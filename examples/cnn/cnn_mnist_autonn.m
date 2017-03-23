@@ -1,7 +1,7 @@
 function [net, info] = cnn_mnist_autonn(varargin)
 % CNN_MNIST_AUTONN  Demonstrates MatConNet on MNIST.
 
-run('../../matlab/setup.m') ;  % add autonn to the path
+try run('../../matlab/setup.m') ; catch; end  % add autonn to the path
 addpath([vl_rootnn '/examples/mnist']) ;
 
 % opts.modelType = 'mlp' ;

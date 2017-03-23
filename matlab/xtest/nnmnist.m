@@ -1,8 +1,7 @@
 classdef nnmnist < nntest
   methods (TestClassSetup)
     function init(test)
-      addpath(fullfile(vl_rootnn, 'examples', 'mnist'));
-      addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', 'examples'));
+      addpath([fileparts(mfilename('fullpath')) '/../../examples/cnn']);
     end
   end
 
