@@ -1,4 +1,4 @@
-function y = autonn_slice(x, varargin)
+function y = slice_wrapper(x, varargin)
 % Helper function implementing forward indexing operation. The derivative
 % is implemented in Net.eval() for efficiency with sparse updates, so
 % this does not correspond to the usual vl_nn* interface.

@@ -3,7 +3,7 @@
 %   The task is to predict the sequence of bits of the sum of two numbers,
 %   given their binary sequences (one bit at a time).
 
-addpath([fileparts(mfilename('fullpath')) '/../../matlab']) ;  % add autonn to path
+run('../../matlab/setup.m') ;  % add autonn to the path
 
 
 T = 8 ;  % number of bits / time steps

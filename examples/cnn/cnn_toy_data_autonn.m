@@ -14,7 +14,7 @@ function [net, stats] = cnn_toy_data_autonn(varargin)
 % This file is part of the VLFeat library and is made available under
 % the terms of the BSD license (see the COPYING file).
 
-addpath([fileparts(mfilename('fullpath')) '/../../matlab']) ;  % Add autonn to path
+run('../../matlab/setup.m') ;  % add autonn to the path
 
 % Parameter defaults. You can add any custom parameters here (e.g.
 % opts.alpha = 1), and change them when calling: cnn_toy_data('alpha', 2).

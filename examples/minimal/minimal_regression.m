@@ -1,7 +1,7 @@
 % MINIMAL_REGRESSION
 %   Demonstrates automatic differentiation of a least-squares objective.
 
-addpath([fileparts(mfilename('fullpath')) '/../../matlab']) ;  % add autonn to path
+run('../../matlab/setup.m') ;  % add autonn to the path
 
 
 % load simple data

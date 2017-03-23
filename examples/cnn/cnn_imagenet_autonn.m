@@ -3,7 +3,7 @@ function [net, info] = cnn_imagenet_autonn(varargin)
 %  This demo demonstrates training the AlexNet, VGG-F, VGG-S, VGG-M,
 %  VGG-VD-16, and VGG-VD-19 architectures on ImageNet data.
 
-addpath([fileparts(mfilename('fullpath')) '/../../matlab']) ;  % Add autonn to path
+run('../../matlab/setup.m') ;  % add autonn to the path
 addpath([vl_rootnn '/examples/imagenet']) ;
 
 opts.dataDir = fullfile(vl_rootnn, 'data','ILSVRC2012') ;
