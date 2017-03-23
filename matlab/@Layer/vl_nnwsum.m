@@ -1,8 +1,7 @@
-function inputs = vl_nnwsum_setup(layer)
+function layer = vl_nnwsum(varargin)
 %VL_NNWSUM_SETUP
 %   Setup a weighted sum layer, by merging any other weighted sums in its
 %   inputs.
-%   Called by AUTONN_SETUP.
 
 % Copyright (C) 2016 Joao F. Henriques.
 % All rights reserved.
@@ -10,15 +9,13 @@ function inputs = vl_nnwsum_setup(layer)
 % This file is part of the VLFeat library and is made available under
 % the terms of the BSD license (see the COPYING file).
 
-  assert(isequal(layer.func, @vl_nnwsum)) ;
-  
   % make sure there's a 'weights' property at the end, with the correct size
-  assert(strcmp(layer.inputs{end-1}, 'weights') && ...
-    numel(layer.inputs{end}) == numel(layer.inputs) - 2) ;
+  assert(strcmp(varargin{end-1}, 'weights') && ...
+    numel(varargin{end}) == numel(varargin) - 2) ;
 
   % separate inputs to the sum, and weights
-  inputs = layer.inputs(1:end-2) ;
-  origWeights = layer.inputs{end} ;
+  inputs = varargin(1:end-2) ;
+  origWeights = varargin{end} ;
   weights = cell(size(inputs)) ;
 
   for k = 1 : numel(inputs)
@@ -40,5 +37,8 @@ function inputs = vl_nnwsum_setup(layer)
 
   % append weights as a property
   inputs = [inputs, {'weights', weights}] ;
+  
+  % create layer
+  layer = Layer(@vl_nnwsum, inputs{:}) ;
 end
 

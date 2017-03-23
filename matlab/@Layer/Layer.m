@@ -146,12 +146,6 @@ classdef Layer < matlab.mixin.Copyable
     
     
     % overloaded MatConvNet functions
-    function y = vl_nnconv(obj, varargin)
-      y = Layer(@vl_nnconv, obj, varargin{:}) ;
-    end
-    function y = vl_nnconvt(obj, varargin)
-      y = Layer(@vl_nnconvt, obj, varargin{:}) ;
-    end
     function y = vl_nnpool(obj, varargin)
       y = Layer(@vl_nnpool, obj, varargin{:}) ;
     end
@@ -160,9 +154,6 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = vl_nnsigmoid(obj, varargin)
       y = Layer(@vl_nnsigmoid, obj, varargin{:}) ;
-    end
-    function y = vl_nndropout(obj, varargin)
-      y = Layer(@vl_nndropout, obj, varargin{:}) ;
     end
     function y = vl_nnbilinearsampler(obj, varargin)
       y = Layer(@vl_nnbilinearsampler, obj, varargin{:}) ;
@@ -184,9 +175,6 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = vl_nnspnorm(obj, varargin)
       y = Layer(@vl_nnspnorm, obj, varargin{:}) ;
-    end
-    function y = vl_nnbnorm(obj, varargin)
-      y = Layer(@vl_nnbnorm, obj, varargin{:}) ;
     end
     function y = vl_nnsoftmax(obj, varargin)
       y = Layer(@vl_nnsoftmax, obj, varargin{:}) ;
@@ -321,13 +309,13 @@ classdef Layer < matlab.mixin.Copyable
     % vl_nnbinaryop does singleton expansion, vl_nnmatrixop does not.
     
     function c = plus(a, b)
-      c = Layer(@vl_nnwsum, a, b, 'weights', [1, 1]) ;
+      c = vl_nnwsum(a, b, 'weights', [1, 1]) ;
     end
     function c = minus(a, b)
-      c = Layer(@vl_nnwsum, a, b, 'weights', [1, -1]) ;
+      c = vl_nnwsum(a, b, 'weights', [1, -1]) ;
     end
     function c = uminus(a)
-      c = Layer(@vl_nnwsum, a, 'weights', -1) ;
+      c = vl_nnwsum(a, 'weights', -1) ;
     end
     function c = uplus(a)
       c = a ;
@@ -336,23 +324,23 @@ classdef Layer < matlab.mixin.Copyable
     function c = times(a, b)
       % optimization: for simple scalar constants, use a vl_nnwsum layer
       if isnumeric(a) && isscalar(a)
-        c = Layer(@vl_nnwsum, b, 'weights', a) ;
+        c = vl_nnwsum(b, 'weights', a) ;
       elseif isnumeric(b) && isscalar(b)
-        c = Layer(@vl_nnwsum, a, 'weights', b) ;
+        c = vl_nnwsum(a, 'weights', b) ;
       else  % general case
         c = Layer(@vl_nnbinaryop, a, b, @times) ;
       end
     end
     function c = rdivide(a, b)
       if isnumeric(b) && isscalar(b)  % optimization for scalar constants
-        c = Layer(@vl_nnwsum, a, 'weights', 1 / b) ;
+        c = vl_nnwsum(a, 'weights', 1 / b) ;
       else
         c = Layer(@vl_nnbinaryop, a, b, @rdivide) ;
       end
     end
     function c = ldivide(a, b)
       if isnumeric(a) && isscalar(a)  % optimization for scalar constants
-        c = Layer(@vl_nnwsum, b, 'weights', 1 / a) ;
+        c = vl_nnwsum(b, 'weights', 1 / a) ;
       else
         c = Layer(@vl_nnbinaryop, a, b, @ldivide) ;
       end
@@ -371,23 +359,23 @@ classdef Layer < matlab.mixin.Copyable
     function c = mtimes(a, b)
       % optimization: for simple scalar constants, use a vl_nnwsum layer
       if isnumeric(a) && isscalar(a)
-        c = Layer(@vl_nnwsum, b, 'weights', a) ;
+        c = vl_nnwsum(b, 'weights', a) ;
       elseif isnumeric(b) && isscalar(b)
-        c = Layer(@vl_nnwsum, a, 'weights', b) ;
+        c = vl_nnwsum(a, 'weights', b) ;
       else  % general case
         c = Layer(@vl_nnmatrixop, a, b, @mtimes) ;
       end
     end
     function c = mrdivide(a, b)
       if isnumeric(b) && isscalar(b)  % optimization for scalar constants
-        c = Layer(@vl_nnwsum, a, 'weights', 1 / b) ;
+        c = vl_nnwsum(a, 'weights', 1 / b) ;
       else
         c = Layer(@vl_nnmatrixop, a, b, @mrdivide) ;
       end
     end
     function c = mldivide(a, b)
       if isnumeric(a) && isscalar(a)  % optimization for scalar constants
-        c = Layer(@vl_nnwsum, b, 'weights', 1 / a) ;
+        c = vl_nnwsum(b, 'weights', 1 / a) ;
       else
         c = Layer(@vl_nnmatrixop, a, b, @mldivide) ;
       end

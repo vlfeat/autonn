@@ -14,13 +14,13 @@ function build(net, varargin)
   opts.sequentialNames = true ;
   opts.shortCircuit = true ;
   opts.forwardOnly = false ;  % used mainly by evalOutputSize for faster build
-  [opts, varargin] = vl_argparsepos(opts, varargin) ;
+  [opts, netOutputs] = vl_argparsepos(opts, varargin) ;
   
-  if ~isscalar(varargin)
+  if ~isscalar(netOutputs)
     % several output layers; create a dummy layer to hold them together
-    rootLayer = Layer(@root, varargin{:}) ;
+    rootLayer = Layer(@root, netOutputs{:}) ;
   else
-    rootLayer = varargin{1} ;
+    rootLayer = netOutputs{1} ;
   end
 
   % make sure all layers have names
@@ -219,9 +219,9 @@ function build(net, varargin)
   
   
   % network outputs, activate diagnostics automatically if empty
-  for k = 1:numel(varargin)
-    if isempty(varargin{k}.diagnostics)
-      varargin{k}.diagnostics = true ;
+  for k = 1:numel(netOutputs)
+    if isempty(netOutputs{k}.diagnostics)
+      netOutputs{k}.diagnostics = true ;
     end
   end
 

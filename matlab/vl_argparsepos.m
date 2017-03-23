@@ -1,14 +1,31 @@
-function [opts, args] = vl_argparsepos(opts, args, varargin)
+function [opts, pos, unknown] = vl_argparsepos(opts, args, varargin)
 %VL_ARGPARSEPOS
+%   [OPTS, POS] = VL_ARGPARSEPOS(OPTS, ARGS)
 %   Same as VL_ARGPARSE, but allows arbitrary positional arguments before
-%   the name-value pairs.
+%   the name-value pairs. The positional arguments are returned in the cell
+%   array POS (see example below).
 %
-%   Example:
+%   [OPTS, POS, UNKNOWN] = VL_ARGPARSEPOS(OPTS, ARGS)
+%   Also returns unknown (non-positional) options in UNKNOWN. This is the
+%   same as the second returned value from VL_ARGPARSE.
+%
+%   Any extra options (such as 'nonrecursive') are passed to VL_ARGPARSE as
+%   well.
+%
+%   Example 1:
 %     opts.pad = 0 ;
-%     [opts, args] = vl_argparsepos(opts, {x, 'pad', 1, 'unknown', []}) ;
-%   The result will be:
+%     [opts, pos] = vl_argparsepos(opts, {x, y, 'pad', 1}) ;
+%   Result:
 %     opts.pad = 1
-%     args = {x, 'unknown', []}
+%     pos = {x, y}
+%
+%   Example 2:
+%     opts.pad = 0 ;
+%     [opts, pos, unknown] = vl_argparsepos(opts, {x, 'pad', 1, 'A', []}) ;
+%   Result:
+%     opts.pad = 1
+%     pos = {x}
+%     unknown = {'A', []}
 
 % Copyright (C) 2016 Joao F. Henriques.
 % All rights reserved.
@@ -35,12 +52,11 @@ function [opts, args] = vl_argparsepos(opts, args, varargin)
   
   % separate them
   namedArgs = args(firstPair:end) ;
-  posArgs = args(1:firstPair-1) ;
+  pos = args(1:firstPair-1) ;
 
   % call vl_argparse
-  if nargout == 2
-    [opts, namedArgs] = vl_argparse(opts, namedArgs, varargin{:}) ;
-    args = [posArgs, namedArgs] ;  % back together
+  if nargout >= 3
+    [opts, unknown] = vl_argparse(opts, namedArgs, varargin{:}) ;
   else
     opts = vl_argparse(opts, namedArgs, varargin{:}) ;
   end
