@@ -1,12 +1,14 @@
-function netOutputs = dagnn2autonn(dag)
-%DAGNN2AUTONN
-%   Converts a DagNN object into recursively nested Layer objects.
+function netOutputs = fromDagNN(dag)
+%LAYER.FROMDAGNN
+%   Converts a DagNN object into the autonn framework (i.e., a set of
+%   recursively nested Layer objects).
+%
 %   Returns a cell array of Layer objects, each corresponding to an output
 %   of the network. These can be composed with other layers, or compiled
 %   into a Net object for training/evaluation.
 %
 %   Example:
-%     layers = dagnn2autonn(myDag) ;
+%     layers = Layer.fromDagNN(myDag) ;
 %     net = Net(layers{:}) ;
 %     net.setInputs('images', randn(5,5,1,3), 'labels', 1:3) ;
 %     net.eval() ;

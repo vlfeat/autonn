@@ -23,7 +23,6 @@ function objs = find(obj, varargin)
 % This file is part of the VLFeat library and is made available under
 % the terms of the BSD license (see the COPYING file).
 
-
   % parse name-value pairs, and leave the rest in varargin
   opts.depth = inf ;
   firstArg = find(cellfun(@(s) ischar(s) && any(strcmp(s, fieldnames(opts))), varargin), 1) ;
@@ -48,7 +47,8 @@ function objs = find(obj, varargin)
   end
 
   % do the work
-  objs = findRecursive(obj, what, n, opts.depth, Layer.initializeRecursion(), {}) ;
+  visited = Layer.initializeRecursion() ;
+  objs = findRecursive(obj, what, n, opts.depth, visited, {}) ;
 
   % choose the Nth object
   if n ~= 0
@@ -63,7 +63,7 @@ end
 
 function selected = findRecursive(obj, what, n, depth, visited, selected)
 % WHAT, N, DEPTH: Search criteria (see FIND).
-% VISITED: Dictionary of objects seen during recursion so far.
+% VISITED: Dictionary of objs seen during recursion so far (handle class).
 % SELECTED: Cell array of selected objects.
 
 % Copyright (C) 2016 Joao F. Henriques.

@@ -90,23 +90,28 @@ case 'autonn'
   objective = vl_nnloss(x, labels, 'loss', 'softmaxlog') ;
   error = vl_nnloss(x, labels, 'loss', 'classerror') ;
 
-  Layer.workspaceNames() ;  % Assign layer names based on workspace variables (e.g. 'images', 'objective')
-  net = Net(objective, error) ;  % Compile network
+  Layer.workspaceNames() ;  % assign layer names based on workspace variables (e.g. 'images', 'objective')
+  net = Net(objective, error) ;  % compile network
   
   
 case 'dagnn'
-  % test Net converted from a DagNN
-  addpath ../mnist/
+  % test conversion from a DagNN
   assert(strcmp(opts.modelType, 'lenet')) ;
 
+  % create DagNN, and rename its inputs
   net = cnn_mnist_init('batchNormalization', opts.batchNormalization, ...
                        'networkType', 'dagnn') ;
 
   net.renameVar('input', 'images');
   net.renameVar('label', 'labels');
   
-  layers = dagnn2autonn(net) ;
-  net = Net(layers{:}) ;
+  % convert it
+  layers = Layer.fromDagNN(net) ;
+  
+  images = layers{1}.find('images', 1) ;  % find images input
+  images.gpu = true ;  % automatically move images to the GPU if needed
+  
+  net = Net(layers{:}) ;  % compile network
 
 otherwise
   error('Unsupported network type ''%s''.', opts.networkType) ;
@@ -129,7 +134,7 @@ inputs = {'images', images, 'labels', labels} ;
 % --------------------------------------------------------------------
 function imdb = getMnistImdb(opts)
 % --------------------------------------------------------------------
-% Preapre the imdb structure, returns image data with mean image subtracted
+% prepare the imdb structure, returns image data with mean image subtracted
 files = {'train-images-idx3-ubyte', ...
          'train-labels-idx1-ubyte', ...
          't10k-images-idx3-ubyte', ...

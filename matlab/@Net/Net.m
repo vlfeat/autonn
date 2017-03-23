@@ -78,7 +78,7 @@ classdef Net < handle
           s = dagnn.DagNN.fromSimpleNN(s, 'CanonicalNames', true) ;
         end
         if isa(s, 'dagnn.DagNN')
-          s = dagnn2autonn(s) ;
+          s = Layer.fromDagNN(s) ;
         end
         if iscell(s)
           varargin = s ;  % varargin should contain a list of Layer objects

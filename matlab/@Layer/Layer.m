@@ -89,6 +89,10 @@ classdef Layer < matlab.mixin.Copyable
     enableCycleChecks = true  % to avoid redundant cycle checks when implicitly calling set.inputs()
   end
   
+  methods (Static)
+    netOutputs = fromDagNN(dag)
+  end
+  
   methods
     function obj = Layer(func, varargin)  % wrap a function call
       obj.saveStack() ;  % record source file and line number, for debugging
@@ -106,7 +110,7 @@ classdef Layer < matlab.mixin.Copyable
       
       % convert from DagNN to Layer
       if isa(func, 'dagnn.DagNN')
-         obj = dagnn2autonn(func) ;
+         obj = Layer.fromDagNN(func) ;
          if isscalar(obj)
            obj = obj{1} ;
          else  % wrap multiple outputs in a weighted sum
@@ -186,8 +190,8 @@ classdef Layer < matlab.mixin.Copyable
       y = Layer(@vl_nnloss, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
     end
-    function [hn, cn] = vl_nnlstm(obj, varargin)
-      [hn, cn] = Layer.createLayer(@vl_nnlstm, [{obj}, varargin]) ;
+    function [hn, cn] = vl_nnlstm(varargin)
+      [hn, cn] = Layer.create(@vl_nnlstm, varargin) ;
     end
     
     
@@ -486,14 +490,15 @@ classdef Layer < matlab.mixin.Copyable
       assert(isa(func, 'function_handle'), 'Argument must be a valid function handle.') ;
       
       opts = varargin ;
-      generator = @(varargin) Layer.createLayer(func, varargin, opts{:}) ;
+      generator = @(varargin) Layer.create(func, varargin, opts{:}) ;
     end
     
-    function varargout = createLayer(func, args, varargin)
+    function varargout = create(func, args, varargin)
       % Create a layer with given function handle FUNC and arguments
       % cell array ARGS, optionally setting additional properties as
       % name-value pairs (numInputDer). numOutputs is inferred.
-      % Supports multiple outputs.
+      % Unlike the Layer constructor, Layer.create supports multiple
+      % outputs.
       assert(isa(func, 'function_handle'), 'Argument must be a valid function handle.') ;
       
       opts.numInputDer = [] ;

@@ -94,7 +94,7 @@ if isempty(opts.network)
     end
     
     % convert to autonn
-    layers = dagnn2autonn(net) ;
+    layers = Layer.fromDagNN(net) ;
     net = Net(layers{:}) ;
 
     opts.networkType = 'autonn' ;
