@@ -211,9 +211,9 @@ for i = 1:size(table,2)
 end
 
 % add spaces between columns
-t = cell(size(table,1), size(table,2) * 2) ;
-t(:,1:2:end) = {'  '} ;
-t(:,2:2:end) = table ;
+t = cell(size(table,1), size(table,2) * 2 - 1) ;
+t(:,1:2:end) = table ;
+t(:,2:2:end) = {'  '} ;
 table = t ;
 
 % concatenate and display
