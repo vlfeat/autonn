@@ -410,7 +410,7 @@ classdef Layer < matlab.mixin.Copyable
     % overloaded indexing
     function varargout = subsref(a, s)
       if strcmp(s(1).type, '()')
-        varargout{1} = Layer(@autonn_slice, a, s.subs{:}) ;
+        varargout{1} = Layer(@slice_wrapper, a, s.subs{:}) ;
       else
         [varargout{1:nargout}] = builtin('subsref', a, s) ;
       end
