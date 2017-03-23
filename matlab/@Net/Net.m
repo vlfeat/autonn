@@ -218,13 +218,15 @@ classdef Net < handle
       fprintf('\n%s = \n', name) ;
       disp(net) ;
       
-      if ~isempty(name)
+      if ~isempty(name) && usejava('desktop')
         if ~isempty(net.vars)
           fprintf('  <a href="matlab:%s.displayVars()">Display variables</a>\n\n', name) ;
         else
           fprintf(['  <a href="matlab:%s.displayVars(vars)">Display variables ' ...
             '(NOTE: Must be in the scope of NET.EVAL; use DBUP/DBDOWN)</a>\n\n'], name) ;
         end
+      else
+        fprintf('  For more information use net.displayVars().\n\n')
       end
     end
     

@@ -22,6 +22,8 @@ function display(obj, name)
     disp(obj) ;
     return
   end
+  
+  showLinks = usejava('desktop') ;
 
   if numel(name) > 30  % line break for long names
     fprintf('\n')
@@ -50,9 +52,13 @@ function display(obj, name)
         else
           label = sprintf('inputs{%i}', i) ;
         end
-        cmd = sprintf('%s.inputs{%i}', name, i) ;
 
-        fprintf('<a href="matlab:display(%s,''%s'')">%s</a>', cmd, cmd, label) ;
+        if ~showLinks
+          fprintf(label) ;
+        else
+          cmd = sprintf('%s.inputs{%i}', name, i) ;
+          fprintf('<a href="matlab:display(%s,''%s'')">%s</a>', cmd, cmd, label) ;
+        end
       end
       if i < numel(obj.inputs)
         fprintf(', ') ;
@@ -65,7 +71,12 @@ function display(obj, name)
 
   if ~isempty(obj.source)
     [~, file, ext] = fileparts(obj.source(1).file) ;
-    fprintf('Defined in <a href="matlab:opentoline(''%s'',%i)">%s%s, line %i</a>.\n', ...
-      obj.source(1).file, obj.source(1).line, file, ext, obj.source(1).line) ;
+    if ~showLinks
+      fprintf('  Defined in %s%s, line %i.\n', file, ext, obj.source(1).line) ;
+    else
+      fprintf('  Defined in <a href="matlab:opentoline(''%s'',%i)">%s%s, line %i</a>.\n', ...
+        obj.source(1).file, obj.source(1).line, file, ext, obj.source(1).line) ;
+    end
   end
 end
+
