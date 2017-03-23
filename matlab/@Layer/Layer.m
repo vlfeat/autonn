@@ -52,7 +52,10 @@ classdef Layer < matlab.mixin.Copyable
 %       customLoss = Layer.fromFunction(@func, 'numInputDer', 1) ;
 %
 %
-%   See also NET.
+%   <a href="matlab:properties('Layer'),methods('Layer')">Properties and methods</a>
+%   More information on property or method XX with 'help Layer.XX'.
+%
+%   See also properties('Layer'), methods('Layer'), Net.
 
 % Copyright (C) 2016 Joao F. Henriques.
 % All rights reserved.

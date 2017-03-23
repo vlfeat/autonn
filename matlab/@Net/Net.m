@@ -27,10 +27,11 @@ classdef Net < handle
 %      disp(net.getValue(loss)) ;
 %      disp(net.getDer(images)) ;
 %
-%   Note: The examples cannot be ran in the <MATCONVNET>/matlab folder
-%   due to function shadowing.
 %
-%   See also LAYER.
+%   <a href="matlab:properties('Net'),methods('Net')">Properties and methods</a>
+%   More information on property or method XX with 'help Net.XX'.
+%
+%   See also properties('Net'), methods('Net'), Layer.
 
 % Copyright (C) 2016 Joao F. Henriques.
 % All rights reserved.
