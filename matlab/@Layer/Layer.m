@@ -123,10 +123,6 @@ classdef Layer < matlab.mixin.Copyable
       obj.enableCycleChecks = false ;
       obj.func = func ;
       obj.inputs = varargin(:)' ;
-      
-      % call setup function if defined. it can change the inputs list (not
-      % allowed for outside functions, to preserve call graph structure).
-      obj.inputs = autonn_setup(obj) ;
       obj.enableCycleChecks = true ;
     end
     
@@ -184,9 +180,11 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = vl_nnsoftmaxloss(obj, varargin)
       y = Layer(@vl_nnsoftmaxloss, obj, varargin{:}) ;
+      y.numInputDer = 1 ;  % only the first derivative is defined
     end
     function y = vl_nnloss(obj, varargin)
       y = Layer(@vl_nnloss, obj, varargin{:}) ;
+      y.numInputDer = 1 ;  % only the first derivative is defined
     end
     function [hn, cn] = vl_nnlstm(obj, varargin)
       [hn, cn] = Layer.createLayer(@vl_nnlstm, [{obj}, varargin]) ;
@@ -196,9 +194,11 @@ classdef Layer < matlab.mixin.Copyable
     % overloaded native Matlab functions
     function y = reshape(obj, varargin)
       y = Layer(@reshape, obj, varargin{:}) ;
+      y.numInputDer = 1 ;  % only the first derivative is defined
     end
     function y = repmat(obj, varargin)
       y = Layer(@repmat, obj, varargin{:}) ;
+      y.numInputDer = 1 ;  % only the first derivative is defined
     end
     function y = permute(obj, varargin)
       y = Layer(@permute, obj, varargin{:}) ;
@@ -211,6 +211,7 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = size(obj, varargin)
       y = Layer(@size, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = sum(obj, varargin)
       y = Layer(@sum, obj, varargin{:}) ;
@@ -264,6 +265,7 @@ classdef Layer < matlab.mixin.Copyable
       % calls the == operator for handle classes).
       if nargin <= 2
         y = Layer(@eq, a, b) ;
+        y.numInputDer = 0 ;  % non-differentiable
       else
         assert(isequal(same, 'sameInstance'), 'The only accepted extra flag for EQ is ''sameInstance''.') ;
         y = eq@handle(a, b) ;
@@ -271,37 +273,48 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = ne(a, b)
       y = Layer(@ne, a, b) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = lt(a, b)
       y = Layer(@lt, a, b) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = gt(a, b)
       y = Layer(@gt, a, b) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = le(a, b)
       y = Layer(@le, a, b) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = ge(a, b)
       y = Layer(@ge, a, b) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     
     function y = and(a, b)
       y = Layer(@and, a, b) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = or(a, b)
       y = Layer(@or, a, b) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = not(a)
       y = Layer(@not, a) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = xor(a, b)
       y = Layer(@xor, a, b) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = any(obj, varargin)
       y = Layer(@any, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = all(obj, varargin)
       y = Layer(@all, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     
     % overloaded math operators. any additions, negative signs and scalar
@@ -342,7 +355,8 @@ classdef Layer < matlab.mixin.Copyable
       if isnumeric(a) && isscalar(a)  % optimization for scalar constants
         c = vl_nnwsum(b, 'weights', 1 / a) ;
       else
-        c = Layer(@vl_nnbinaryop, a, b, @ldivide) ;
+        % @ldivide is just @rdivide with swapped inputs
+        c = Layer(@vl_nnbinaryop, b, a, @rdivide) ;
       end
     end
     function c = power(a, b)
@@ -377,7 +391,8 @@ classdef Layer < matlab.mixin.Copyable
       if isnumeric(a) && isscalar(a)  % optimization for scalar constants
         c = vl_nnwsum(b, 'weights', 1 / a) ;
       else
-        c = Layer(@vl_nnmatrixop, a, b, @mldivide) ;
+        % @mldivide is just @mrdivide with swapped inputs
+        c = Layer(@vl_nnmatrixop, b, a, @mrdivide) ;
       end
     end
     function c = mpower(a, b)
@@ -393,6 +408,7 @@ classdef Layer < matlab.mixin.Copyable
     
     function y = colon(obj, varargin)
       y = Layer(@colon, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     
     % overloaded indexing
@@ -539,30 +555,39 @@ classdef Layer < matlab.mixin.Copyable
     % Layer object, call with Layer.rand(...)).
     function y = rand(obj, varargin)
       y = Layer(@rand, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = randi(obj, varargin)
       y = Layer(@randi, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = randn(obj, varargin)
       y = Layer(@randn, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = randperm(obj, varargin)
       y = Layer(@randperm, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = zeros(obj, varargin)
       y = Layer(@zeros, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = ones(obj, varargin)
       y = Layer(@ones, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = inf(obj, varargin)
       y = Layer(@inf, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = nan(obj, varargin)
       y = Layer(@nan, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     function y = eye(obj, varargin)
       y = Layer(@eye, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
   end
   

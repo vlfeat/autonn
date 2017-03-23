@@ -27,8 +27,7 @@ function [y, db] = vl_nnbinaryop(a, b, op, dy)
       end
 
     elseif isequal(op, @rdivide)
-      % note: @ldivide is just @rdivide with swapped inputs (see
-      % autonn_setup/vl_nnbinaryop_setup)
+      % note: @ldivide is just @rdivide with swapped inputs
       da = bsxfun(@rdivide, dy, b) ;
       if nargout > 1
         db = -dy .* bsxfun(@rdivide, a, b .^ 2) ;
