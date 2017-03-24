@@ -41,6 +41,18 @@ classdef Param < Layer
       obj.trainMethod = opts.trainMethod ;
       obj.gpu = opts.gpu ;
     end
+    
+    function displayCustom(obj, ~, ~)
+      s.name = obj.name ;
+      s.value = obj.value ;
+      s.weightDecay = obj.weightDecay ;
+      s.learningRate = obj.learningRate ;
+      s.trainMethod = obj.trainMethod ;
+      s.gpu = obj.gpu ;
+      fprintf('Param\n\n') ;
+      disp(s) ;
+    end
   end
 end
- 
+
+

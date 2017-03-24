@@ -435,6 +435,44 @@ classdef Layer < matlab.mixin.Copyable
     function idx = end(obj, dim, ndim)
       error('Not supported, use SIZE(X,DIM) or a constant size instead.') ;
     end
+    
+    function display(obj, name)
+      % DISPLAY(OBJ)
+      % Overload DISPLAY to show hyperlinks in command window, allowing one to
+      % interactively traverse the network. Note that the builtin DISP is
+      % unchanged.
+      if nargin < 2
+        name = inputname(1) ;
+      end
+      fprintf('\n%s', name) ;
+      
+      if builtin('numel', obj) ~= 1  % non-scalar, use standard display
+        fprintf(' =\n\n') ;
+        disp(obj) ;
+        return
+      end
+      
+      if numel(name) > 30, fprintf('\n'); end  % line break for long names
+      showLinks = usejava('desktop') ;
+      fprintf(' = ') ;
+      obj.displayCustom(name, showLinks) ;
+      
+      if ~isempty(obj.source)  % show source-code origin
+        [~, file, ext] = fileparts(obj.source(1).file) ;
+        if ~showLinks
+          fprintf('Defined in %s%s, line %i.\n', file, ext, obj.source(1).line) ;
+        else
+          fprintf('Defined in <a href="matlab:opentoline(''%s'',%i)">%s%s, line %i</a>.\n', ...
+            obj.source(1).file, obj.source(1).line, file, ext, obj.source(1).line) ;
+        end
+      end
+      
+      if showLinks
+        fprintf('(<a href="matlab:disp(%s)">Show all properties</a>)\n', name) ;
+      else
+        fprintf('(Use disp(%s) to show all properties)\n', name) ;
+      end
+    end
   end
   
   methods (Access = {?Net, ?Layer})
@@ -472,8 +510,8 @@ classdef Layer < matlab.mixin.Copyable
       % the first function in user-land (not part of autonn).
       stack = dbstack('-completenames') ;
       
-      % current file's directory (e.g. <MATCONVNET>/matlab/autonn)
-      p = [fileparts(stack(1).file), filesep] ;
+      % 2 folders up from current file's directory (<autonn>/matlab)
+      p = [fileparts(fileparts(stack(1).file)), filesep] ;
       
       % find a non-matching directory (i.e., not part of autonn directly)
       for i = 2:numel(stack)

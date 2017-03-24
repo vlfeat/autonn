@@ -26,5 +26,12 @@ classdef Input < Layer
       obj.name = opts.name ;
       obj.gpu = opts.gpu ;
     end
+    
+    function displayCustom(obj, ~, ~)
+      s.name = obj.name ;
+      s.gpu = obj.gpu ;
+      fprintf('Input\n\n') ;
+      disp(s) ;
+    end
   end
 end

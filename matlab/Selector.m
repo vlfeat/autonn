@@ -27,5 +27,22 @@ classdef Selector < Layer
       obj.index = index ;
       obj.enableCycleChecks = true ;
     end
+    
+    function displayCustom(obj, varName, showLinks)
+      fprintf('Selector for output #%i of layer ', obj.index) ;
+      
+      if ~isempty(obj.inputs{1}.name)
+        label = obj.inputs{1}.name ;
+      else
+        label = 'inputs{1}' ;
+      end
+      
+      if ~showLinks || isempty(varName)
+        fprintf([label '\n']) ;
+      else
+        cmd = [varName '.inputs{1}'] ;
+        fprintf('<a href="matlab:display(%s,''%s'')">%s</a>\n', cmd, cmd, label) ;
+      end
+    end
   end
 end
