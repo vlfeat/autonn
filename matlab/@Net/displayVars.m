@@ -80,9 +80,7 @@ for i = 1:numel(vars)
     end
   
     if opts.showLinks
-      % link to get to the originating layer (fwd/bwd structs).
-      % note that the links must have a fixed number of characters,
-      % otherwise the columns will be misaligned
+      % link to get to the originating layer (fwd/bwd structs)
       fwd = sprintf('%s.forward(%i)', netname, info(i).index) ;
       bwd = sprintf('%s.backward(%i)', netname, numel(net.forward) - info(i).index + 1) ;
       
@@ -106,9 +104,13 @@ for i = 1:numel(vars)
   values{i} = str(1:end-1) ;  % remove extraneous 'x' at the end of the var size
   
   if opts.showLinks
-    % link to get variable's value
-    values{i} = sprintf('<a href="matlab:display(''%s{%d}'')">%s</a>', ...
-      varname, i, values{i}) ;
+    % link to show variable's value
+    title = info(i).name ;
+    if mod(i, 2) == 0
+      title = [title ' derivative'] ;
+    end
+    values{i} = sprintf('<a href="matlab:figure(''Name'',''%s'');vl_tshow(%s{%d});colorbar">%s</a>', ...
+      title, varname, i, values{i}) ;
   end
   
   % flags (GPU, NaN, Inf)
