@@ -47,6 +47,7 @@ classdef Net < handle
     params = []  % list of Params
     gpu = false  % whether the network is in GPU or CPU mode
     isGpuVar = []  % whether each variable or derivative can be on the GPU
+    parameterServer = []  % ParameterServer object, accumulates parameter derivatives across GPUs
   end
   properties (SetAccess = public, GetAccess = public)
     meta = []  % optional meta properties
@@ -212,6 +213,15 @@ classdef Net < handle
       end
     end
     
+    function clearParameterServer(obj)
+    %CLEARPARAMETERSERVER  Remove the parameter server
+    %    CLEARPARAMETERSERVER(obj) stops using the parameter server.
+      if ~isempty(obj.parameterServer)
+        obj.parameterServer.stop() ;
+      end
+      obj.parameterServer = [] ;
+    end
+    
     function display(net, name)
       if nargin < 2
         name = inputname(1) ;
@@ -223,6 +233,7 @@ classdef Net < handle
       s.Number_of_inputs = numel(fieldnames(net.inputs)) ;
       s.Number_of_parameters = numel(net.params) ;
       s.GPU_mode = net.gpu ;
+      s.Multiple_GPUs = ~isempty(net.parameterServer) ;
       
       fprintf(strrep(evalc('disp(s)'), '_', ' ')) ;
       

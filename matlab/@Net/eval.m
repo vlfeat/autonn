@@ -119,5 +119,20 @@ function eval(net, mode, derOutput, accumulateParamDers)
     end
   end
 
+  % send parameter derivatives to the parameter server, if using multiple
+  % GPUs
+  if ~isempty(net.parameterServer)
+    ps = net.parameterServer ;
+    paramDerIdx = [net.params.var] + 1 ;  % indexes of param derivative vars
+    paramDer = vars(paramDerIdx) ;
+    
+    for i = 1:numel(net.params)  % push each one into the parameter server
+      ps.pushWithIndex(i, paramDer{i}) ;
+    end
+    
+    [vars(paramDerIdx)] = deal({[]}) ;  % clear them
+  end
+  
   net.vars = vars ;
 end
+
