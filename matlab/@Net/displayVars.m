@@ -40,7 +40,12 @@ opts.showMemory = true ;
 opts.showLinks = usejava('desktop') ;
 opts = vl_argparse(opts, varargin) ;
 
-assert(~isempty(vars), 'NET.VARS is empty.') ;
+if isempty(vars)
+  error(sprintf(['NET.VARS is empty.\n' ...
+    'NOTE: Net.eval() is executing. For performance, it holds all of the\n' ...
+    'network''s variables in a local variable (called ''vars''). To display\n' ...
+    'them, first navigate to the scope of Net.eval() with dbup/dbdown.\n\n'])) ;  %#ok<SPERR>
+end
 
 info = net.getVarsInfo() ;
 assert(numel(info) == numel(vars)) ;

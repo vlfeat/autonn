@@ -216,19 +216,41 @@ classdef Net < handle
       if nargin < 2
         name = inputname(1) ;
       end
-      fprintf('\n%s = \n', name) ;
-      disp(net) ;
+      fprintf('\n%s = Net object with:\n\n', name) 
       
-      if ~isempty(name) && usejava('desktop')
-        if ~isempty(net.vars)
-          fprintf('  <a href="matlab:%s.displayVars()">Display variables</a>\n\n', name) ;
+      s.Number_of_layers = numel(net.forward) ;
+      s.Number_of_variables = numel(net.isGpuVar) ;
+      s.Number_of_inputs = numel(fieldnames(net.inputs)) ;
+      s.Number_of_parameters = numel(net.params) ;
+      s.GPU_mode = net.gpu ;
+      
+      fprintf(strrep(evalc('disp(s)'), '_', ' ')) ;
+      
+      showLinks = ~isempty(name) && usejava('desktop') ;
+      
+      if showLinks
+        props = ['<a href="matlab:disp(' name ')">show all properties</a>'] ;
+      else
+        props = 'use net.disp() to show all properties' ;
+      end
+      
+      if ~isempty(net.vars)
+        if showLinks
+          fprintf('<a href="matlab:%s.displayVars()">Display variables</a>, %s\n\n', name, props) ;
         else
-          fprintf(['  <a href="matlab:%s.displayVars(vars)">Display variables ' ...
-            '(NOTE: Must be in the scope of NET.EVAL; use DBUP/DBDOWN)</a>\n\n'], name) ;
+          fprintf('Use net.displayVars() to show all variables, %s.\n\n', props) ;
         end
       else
-        fprintf('  For more information use net.displayVars().\n\n')
+        if showLinks
+          fprintf('<a href="matlab:%s.displayVars(vars)">Display variables</a>, %s\n', name, props) ;
+        else
+          fprintf('Use net.displayVars(vars) to show all variables, %s\n', props) ;
+        end
+        fprintf(['NOTE: Net.eval() is executing. For performance, it holds all of the\n' ...
+                 'network''s variables in a local variable (called ''vars''). To display\n' ...
+                 'them, first navigate to the scope of Net.eval() with dbup/dbdown.\n\n']) ;
       end
+      
     end
     
     function s = saveobj(net)
