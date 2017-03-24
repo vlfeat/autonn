@@ -114,6 +114,9 @@ classdef Layer < matlab.mixin.Copyable
          if isscalar(obj)
            obj = obj{1} ;
          else  % wrap multiple outputs in a weighted sum
+           for i = 1:numel(obj)  % keep original objects, don't let them be optimized into a single weighted sum
+             obj{i}.optimize = false ;
+           end
            obj = Layer(@vl_nnwsum, obj{:}, 'weights', ones(1, numel(obj))) ;
          end
          return
