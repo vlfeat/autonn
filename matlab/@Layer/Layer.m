@@ -436,6 +436,11 @@ classdef Layer < matlab.mixin.Copyable
       error('Not supported, use SIZE(X,DIM) or a constant size instead.') ;
     end
     
+    function y = bsxfun(varargin)
+      error(['BSXFUN is already called implicitly for all binary operators. ' ...
+        'Use the corresponding math operator instead of BSXFUN.']) ;
+    end
+    
     function display(obj, name)
       % DISPLAY(OBJ)
       % Overload DISPLAY to show hyperlinks in command window, allowing one to
