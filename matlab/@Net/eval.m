@@ -55,7 +55,7 @@ function eval(net, mode, derOutput, accumulateParamDers)
     if accumulateParamDers  % except for params (e.g. to implement sub-batches)
       clear([net.params.var] + 1) = false ;  % next var is the derivative
     end
-    [vars(clear)] = deal({0}) ;
+    vars(clear) = {0} ;
 
     % set root layer's output derivative
     assert(~isempty(derOutput), 'Must specify non-empty output derivatives for normal mode.')
@@ -130,7 +130,7 @@ function eval(net, mode, derOutput, accumulateParamDers)
       ps.pushWithIndex(i, paramDer{i}) ;
     end
     
-    [vars(paramDerIdx)] = deal({[]}) ;  % clear them
+    vars(paramDerIdx) = {[]} ;  % clear them
   end
   
   net.vars = vars ;

@@ -364,9 +364,7 @@ else
   end
 end
 
-if isa(net, 'dagnn.DagNN')
-  net.reset() ;
-end
+net.reset() ;
 net.move('cpu') ;
 
 % -------------------------------------------------------------------------
@@ -444,7 +442,8 @@ w = net.getValue(paramVars) ;
 dw = net.getDer(paramVars) ;
 if isscalar(paramVars), w = {w} ; dw = {dw} ; end
 
-net.setValue(paramVars, cell(size(paramVars))) ;  % save memory
+% allow memory to be released, for parameters and their derivatives
+net.setValue([paramVars, paramVars + 1], cell(1, 2 * numel(paramVars))) ;
 
 for p=1:numel(net.params)
   if ~isempty(parserv)

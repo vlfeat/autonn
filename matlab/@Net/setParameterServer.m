@@ -19,7 +19,9 @@ function setParameterServer(net, ps)
       deviceType = 'cpu' ;
       dataType = class(paramValues{p}) ;
     end
-    ps.register(net.params(p).name, size(paramValues{p}), dataType, deviceType) ;
+    % use sequential names, net.params(p).name not guaranteed to be valid
+    name = sprintf('p%i', p) ;
+    ps.register(name, size(paramValues{p}), dataType, deviceType) ;
   end
   
   net.parameterServer = ps ;

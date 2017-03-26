@@ -98,19 +98,21 @@ classdef Net < handle
     %  to either the 'gpu' or the 'cpu'.
       switch device
         case 'gpu'
-          moveOp = @gpuArray ;
-        case 'cpu'
-          moveOp = @gather ;
+          % only move vars marked as GPU arrays
+          net.vars(net.isGpuVar) = cellfun(@gpuArray, net.vars(net.isGpuVar), 'UniformOutput',false) ;
           
+        case 'cpu'
            % by moving to the CPU we lose the knowledge of which vars are
            % supposed to be on the GPU, so store that. once on the GPU,
            % always on the GPU.
           net.isGpuVar = net.isGpuVar | cellfun('isclass', net.vars, 'gpuArray') ;
+          
+          % move all just to be safe
+          net.vars = cellfun(@gather, net.vars, 'UniformOutput',false) ;
+          
         otherwise
           error('Unknown device ''%s''.', device) ;
       end
-      
-      net.vars(net.isGpuVar) = cellfun(moveOp, net.vars(net.isGpuVar), 'UniformOutput',false) ;
       
       net.gpu = strcmp(device, 'gpu') ;
       if isfield(net.inputs, 'gpuMode')
@@ -213,13 +215,18 @@ classdef Net < handle
       end
     end
     
-    function clearParameterServer(obj)
+    function clearParameterServer(net)
     %CLEARPARAMETERSERVER  Remove the parameter server
     %    CLEARPARAMETERSERVER(obj) stops using the parameter server.
-      if ~isempty(obj.parameterServer)
-        obj.parameterServer.stop() ;
+      if ~isempty(net.parameterServer)
+        net.parameterServer.stop() ;
       end
-      obj.parameterServer = [] ;
+      net.parameterServer = [] ;
+    end
+    
+    function reset(net)
+    %RESET Alias for clearParameterServer
+      net.clearParameterServer();
     end
     
     function display(net, name)
