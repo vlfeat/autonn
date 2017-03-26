@@ -234,7 +234,26 @@ if numGpus >= 1
 end
 if numGpus > 1
   parserv = ParameterServer(params.parameterServer) ;
-  net.setParameterServer(parserv) ;
+  
+  if ~isa(net, 'dagnn.DagNN')
+    % some layers have implicit Param sizes: the Params are scalar, until
+    % the first derivative computation, when they're expanded to full size.
+    % this allows initializing layers without knowing their input/output
+    % sizes, making them less verbose. e.g. batch-norm: y = vl_nnbnorm(x);
+    % for multi-GPU we need their sizes, so compute their derivatives once.
+    subset = params.(mode) ;
+    inputs = params.getBatch(params.imdb, subset(1)) ;  % one sample
+    
+    net.setInputs(inputs{:}) ;
+    net.eval('normal', params.derOutputs) ;
+    
+    paramDer = net.getDer([net.params.var]) ;
+    if ~iscell(paramDer), paramDer = {paramDer} ; end
+    
+    net.setParameterServer(parserv, paramDer) ;
+  else
+    net.setParameterServer(parserv) ;
+  end
 else
   parserv = [] ;
 end

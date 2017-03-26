@@ -1,6 +1,6 @@
-function setParameterServer(net, ps)
+function setParameterServer(net, ps, paramValues)
 %SETPARAMETERSERVER  Set a parameter server for the parameter derivatives
-%    SETPARAMETERSERVER(obj, PS) uses the specified
+%    SETPARAMETERSERVER(NET, PS) uses the specified
 %    ParameterServer PS to store and accumulate parameter
 %    derivatives across multiple MATLAB processes.
 %
@@ -8,7 +8,9 @@ function setParameterServer(net, ps)
 %    and must be retrieved from the server.
 
   % get initial values of all parameters
-  paramValues = net.vars([net.params.var]) ;
+  if nargin < 3
+    paramValues = net.vars([net.params.var]) ;
+  end
   
   % register each one
   for p = 1:numel(net.params)
