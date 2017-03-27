@@ -371,10 +371,10 @@ classdef Layer < matlab.mixin.Copyable
     end
     
     function y = transpose(a)
-      y = Layer(@vl_nnmatrixop, a, [], @transpose) ;
+      y = Layer(@transpose, a) ;
     end
     function y = ctranspose(a)
-      y = Layer(@vl_nnmatrixop, a, [], @ctranspose) ;
+      y = Layer(@ctranspose, a) ;
     end
     
     function c = mtimes(a, b)
@@ -384,14 +384,14 @@ classdef Layer < matlab.mixin.Copyable
       elseif isnumeric(b) && isscalar(b)
         c = vl_nnwsum(a, 'weights', b) ;
       else  % general case
-        c = Layer(@vl_nnmatrixop, a, b, @mtimes) ;
+        c = Layer(@mtimes, a, b) ;
       end
     end
     function c = mrdivide(a, b)
       if isnumeric(b) && isscalar(b)  % optimization for scalar constants
         c = vl_nnwsum(a, 'weights', 1 / b) ;
       else
-        c = Layer(@vl_nnmatrixop, a, b, @mrdivide) ;
+        c = Layer(@mrdivide, a, b) ;
       end
     end
     function c = mldivide(a, b)
@@ -399,11 +399,8 @@ classdef Layer < matlab.mixin.Copyable
         c = vl_nnwsum(b, 'weights', 1 / a) ;
       else
         % @mldivide is just @mrdivide with swapped inputs
-        c = Layer(@vl_nnmatrixop, b, a, @mrdivide) ;
+        c = Layer(@mrdivide, b, a) ;
       end
-    end
-    function c = mpower(a, b)
-      c = Layer(@vl_nnmatrixop, a, b, @mpower) ;
     end
     
     function y = vertcat(obj, varargin)

@@ -58,6 +58,26 @@ function dx = log_der(x, dy)
   dx = dy ./ x ;
 end
 
+function dx = transpose_der(~, dy)
+  dx = dy.' ;
+end
+
+function dx = ctranspose_der(~, dy)
+  dx = dy' ;
+end
+
+function [da, db] = mtimes_der(a, b, dy)
+  da = dy * b.' ;
+  db = a.' * dy ;
+end
+
+function [da, db] = mrdivide_der(a, b, dy)
+  % note: @mldivide is just @mrdivide with swapped inputs
+  bt = b.' ;
+  da = dy / bt ;
+  db = -a' / bt * dy / bt ;
+end
+
 function dx = inv_der(x, dy)
   inv_x_t = inv(x)';
   dx = -inv_x_t * dy * inv_x_t;
