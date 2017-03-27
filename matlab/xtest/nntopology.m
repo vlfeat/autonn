@@ -1,4 +1,4 @@
-classdef nnautonn < nntest
+classdef nntopology < nntest
   properties (TestParameter)
     topology = {'sequential', 'diamond'}
   end

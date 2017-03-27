@@ -1,4 +1,4 @@
-classdef nnautonnfind < nntest
+classdef nnfind < nntest
   properties (TestParameter)
     topology = {'sequential', 'diamond'}
     index = {1, 2, 3, 4, 'all', -1}

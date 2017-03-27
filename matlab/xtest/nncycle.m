@@ -1,4 +1,4 @@
-classdef nnautonncycle < nntest
+classdef nncycle < nntest
   methods (Test)
     function testCycle(test)
       % diamond topology

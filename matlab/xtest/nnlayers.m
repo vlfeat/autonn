@@ -1,4 +1,4 @@
-classdef nnautonnlayers < nntest
+classdef nnlayers < nntest
   methods (Test)
     function testLayers(test)
       % use Params for all inputs so we can choose their values now

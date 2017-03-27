@@ -1,4 +1,4 @@
-classdef nnautonncopy < nntest
+classdef nncopy < nntest
   properties (TestParameter)
     topology = {'sequential', 'diamond'}
     sharedLayer = {0, 1, 2, 3}
