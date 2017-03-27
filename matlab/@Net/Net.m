@@ -1,17 +1,18 @@
 classdef Net < handle
-%Net
-%   A compiled network, ready to be evaluated on some data.
-%
+%Net Compiled network that can be evaluated on data
 %   While Layer objects are used to easily define a network topology
 %   (build-time), a Net object compiles them to a format that can be
 %   executed quickly (run-time).
+%
+%   To compile a network, defined by its output Layer objects, just pass
+%   them to a Net during construction.
 %
 %   Example:
 %      % define topology
 %      images = Input() ;
 %      labels = Input() ;
 %      prediction = vl_nnconv(images, 'size', [5, 5, 1, 3]) ;
-%      loss = vl_nnsoftmaxloss(prediction, labels) ;
+%      loss = vl_nnloss(prediction, labels) ;
 %
 %      % assign names automatically
 %      Layer.workspaceNames() ;
@@ -24,13 +25,11 @@ classdef Net < handle
 %                    'labels', single(1:3)) ;
 %      net.eval() ;
 %
-%      disp(net.getValue(loss)) ;
-%      disp(net.getDer(images)) ;
+%      disp(net.getValue(loss)) ;  % get loss value
+%      disp(net.getDer(images)) ;  % get image derivatives
 %
 %
 %   <a href="matlab:properties('Net'),methods('Net')">Properties and methods</a>
-%   More information on property or method XX with 'help Net.XX'.
-%
 %   See also properties('Net'), methods('Net'), Layer.
 
 % Copyright (C) 2016 Joao F. Henriques.
@@ -94,8 +93,10 @@ classdef Net < handle
     
     function move(net, device)
     %MOVE Move data to CPU or GPU
-    %  MOVE(DESTINATION) moves the data associated to the net object OBJ
-    %  to either the 'gpu' or the 'cpu'.
+    %   NET.MOVE(DESTINATION) moves all variables (including derivatives)
+    %   in NET to either the 'gpu' or the 'cpu'. The status of a variable
+    %   (whether it is a gpuArray) is recorded before moving to the CPU,
+    %   and used later to only convert those variables back to the GPU.
       switch device
         case 'gpu'
           % only move vars marked as GPU arrays
@@ -121,9 +122,9 @@ classdef Net < handle
     end
     
     function value = getValue(net, var)
-      %NET.GETVALUE(VAR)
-      % Returns the value of a given variable. VAR may either be a layer
-      % name or Layer object (referring to its output), or a var index.
+      %GETVALUE Returns the value of a given variable
+      %   NET.GETVALUE(VAR) returns the value of a given variable.
+      %   VAR may be a Layer object, its name, or an internal var index.
       var = net.getVarIndex(var) ;
       if isscalar(var)
         value = net.vars{var} ;
@@ -134,9 +135,9 @@ classdef Net < handle
     
     
     function der = getDer(net, var)
-      %NET.GETDER(VAR)
-      % Returns the derivative of a variable. VAR may either be a layer
-      % name or Layer object (referring to its output), or a var index.
+      %GETDER Returns the derivative of a given variable
+      %   NET.GETDER(VAR) returns the derivative of a given variable.
+      %   VAR may be a Layer object, its name, or an internal var index.
       var = net.getVarIndex(var) ;
       if isscalar(var)
         der = net.vars{var + 1} ;
@@ -146,9 +147,9 @@ classdef Net < handle
     end
     
     function setValue(net, var, value)
-      %NET.SETVALUE(VAR, VALUE)
-      % Sets the value of a given variable. VAR may either be a layer name
-      % or Layer object (referring to its output), or a var index.
+      %SETVALUE Sets the value of a given variable
+      %   NET.SETVALUE(VAR, VALUE) sets the value of a given variable.
+      %   VAR may be a Layer object, its name, or an internal var index.
       var = net.getVarIndex(var) ;
       if isscalar(var)
         net.vars{var} = value ;
@@ -158,9 +159,13 @@ classdef Net < handle
     end
     
     function setDer(net, var, der)
-      %NET.SETDER(VAR)
-      % Sets the derivative of a variable. VAR may either be a layer name
-      % or Layer object (referring to its output), or a var index.
+      %SETDER Sets the derivative of a given variable
+      %   NET.SETDER(VAR) sets the derivative of a given variable.
+      %   VAR may be a Layer object, its name, or an internal var index.
+      %
+      %   Note that the network output derivatives are set in the call to
+      %   Net.eval, and the others are computed with backpropagation, so
+      %   there is rarely a need to call this function.
       var = net.getVarIndex(var) ;
       if isscalar(var)
         net.vars{var + 1} = der ;

@@ -1,5 +1,5 @@
 classdef Layer < matlab.mixin.Copyable
-%Layer
+%Layer Main building block for defining new networks
 %   The Layer object is the main building block for defining networks in
 %   the AutoNN framework. It specifies a function call in a computational
 %   graph.
