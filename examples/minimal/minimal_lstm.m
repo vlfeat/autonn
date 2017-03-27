@@ -48,8 +48,8 @@ net = Net(loss, err) ;
 
 
 % simple SGD
-lr = 0.2 ;
-iters = 1500 ;
+lr = 0.2 ;  % learning rate
+iters = 1500 ;  % number of iterations
 
 losses = zeros(1, iters) ;
 errors = zeros(1, iters) ;

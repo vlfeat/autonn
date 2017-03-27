@@ -1,5 +1,5 @@
 function [W, b] = vl_nnlstm_params(d, m, varargin)
-%VL_NNLSTM_PARAMS
+%VL_NNLSTM_PARAMS Initialize the learnable parameters for an LSTM
 %   [W, B] = VL_NNLSTM_PARAMS(D, M) initializes parameter matrix W and
 %   vector B with appropriate randomized values, for an LSTM with D hidden
 %   units and a M-dimensional input.

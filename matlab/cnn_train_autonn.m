@@ -1,9 +1,9 @@
-function [net,stats] = cnn_train_dag(net, imdb, getBatch, varargin)
-%CNN_TRAIN_DAG Demonstrates training a CNN using the DagNN wrapper
-%    CNN_TRAIN_DAG() is similar to CNN_TRAIN(), but works with
-%    the DagNN wrapper instead of the SimpleNN wrapper.
+function [net,stats] = cnn_train_autonn(net, imdb, getBatch, varargin)
+%CNN_TRAIN_AUTONN Demonstrates training a CNN using the DagNN wrapper
+%   CNN_TRAIN_AUTONN() is similar to CNN_TRAIN(), but works with
+%   the AutoNN wrapper instead of the SimpleNN wrapper.
 
-% Copyright (C) 2014-16 Andrea Vedaldi.
+% Copyright (C) 2014-17 Andrea Vedaldi and Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under

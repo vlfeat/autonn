@@ -1,5 +1,5 @@
 function dynamic_subplot(ax, aspect, property, region)
-%DYNAMIC_SUBPLOT Dynamically reflowing subplots, to maintain aspect ratio.
+%DYNAMIC_SUBPLOT Dynamically reflowing subplots, to maintain aspect ratio
 %   DYNAMIC_SUBPLOT
 %   Shows a demo with 30 subplots.
 %

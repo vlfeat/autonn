@@ -1,5 +1,5 @@
 function varargout = vl_nnlstm(x, hp, cp, W, b, varargin)
-%VL_NNLSTM Long Short-Term Memory cell.
+%VL_NNLSTM Long Short-Term Memory cell (LSTM)
 %   [HN, CN] = VL_NNLSTM(X, HP, CP, W, B)
 %   Implements one time-step of an LSTM cell.
 %
@@ -25,6 +25,9 @@ function varargout = vl_nnlstm(x, hp, cp, W, b, varargin)
 %   Outputs
 %   hn: The next hidden-state, the LSTM output (d x N).
 %   cn: The next cell-state (d x N).
+%
+%   See "examples/minimal/minimal_lstm.m" for a full example chaining
+%   multiple time steps.
 %
 %
 %   [DZDX,DZDHP,DZDCP,DZDW,DZDB] = VL_NNLSTM(X, HP, CP, W, B, DZDHN, DZDCN)

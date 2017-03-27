@@ -1,5 +1,5 @@
 function [opts, pos, unknown] = vl_argparsepos(opts, args, varargin)
-%VL_ARGPARSEPOS
+%VL_ARGPARSEPOS Parse list of param.-value pairs, with positional arguments
 %   [OPTS, POS] = VL_ARGPARSEPOS(OPTS, ARGS)
 %   Same as VL_ARGPARSE, but allows arbitrary positional arguments before
 %   the name-value pairs. The positional arguments are returned in the cell
