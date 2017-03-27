@@ -1,5 +1,5 @@
-function eval(net, mode, derOutput, accumulateParamDers)
-%EVAL Compute network outputs and/or derivatives.
+function eval(net, inputs, mode, derOutput, accumulateParamDers)
+%EVAL Compute network outputs and/or derivatives
 
 % Copyright (C) 2016 Joao F. Henriques.
 % All rights reserved.
@@ -7,29 +7,43 @@ function eval(net, mode, derOutput, accumulateParamDers)
 % This file is part of the VLFeat library and is made available under
 % the terms of the BSD license (see the COPYING file).
 
-
-  if nargin < 2
-    mode = 'normal' ;
+  if nargin < 2 || ~iscell(inputs) || mod(numel(inputs), 2) ~= 0
+    error('Expected network inputs in the form {INPUT1, VALUE1, INPUT2, VALUE2,...}.') ;
   end
   if nargin < 3
-    derOutput = single(1) ;
+    mode = 'normal' ;
   end
   if nargin < 4
+    derOutput = single(1) ;
+  end
+  if nargin < 5
     accumulateParamDers = false ;
+  end
+  
+  % set inputs
+  for i = 1 : 2 : numel(inputs) - 1
+    var = net.getVarIndex(inputs{i}) ;
+    value = inputs{i+1} ;
+    
+    if net.gpu && net.isGpuVar(var) && ~isa(value, 'gpuArray')
+      value = gpuArray(value) ;  % move to GPU if needed
+    end
+    
+    net.vars{var} = value ;
   end
 
   switch mode
-  case {'normal', 'forward'}  % forward and backward
-    if isfield(net.inputs, 'testMode')
-      net.setInputs('testMode', false) ;
-    end
+  case {'normal', 'forward'}  % forward and backward modes
+    testMode = false ;
   case 'test'  % test mode
-    if isfield(net.inputs, 'testMode')
-      net.setInputs('testMode', true) ;
-    end
+    testMode = true ;
   otherwise
     error('Unknown mode ''%s''.', mode) ;
   end
+  if isfield(net.inputs, 'testMode')
+    net.vars{net.inputs.testMode} = testMode ;
+  end
+
 
   % use local variables for efficiency
   forward = net.forward ;
@@ -47,6 +61,7 @@ function eval(net, mode, derOutput, accumulateParamDers)
     
     vars(layer.outputVar) = out(layer.outputArgPos);
   end
+
 
   % backward pass
   if strcmp(mode, 'normal')
@@ -118,6 +133,7 @@ function eval(net, mode, derOutput, accumulateParamDers)
       end
     end
   end
+
 
   % send parameter derivatives to the parameter server, if using multiple
   % GPUs

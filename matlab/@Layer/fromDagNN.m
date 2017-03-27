@@ -11,8 +11,7 @@ function netOutputs = fromDagNN(dag)
 %   Example:
 %     layers = Layer.fromDagNN(myDag) ;
 %     net = Net(layers{:}) ;
-%     net.setInputs('images', randn(5,5,1,3), 'labels', 1:3) ;
-%     net.eval() ;
+%     net.eval({'images', randn(5,5,1,3), 'labels', 1:3}) ;
 
 % Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.

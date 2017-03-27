@@ -68,11 +68,9 @@ for iter = 1:iters,
   data_y = dec2bin(C, T) ;  % same for the true answer
   data_y = single(fliplr(data_y) == '1') * 2 - 1;  % bit classes for prediction will be -1 or 1
   
-  net.setInputs('x', data_x, 'y', data_y) ;
-  
   
   % evaluate network
-  net.eval() ;
+  net.eval({'x', data_x, 'y', data_y}) ;
   
   % update weights
   w = net.getValue(params) ;

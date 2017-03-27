@@ -21,9 +21,8 @@ classdef Net < handle
 %      net = Net(loss) ;
 %
 %      % set input data and evaluate network
-%      net.setInputs('images', randn(5, 5, 1, 3, 'single'), ...
-%                    'labels', single(1:3)) ;
-%      net.eval() ;
+%      net.eval({'images', randn(5, 5, 1, 3, 'single'), ...
+%                'labels', single(1:3)}) ;
 %
 %      disp(net.getValue(loss)) ;  % get loss value
 %      disp(net.getDer(images)) ;  % get image derivatives
@@ -32,7 +31,7 @@ classdef Net < handle
 %   <a href="matlab:properties('Net'),methods('Net')">Properties and methods</a>
 %   See also properties('Net'), methods('Net'), Layer.
 
-% Copyright (C) 2016 Joao F. Henriques.
+% Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under
@@ -53,11 +52,6 @@ classdef Net < handle
     diagnostics = []  % list of diagnosed vars (see Net.plotDiagnostics)
   end
 
-  methods  % methods defined in their own files
-    eval(net, mode, derOutput, accumulateParamDers)
-    plotDiagnostics(net, numPoints)
-    displayVars(net, vars, varargin)
-  end
   methods (Access = private)
     build(net, varargin)
     optimizeVars(net, opts, objs)
@@ -117,7 +111,7 @@ classdef Net < handle
       
       net.gpu = strcmp(device, 'gpu') ;
       if isfield(net.inputs, 'gpuMode')
-        net.setInputs('gpuMode', net.gpu) ;
+        net.setValue('gpuMode', net.gpu) ;
       end
     end
     
@@ -171,20 +165,6 @@ classdef Net < handle
         net.vars{var + 1} = der ;
       else
         net.vars(var + 1) = der ;
-      end
-    end
-    
-    function setInputs(net, varargin)
-      assert(mod(numel(varargin), 2) == 0, ...
-        'Arguments must be in the form INPUT1, VALUE1, INPUT2, VALUE2,...'),
-      
-      for i = 1 : 2 : numel(varargin) - 1
-        var = net.inputs.(varargin{i}) ;
-        value = varargin{i+1} ;
-        if net.gpu && net.isGpuVar(var)  % move to GPU if needed
-          value = gpuArray(value) ;
-        end
-        net.vars{var} = value ;
       end
     end
     

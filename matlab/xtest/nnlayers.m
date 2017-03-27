@@ -91,7 +91,7 @@ classdef nnlayers < nntest
       net = Net(output) ;
       
       % run forward only
-      net.eval('forward') ;
+      net.eval({}, 'forward') ;
       
       % check output is non-empty
       y = net.getValue(output) ;
@@ -108,7 +108,7 @@ classdef nnlayers < nntest
       end
       
       % run forward and backward
-      net.eval('normal', der) ;
+      net.eval({}, 'normal', der) ;
       
       % check all derivatives are non-empty
       ders = net.getValue(2:2:numel(net.vars)) ;

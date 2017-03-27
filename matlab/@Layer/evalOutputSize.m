@@ -51,8 +51,7 @@ function sz = evalOutputSize(obj, varargin)
   
   % compile and evaluate network
   net = Net(obj, 'sequentialNames',false, 'shortCircuit',false, 'forwardOnly',true) ;
-  net.setInputs(inputs{:}) ;
-  net.eval('forward') ;
+  net.eval(inputs, 'forward') ;
   
   % retrieve values of given layers, and return their sizes
   sz = cell(size(layers)) ;

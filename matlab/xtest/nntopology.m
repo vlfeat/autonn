@@ -64,7 +64,6 @@ classdef nntopology < nntest
       % name layers, create net and set input
       Layer.workspaceNames() ;
       net = Net(y) ;
-      net.setInputs('x', x_value) ;
       
       % handle GPU
       if strcmp(test.currentDevice, 'gpu')
@@ -74,7 +73,7 @@ classdef nntopology < nntest
       end
       
       % run forward and backward
-      net.eval('normal', y_der) ;
+      net.eval({'x', x_value}, 'normal', y_der) ;
       
       % check output and input derivatives
       disp('Output:') ;

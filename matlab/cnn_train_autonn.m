@@ -244,8 +244,7 @@ if numGpus > 1
     subset = params.(mode) ;
     inputs = params.getBatch(params.imdb, subset(1)) ;  % one sample
     
-    net.setInputs(inputs{:}) ;
-    net.eval('normal', params.derOutputs) ;
+    net.eval(inputs, 'normal', params.derOutputs) ;
     
     paramDer = net.getDer([net.params.var]) ;
     if ~iscell(paramDer), paramDer = {paramDer} ; end
@@ -314,11 +313,10 @@ for t=1:params.batchSize:numel(subset)
         net.eval(inputs) ;
       end
     else  % AutoNN
-      net.setInputs(inputs{:}) ;
       if strcmp(mode, 'train')
-        net.eval('normal', params.derOutputs, s ~= 1) ;
+        net.eval(inputs, 'normal', params.derOutputs, s ~= 1) ;
       else
-        net.eval('test') ;
+        net.eval(inputs, 'test') ;
       end
     end
   end

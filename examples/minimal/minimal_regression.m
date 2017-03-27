@@ -38,11 +38,8 @@ for iter = 1:100,
   % draw minibatch
   idx = randperm(numel(data_y), 50) ;
   
-  net.setValue(x, data_x(:,idx)) ;
-  net.setValue(y, data_y(idx)') ;
-  
   % evaluate network
-  net.eval() ;
+  net.eval({x, data_x(:,idx), y, data_y(idx)'}) ;
   
   % update weights
   net.setValue(w, net.getValue(w) - lr * net.getDer(w)) ;
