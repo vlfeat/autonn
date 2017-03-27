@@ -3,7 +3,7 @@ function [net, info] = cnn_imagenet_autonn(varargin)
 %  This demo demonstrates training the AlexNet, VGG-F, VGG-S, VGG-M,
 %  VGG-VD-16, and VGG-VD-19 architectures on ImageNet data.
 
-run('../../setup.m') ;  % add autonn to the path
+run('../../setup.m') ;  % add AutoNN to the path
 addpath([vl_rootnn '/examples/imagenet']) ;
 
 opts.dataDir = fullfile(vl_rootnn, 'data','ILSVRC2012') ;
@@ -93,7 +93,7 @@ if isempty(opts.network)
                               'classDescriptions', imdb.classes.description) ;
     end
     
-    % convert to autonn
+    % convert to AutoNN
     layers = Layer.fromDagNN(net) ;
     net = Net(layers{:}) ;
 

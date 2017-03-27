@@ -1,7 +1,7 @@
 % MINIMAL_REGRESSION
 %   Demonstrates automatic differentiation of a least-squares objective.
 
-run('../../setup.m') ;  % add autonn to the path
+run('../../setup.m') ;  % add AutoNN to the path
 
 
 % load simple data

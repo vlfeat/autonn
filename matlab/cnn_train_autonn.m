@@ -82,7 +82,7 @@ if isa(net, 'dagnn.DagNN')
       sel(i) = net.getLayerIndex(opts.stats{i}) ;
     end
   end
-else  % autonn
+else  % AutoNN
   if isempty(opts.extractStatsFn)
     opts.extractStatsFn = @extractStatsAutoNN ;
   end
@@ -313,7 +313,7 @@ for t=1:params.batchSize:numel(subset)
         net.mode = 'test' ;
         net.eval(inputs) ;
       end
-    else  % autonn
+    else  % AutoNN
       net.setInputs(inputs{:}) ;
       if strcmp(mode, 'train')
         net.eval('normal', params.derOutputs, s ~= 1) ;

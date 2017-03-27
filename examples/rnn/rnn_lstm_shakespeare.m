@@ -2,7 +2,7 @@ function [net, info] = rnn_lstm_shakespeare(varargin)
 % RNN_LSTM_SHAKESPEARE
 % Demonstrates MatConNet RNN/LSTM trained on Shakespeare text.
 
-run('../../setup.m') ;  % add autonn to the path
+run('../../setup.m') ;  % add AutoNN to the path
 
 opts.model = 'lstm' ;
 opts.expDir = fullfile(vl_rootnn, 'data', 'rnn') ;

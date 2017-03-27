@@ -1,7 +1,7 @@
 classdef Layer < matlab.mixin.Copyable
 %Layer
 %   The Layer object is the main building block for defining networks in
-%   the autonn framework. It specifies a function call in a computational
+%   the AutoNN framework. It specifies a function call in a computational
 %   graph.
 %
 %   Generally there is no need to invoke Layer directly. One can start
@@ -13,51 +13,49 @@ classdef Layer < matlab.mixin.Copyable
 %   And then composing them using the overloaded functions:
 %
 %      prediction = vl_nnconv(images, 'size', [1, 1, 4, 3]) ;
-%      loss = vl_nnsoftmaxloss(prediction, labels) ;
+%      loss = vl_nnloss(prediction, labels) ;
 %
-%   Both vl_nnconv and vl_nnsoftmaxloss will not run directly, but are
-%   overloaded to return Layer objects that contain the function call
-%   information.
+%   Both vl_nnconv and vl_nnloss will not run directly, but are overloaded
+%   to return Layer objects that contain the function call information.
 %
+%   These functions are defined in MatConvNet (convolution and logistic
+%   loss), and at run-time any inputs and options are passed directly to
+%   them. This means that their documentation (e.g. help vl_nnconv) is
+%   valid in the AutoNN framework.
+%
+%   Some extra options may be available, such as the 'size' option above,
+%   which automatically initializes convolution parameters with that size.
+%   These are defined by the Layer overload (e.g. help Layer.vl_nnconv).
+%
+%Math operations
 %   Math operators are also overloaded, making it possible to mix layers
 %   with arbitrary mathematical formulas and differentiate through them.
-%   See the EXAMPLES/AUTONN/ directory for example usage.
+%   For example:
 %
+%      l1 = sum(weights .* abs(prediction - labels)) ;
 %
-%   ### Custom Layers ###
-%   To create custom layers from a user function FUNC, create a generator:
+%   This defines a weighted L1 loss using math operators. There's no need
+%   to define its derivative, as it's done automatically.
 %
-%      customLoss = Layer.fromFunction(@func) ;
+%   See the examples directory for more sample usage.
 %
-%   Then compose it normally, like other overloaded MatConvNet functions:
+%Custom layers
+%   Automatic differentiation enables very fast prototyping (in terms of
+%   coding effort), but sometimes we may know of more efficient ways to
+%   compute some derivatives. In these cases defining a new custom layer is
+%   helpful. It also allows extending the framework with new core Matlab
+%   operators. See help Layer.fromFunction.
 %
-%      loss = customLoss(prediction, labels) ;
-%
-%   FUNC must accept extra output derivative arguments, which will be
-%   supplied when in backward mode. In the above example, it will be called
-%   as:
-%   * Forward mode:   Y = FUNC(X, L)
-%   * Backward mode:  DZDX = FUNC(X, L, DZDY)
-%   Where DZDY is the output derivative and DZDX is the input derivative.
-%
-%   Further notes:
-%
-%   * If your custom function is called with any name-value pairs, the
-%     output derivative arguments appear *before* the name-value pairs.
-%
-%   * The function can return multiple values.
-%
-%   * If you do not wish to return the derivative for some inputs (e.g.
-%     labels), restrict the number of returned derivatives:
-%       customLoss = Layer.fromFunction(@func, 'numInputDer', 1) ;
+%Network evaluation
+%   The computational graphs defined with Layer are evaluated by the Net
+%   class (see help Net).
 %
 %
 %   <a href="matlab:properties('Layer'),methods('Layer')">Properties and methods</a>
-%   More information on property or method XX with 'help Layer.XX'.
-%
-%   See also properties('Layer'), methods('Layer'), Net.
+%   See also properties('Layer'), methods('Layer'), Net, Input, Param,
+%   Selector, Var.
 
-% Copyright (C) 2016 Joao F. Henriques.
+% Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under
@@ -91,6 +89,7 @@ classdef Layer < matlab.mixin.Copyable
   
   methods (Static)
     netOutputs = fromDagNN(dag)
+    generator = fromFunction(func, varargin)
   end
   
   methods
@@ -509,13 +508,13 @@ classdef Layer < matlab.mixin.Copyable
     
     function saveStack(obj)
       % record call stack (source files and line numbers), starting with
-      % the first function in user-land (not part of autonn).
+      % the first function in user-land (not part of AutoNN).
       stack = dbstack('-completenames') ;
       
       % 2 folders up from current file's directory (<autonn>/matlab)
       p = [fileparts(fileparts(stack(1).file)), filesep] ;
       
-      % find a non-matching directory (i.e., not part of autonn directly)
+      % find a non-matching directory (i.e., not part of AutoNN directly)
       for i = 2:numel(stack)
         if ~strncmp(p, stack(i).file, numel(p))
           obj.source = stack(i:end) ;
@@ -527,21 +526,14 @@ classdef Layer < matlab.mixin.Copyable
   end
   
   methods (Static)
-    function generator = fromFunction(func, varargin)
-      % Returns a layer generator, based on a custom function FUNC.
-      % May set additional properties as name-value pairs (numInputDer).
-      assert(isa(func, 'function_handle'), 'Argument must be a valid function handle.') ;
-      
-      opts = varargin ;
-      generator = @(varargin) Layer.create(func, varargin, opts{:}) ;
-    end
-    
     function varargout = create(func, args, varargin)
       % Create a layer with given function handle FUNC and arguments
       % cell array ARGS, optionally setting additional properties as
       % name-value pairs (numInputDer). numOutputs is inferred.
       % Unlike the Layer constructor, Layer.create supports multiple
       % outputs.
+      % This function is not meant to be called directly; instead see
+      % Layer.fromFunction.
       assert(isa(func, 'function_handle'), 'Argument must be a valid function handle.') ;
       
       opts.numInputDer = [] ;

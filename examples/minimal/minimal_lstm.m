@@ -3,7 +3,7 @@
 %   The task is to predict the sequence of bits of the sum of two numbers,
 %   given their binary sequences (one bit at a time).
 
-run('../../setup.m') ;  % add autonn to the path
+run('../../setup.m') ;  % add AutoNN to the path
 
 
 T = 8 ;  % number of bits / time steps

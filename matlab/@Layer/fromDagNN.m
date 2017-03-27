@@ -1,7 +1,8 @@
 function netOutputs = fromDagNN(dag)
 %LAYER.FROMDAGNN
-%   Converts a DagNN object into the autonn framework (i.e., a set of
-%   recursively nested Layer objects).
+%   OUTPUTS = Layer.fromDagNN(DAG) converts a MatConvNet DagNN object, DAG,
+%   into the AutoNN framework (i.e., a set of recursively nested Layer
+%   objects).
 %
 %   Returns a cell array of Layer objects, each corresponding to an output
 %   of the network. These can be composed with other layers, or compiled
@@ -13,7 +14,7 @@ function netOutputs = fromDagNN(dag)
 %     net.setInputs('images', randn(5,5,1,3), 'labels', 1:3) ;
 %     net.eval() ;
 
-% Copyright (C) 2016 Joao F. Henriques.
+% Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under
