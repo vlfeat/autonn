@@ -1,7 +1,7 @@
 % MINIMAL_NETWORK
 %   Demonstrates a simple logistic regression network.
 
-run('../../setup.m') ;  % add AutoNN to the path
+run('../../setup_autonn.m') ;  % add AutoNN to the path
 
 
 % load simple data

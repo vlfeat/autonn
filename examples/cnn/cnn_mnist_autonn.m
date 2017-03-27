@@ -1,7 +1,7 @@
 function [net, info] = cnn_mnist_autonn(varargin)
 % CNN_MNIST_AUTONN  Demonstrates MatConNet on MNIST.
 
-try run('../../setup.m') ; catch; end  % add AutoNN to the path
+try run('../../setup_autonn.m') ; catch; end  % add AutoNN to the path
 addpath([vl_rootnn '/examples/mnist']) ;
 
 % opts.modelType = 'mlp' ;
