@@ -20,7 +20,7 @@ classdef Net < handle
 %      % compile network
 %      net = Net(loss) ;
 %
-%      % set input data and evaluate network
+%      % evaluate the network on some input data
 %      net.eval({'images', randn(5, 5, 1, 3, 'single'), ...
 %                'labels', single(1:3)}) ;
 %
@@ -59,6 +59,11 @@ classdef Net < handle
   
   methods
     function net = Net(varargin)
+      % NET Constructor for Net object
+      %    The constructor accepts a list of Layers (output layers of a
+      %    network for compilation), a SimpleNN/DagNN to be converted to
+      %    Net, or a saved struct created with SAVEOBJ.
+      
       % load from struct, distinguishing from SimpleNN
       if isscalar(varargin) && isstruct(varargin{1}) && ~isfield(varargin{1}, 'layers')
         net = Net.loadobj(varargin{1}) ;
@@ -87,7 +92,7 @@ classdef Net < handle
     
     function move(net, device)
     %MOVE Move data to CPU or GPU
-    %   NET.MOVE(DESTINATION) moves all variables (including derivatives)
+    %   OBJ.MOVE(DESTINATION) moves all variables (including derivatives)
     %   in NET to either the 'gpu' or the 'cpu'. The status of a variable
     %   (whether it is a gpuArray) is recorded before moving to the CPU,
     %   and used later to only convert those variables back to the GPU.
@@ -117,7 +122,7 @@ classdef Net < handle
     
     function value = getValue(net, var)
       %GETVALUE Returns the value of a given variable
-      %   NET.GETVALUE(VAR) returns the value of a given variable.
+      %   OBJ.GETVALUE(VAR) returns the value of a given variable.
       %   VAR may be a Layer object, its name, or an internal var index.
       var = net.getVarIndex(var) ;
       if isscalar(var)
@@ -130,7 +135,7 @@ classdef Net < handle
     
     function der = getDer(net, var)
       %GETDER Returns the derivative of a given variable
-      %   NET.GETDER(VAR) returns the derivative of a given variable.
+      %   OBJ.GETDER(VAR) returns the derivative of a given variable.
       %   VAR may be a Layer object, its name, or an internal var index.
       var = net.getVarIndex(var) ;
       if isscalar(var)
@@ -142,7 +147,7 @@ classdef Net < handle
     
     function setValue(net, var, value)
       %SETVALUE Sets the value of a given variable
-      %   NET.SETVALUE(VAR, VALUE) sets the value of a given variable.
+      %   OBJ.SETVALUE(VAR, VALUE) sets the value of a given variable.
       %   VAR may be a Layer object, its name, or an internal var index.
       var = net.getVarIndex(var) ;
       if isscalar(var)
@@ -154,7 +159,7 @@ classdef Net < handle
     
     function setDer(net, var, der)
       %SETDER Sets the derivative of a given variable
-      %   NET.SETDER(VAR) sets the derivative of a given variable.
+      %   OBJ.SETDER(VAR) sets the derivative of a given variable.
       %   VAR may be a Layer object, its name, or an internal var index.
       %
       %   Note that the network output derivatives are set in the call to
@@ -169,6 +174,15 @@ classdef Net < handle
     end
     
     function idx = getVarIndex(net, var, errorIfNotFound)
+      %GETVARINDEX Returns the internal index of a variable
+      %   OBJ.GETVARINDEX(VAR) returns the index IDX of OBJ.VARS{IDX},
+      %   where the variable is stored. VAR may be a Layer object or its
+      %   name. This may be used to speed up some operations, but is mostly
+      %   intended for internal use. The corresponding derivative is stored
+      %   in OBJ.VARS{IDX + 1}.
+      %
+      %   OBJ.GETVARINDEX(VAR, TRUE) returns 0 if the variable is not
+      %   found, instead of throwing an error.
       if nargin < 3
         errorIfNotFound = true ;
       end
@@ -201,8 +215,9 @@ classdef Net < handle
     end
     
     function clearParameterServer(net)
-    %CLEARPARAMETERSERVER  Remove the parameter server
-    %    CLEARPARAMETERSERVER(obj) stops using the parameter server.
+    %CLEARPARAMETERSERVER Remove the parameter server
+    %   OBJ.CLEARPARAMETERSERVER() stops using the parameter server, for
+    %   multi-GPU networks. See ParameterServer.
       if ~isempty(net.parameterServer)
         net.parameterServer.stop() ;
       end
@@ -215,6 +230,7 @@ classdef Net < handle
     end
     
     function display(net, name)
+    %DISPLAY Displays network information
       if nargin < 2
         name = inputname(1) ;
       end
@@ -257,6 +273,7 @@ classdef Net < handle
     end
     
     function s = saveobj(net)
+    %SAVEOBJ Returns the object as a struct
       s.forward = net.forward ;
       s.backward = net.backward ;
       s.inputs = net.inputs ;
@@ -275,6 +292,7 @@ classdef Net < handle
   
   methods (Static, Access = private)
     function net = loadobj(s)
+    %LOADOBJ Loads the object from a struct (called by constructor)
       net = Net() ;
       net.forward = s.forward ;
       net.backward = s.backward ;
@@ -288,9 +306,10 @@ classdef Net < handle
     end
     
     function layer = parseArgs(layer, args)
-      % helper function to parse a layer's arguments, storing the constant
-      % arguments (args), non-constant var indexes (inputVars), and their
-      % positions in the arguments list (inputArgPos).
+    %PARSEARGS
+    %   Helper function to parse a layer's arguments, storing the constant
+    %   arguments (args), non-constant var indexes (inputVars), and their
+    %   positions in the arguments list (inputArgPos).
       inputVars = [] ;
       inputArgPos = [] ;
       for a = 1:numel(args)
@@ -309,9 +328,10 @@ classdef Net < handle
     end
     
     function s = initStruct(n, varargin)
-      % helper function to initialize a struct with given fields and size.
-      % note fields are sorted in ASCII order (important when assigning
-      % structs).
+    %INITSTRUCT
+    %   Helper function to initialize a struct with given fields and size.
+    %   Note fields are sorted in ASCII order (important when assigning
+    %   structs).
       varargin(2,:) = {cell(1, n)} ;
       s = orderfields(struct(varargin{:})) ;
     end
