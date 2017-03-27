@@ -119,10 +119,10 @@ switch lower(opts.weightInitMethod)
     sc = 0.01/opts.scale ;
     weights = randn(sz, type)*sc;
   case 'xavier'
-    sc = sqrt(3/(h*w*in)) ;
+    sc = sqrt(3/(sz(1)*sz(2)*sz(3))) ; 
     weights = (rand(sz, type)*2 - 1)*sc ;
   case 'xavierimproved'
-    sc = sqrt(2/(h*w*out)) ;
+    sc = sqrt(2/(sz(1)*sz(2)*sz(4))) ;  
     weights = randn(sz, type)*sc ;
   otherwise
     error('Unknown weight initialization method''%s''', opts.weightInitMethod) ;
