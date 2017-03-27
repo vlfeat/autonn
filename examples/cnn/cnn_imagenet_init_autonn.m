@@ -126,7 +126,8 @@ function weights = init_weight(opts, sz, type)
 % 
 % where `N_in` is the dimensionality of the input and `N_out` is the 
 % dimensionality of the output.  However, following the approach taken by 
-% caffe, we ignore the `N_out` and rescale according to sample uniformly from:
+% caffe, we remove the `N_out` term and rescale accordingly, sampling 
+% uniformly from:
 %
 %     [ -sqrt(3/N_in), sqrt(3/N_in) ]
 % 
