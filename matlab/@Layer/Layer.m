@@ -326,7 +326,7 @@ classdef Layer < matlab.mixin.Copyable
     
     % overloaded math operators. any additions, negative signs and scalar
     % factors are merged into a single vl_nnwsum by the Layer constructor.
-    % vl_nnbinaryop does singleton expansion, vl_nnmatrixop does not.
+    % singleton expansion (bsxfun) is enabled when possible.
     
     function c = plus(a, b)
       c = vl_nnwsum(a, b, 'weights', [1, 1]) ;
@@ -348,14 +348,14 @@ classdef Layer < matlab.mixin.Copyable
       elseif isnumeric(b) && isscalar(b)
         c = vl_nnwsum(a, 'weights', b) ;
       else  % general case
-        c = Layer(@vl_nnbinaryop, a, b, @times) ;
+        c = Layer(@bsxfun, @times, a, b) ;
       end
     end
     function c = rdivide(a, b)
       if isnumeric(b) && isscalar(b)  % optimization for scalar constants
         c = vl_nnwsum(a, 'weights', 1 / b) ;
       else
-        c = Layer(@vl_nnbinaryop, a, b, @rdivide) ;
+        c = Layer(@bsxfun, @rdivide, a, b) ;
       end
     end
     function c = ldivide(a, b)
@@ -363,11 +363,11 @@ classdef Layer < matlab.mixin.Copyable
         c = vl_nnwsum(b, 'weights', 1 / a) ;
       else
         % @ldivide is just @rdivide with swapped inputs
-        c = Layer(@vl_nnbinaryop, b, a, @rdivide) ;
+        c = Layer(@bsxfun, @rdivide, b, a) ;
       end
     end
     function c = power(a, b)
-      c = Layer(@vl_nnbinaryop, a, b, @power) ;
+      c = Layer(@bsxfun, @power, a, b) ;
     end
     
     function y = transpose(a)

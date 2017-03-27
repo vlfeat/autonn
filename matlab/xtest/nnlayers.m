@@ -32,8 +32,8 @@ classdef nnlayers < nntest
     
     function testMath(test)
       % use Params for all inputs so we can choose their values now
-      a = Param('value', randn(3, 3, test.currentDataType)) ;
-      b = Param('value', randn(3, 3, test.currentDataType)) ;
+      a = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3)) ;
+      b = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3)) ;
       c = Param('value', randn(1, 1, test.currentDataType)) ;
       d = Param('value', randn(3, 1, test.currentDataType)) ;
       Layer.workspaceNames() ;
@@ -48,9 +48,12 @@ classdef nnlayers < nntest
       % matrix
       do(test, a * b) ;
       do(test, a') ;
+      do(test, inv(a)) ;
+      do(test, a / b) ;
       
       % binary with expanded dimensions
       do(test, a .* d) ;
+      do(test, a ./ d) ;
       do(test, a .^ 2) ;
     end
     

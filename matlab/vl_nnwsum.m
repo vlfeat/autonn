@@ -6,8 +6,7 @@ function varargout = vl_nnwsum(varargin)
 %
 %   [DA, DB, ...] = VL_NNWSUM(A, B, ..., DZDY, 'weights', W)
 %   Projected derivatives of the same operation with respect to all inputs,
-%   except for weights W, which are assumed constant. For products of
-%   non-constant inputs, see VL_NNBINARYOP.
+%   except for weights W, which are assumed constant.
 
 % Copyright (C) 2016 Joao F. Henriques.
 % All rights reserved.

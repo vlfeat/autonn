@@ -23,6 +23,7 @@ function derFunc = autonn_der(func)
   end
 end
 
+
 function dx = reshape_der(x, varargin)  %#ok<*DEFNU>
   dx = reshape(varargin{end}, size(x)) ;
 end
@@ -38,6 +39,7 @@ end
 function dx = squeeze_der(x, dy)
   dx = reshape(dy, size(x)) ;
 end
+
 
 function dx = abs_der(x, dy)
   assert(isreal(dy), 'Complex values not supported by ABS derivative.') ;
@@ -57,6 +59,7 @@ function dx = log_der(x, dy)
   assert(all(abs(x(:)) > eps), 'Derivative undefined for LOG(0) (approaches infinity).') ;
   dx = dy ./ x ;
 end
+
 
 function dx = transpose_der(~, dy)
   dx = dy.' ;
@@ -83,6 +86,7 @@ function dx = inv_der(x, dy)
   dx = -inv_x_t * dy * inv_x_t;
 end
 
+
 function dx = sum_der(x, dim, dy)
   if nargin < 3
     % one-argument syntax of sum, plus derivative
@@ -108,6 +112,7 @@ function dx = mean_der(x, dim, dy)
   reps(dim) = size(x,dim) ;
   dx = repmat(dy, reps) / size(x, dim) ;
 end
+
 
 function dx = gather_der(x, dy)
   if isa(x, 'gpuArray')
