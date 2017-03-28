@@ -1,4 +1,4 @@
-function netOutputs = fromDagNN(dag)
+function netOutputs = fromDagNN(dag, customFn)
 %LAYER.FROMDAGNN
 %   OUTPUTS = Layer.fromDagNN(DAG) converts a MatConvNet DagNN object, DAG,
 %   into the AutoNN framework (i.e., a set of recursively nested Layer
@@ -12,12 +12,33 @@ function netOutputs = fromDagNN(dag)
 %     layers = Layer.fromDagNN(myDag) ;
 %     net = Net(layers{:}) ;
 %     net.eval({'images', randn(5,5,1,3), 'labels', 1:3}) ;
+%
+%   OUTPUTS = Layer.fromDagNN(DAG, @CUSTOMFN) adds support for custom DagNN
+%   blocks, by calling function CUSTOMFN to convert unknown DagNN blocks.
+%
+%   The function's signature is customFn(block, inputs, params), where
+%   block is the DagNN layer object, inputs is a cell array with the AutoNN
+%   input layers, and likewise for params.
+%
+%   The following example would convert a DagNN block of class myClass,
+%   with 1 input and 1 parameter, to a AutoNN layer that calls function
+%   myfunc:
+%     function obj = customFn(block, inputs, params)
+%       if isa(block, 'myClass')
+%         f = Layer.fromFunction(@myfunc) ;
+%         obj = f(inputs{1}, params{1}, 'alpha', block.alpha) ;
+%       end
+%     end
 
 % Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under
 % the terms of the BSD license (see the COPYING file).
+
+  if nargin < 2
+    customFn = [] ;
+  end
 
   dag.rebuild() ;
   
@@ -151,7 +172,12 @@ function netOutputs = fromDagNN(dag)
       end
       
     otherwise
-      error(['Unknown block type ''' class(block) '''.']) ;
+      if ~isempty(customFn)
+        % handle custom blocks
+        obj = customFn(block, inputs, params) ;
+      else
+        error(['Unknown block type ''' class(block) '''.']) ;
+      end
     end
     
     obj.name = layer.name ;
