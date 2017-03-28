@@ -110,9 +110,30 @@ net = vl_nnrelu(net) ;
 % -------------------------------------------------------------------------
 function weights = init_weight(opts, sz, type)
 % -------------------------------------------------------------------------
-% See K. He, X. Zhang, S. Ren, and J. Sun. Delving deep into
-% rectifiers: Surpassing human-level performance on imagenet
-% classification. CoRR, (arXiv:1502.01852v1), 2015.
+% Notes on weight initialization
+% ---
+% 
+% `opts.weightInitMethod` can take several values:
+% 
+% 'gaussian' - standard gaussian initialization
+% 
+% 'xavier' - this initialization was proposed in X. Glorot and Y. Bengio. 
+% "Understanding the difficulty of training deep feedforward neural networks." 
+% Aistats. Vol. 9. 2010. The paper originally suggested sampling weights 
+% uniformly from the interval:
+%
+%     [ -sqrt(6/(N_in + N_out)), sqrt(6/(N_in + N_out)) ]
+% 
+% where `N_in` is the dimensionality of the input and `N_out` is the 
+% dimensionality of the output.  However, following the approach taken by 
+% caffe, we remove the `N_out` term and rescale accordingly, sampling 
+% uniformly from:
+%
+%     [ -sqrt(3/N_in), sqrt(3/N_in) ]
+% 
+% 'xavierimproved' - this initialization was proposed in  K. He, X. Zhang, 
+% S. Ren, and J. Sun. Delving deep into rectifiers: Surpassing human-level 
+% performance on imagenet classification. CoRR, (arXiv:1502.01852v1), 2015.
 
 switch lower(opts.weightInitMethod)
   case 'gaussian'
