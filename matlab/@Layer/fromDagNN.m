@@ -114,13 +114,15 @@ function netOutputs = fromDagNN(dag, customFn)
       if isscalar(params), params{2} = [] ; end  % no bias
       
       obj = vl_nnconv(inputs{1}, params{1}, params{2}, ...
-        'pad', block.pad, 'stride', block.stride, block.opts{:}) ;
+        'stride', block.stride, 'pad', block.pad, ...
+        'dilate', block.dilate, block.opts{:}) ;
     
     case 'dagnn.ConvTranspose'
       if isscalar(params), params{2} = [] ; end  % no bias
       
       obj = vl_nnconvt(inputs{1}, params{1}, params{2}, ...
-        'pad', block.pad, 'stride', block.stride, block.opts{:}) ;
+        'upsample', block.upsample, 'crop', block.crop, ...
+        'numGroups', block.numGroups, block.opts{:}) ;
     
     case 'dagnn.BatchNorm'
       % make sure the Params are not empty, but scalar
