@@ -83,9 +83,6 @@ function other = deepCopyRecursive(original, copyFn, renameFn, visited)
     other = copyFn(original) ;
   end
   
-  % set unique ID for the new layer
-  other.id = Layer.uniqueId() ;
-  
   % rename if necessary
   other.name = renameFn(other.name) ;
 

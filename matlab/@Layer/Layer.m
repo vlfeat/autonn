@@ -476,6 +476,15 @@ classdef Layer < matlab.mixin.Copyable
     end
   end
   
+  methods(Access = protected)
+    function other = copyElement(obj)
+      % copyElement is used by matlab.mixin.Copyable.copy to customize the
+      % copy operation. ensure the ID of the copied object is unique.
+      other = copyElement@matlab.mixin.Copyable(obj) ;
+      other.id = Layer.uniqueId() ;
+    end
+  end
+  
   methods (Access = {?Net, ?Layer})
     function cycleCheckRecursive(obj, root, visited)
       if eq(obj, root, 'sameInstance')
@@ -631,7 +640,7 @@ classdef Layer < matlab.mixin.Copyable
     end
   end
   
-  methods (Static, Access = 'private')
+  methods (Static, Access = protected)
     function id = uniqueId()
       persistent nextId
       if isempty(nextId)
