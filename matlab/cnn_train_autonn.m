@@ -39,7 +39,11 @@ opts.profile = false ;
 opts.parameterServer.method = 'mmap' ;
 opts.parameterServer.prefix = 'mcn' ;
 
-opts.derOutputs = {'objective', 1} ;
+if isa(net, 'dagnn.DagNN')
+  opts.derOutputs = {'objective', 1} ;
+else
+  opts.derOutputs = 1 ;
+end
 opts.stats = 'auto' ;  % list of layers to aggregate stats from (e.g. loss, error), or 'auto' for automatic
 opts.extractStatsFn = [] ;
 opts.plotStatistics = true;
@@ -85,9 +89,6 @@ if isa(net, 'dagnn.DagNN')
 else  % AutoNN
   if isempty(opts.extractStatsFn)
     opts.extractStatsFn = @extractStatsAutoNN ;
-  end
-  if isequal(opts.derOutputs, {'objective', 1})
-    opts.derOutputs = 1 ;
   end
   
   if isequal(opts.stats, 'auto')  % all losses
