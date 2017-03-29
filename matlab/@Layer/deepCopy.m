@@ -1,41 +1,54 @@
 function other = deepCopy(obj, varargin)
-% OTHER = OBJ.DEEPCOPY(SHAREDLAYER1, SHAREDLAYER2, ...)
-% OTHER = OBJ.DEEPCOPY({SHAREDLAYER1, SHAREDLAYER2, ...})
-% Returns a deep copy of a layer, excluding SHAREDLAYER1,
-% SHAREDLAYER2, etc, which are optional. This can be used to
-% implement shared Params, or define the boundaries of the deep copy.
+%DEEPCOPY Copies a network or subnetwork, optionally sharing some layers
+%   OTHER = OBJ.DEEPCOPY() returns a deep copy of the network (or
+%   subnetwork) that has output OBJ. This essentially recurses through all
+%   the input layers of OBJ, copying them and all of their inputs as well.
 %
-% OTHER = OBJ.DEEPCOPY(..., RENAME)
-% Specifies a function handle to be evaluated on each name, possibly
-% modifying it (e.g. append a prefix or suffix).
+%   To create a shallow copy (i.e., not copy inputs recursively), use
+%   OTHER = OBJ.COPY().
 %
-% OTHER = OBJ.DEEPCOPY(..., 'noName')
-% Does not copy object names (they are left empty).
+%   OBJ.DEEPCOPY(..., 'option', value, ...) accepts the following options:
 %
-% To create a shallow copy, use OTHER = OBJ.COPY().
+%   `share`:: {}
+%     Excludes a set of layers from the deep copy, given as a cell array.
+%     The layers will be shared between the original network and the copied
+%     network. This can be used to implement shared parameters and shared
+%     inputs (e.g. for two-stream networks), or to define the boundaries of
+%     the deep copy (to only copy up to a certain layer).
+%
+%   `renameFn`:: @deal (no renaming)
+%     Allows renaming the layers, by passing the layer names through the
+%     given function handle. For example, to append the prefix 'streamA_'
+%     to every copied layer, use: 'renameFn', @(name) ['streamA_' name]
+%
+%   `copyFn`:: [] (simple copy)
+%     Specifies a different function handle to create a shallow copy of
+%     each layer. Its input argument is a Layer and its output must be a
+%     copy of that layer. This allows more complex editing of layers during
+%     the copy operation (e.g. changing a layer type to another type).
 
-  shared = varargin ;  % list of shared layers
-  rename = @deal ;  % no renaming by default
-  if ~isempty(shared)
-    if isa(shared{end}, 'function_handle')
-      rename = shared{end} ;  % specified rename function
-      shared(end) = [] ;
-    elseif ischar(shared{end})
-      assert(strcmp(shared{end}, 'noName'), 'Invalid option.') ;
-      rename = @(~) [] ;  % assign empty to name
-      shared(end) = [] ;
-    end
-  end
+% Copyright (C) 2016-2017 Joao F. Henriques.
+% All rights reserved.
+%
+% This file is part of the VLFeat library and is made available under
+% the terms of the BSD license (see the COPYING file).
 
-  if isscalar(shared) && iscell(shared{1})  % passed in cell array
-    shared = shared{1} ;
-  end
-  
+  opts.share = {} ;
+  opts.renameFn = @deal ;
+  opts.copyFn = [] ;
+  opts = vl_argparse(opts, varargin, 'nonrecursive') ;
+
   % map between (original) object ID and its copied instance. also acts as
   % a 'visited' list, to avoid redundant recursions.
   visited = Layer.initializeRecursion() ;
   
+  shared = opts.share;
+  if ~iscell(shared)
+    shared = {shared} ;
+  end
+  
   for i = 1:numel(shared)
+    assert(isa(shared{i}, 'Layer'), 'The option ''share'' must specify a cell array of Layer objects.') ;
     assert(~eq(shared{i}, obj, 'sameInstance'), 'The root layer of a deep copy cannot be a shared layer.') ;
     
     % propagate shared status (see below)
@@ -43,7 +56,7 @@ function other = deepCopy(obj, varargin)
   end
 
   % do the actual copy
-  other = deepCopyRecursive(obj, rename, visited) ;
+  other = deepCopyRecursive(obj, opts.copyFn, opts.renameFn, visited) ;
 end
 
 function shareRecursive(shared, visited)
@@ -62,12 +75,19 @@ function shareRecursive(shared, visited)
   end
 end
 
-function other = deepCopyRecursive(original, rename, visited)
+function other = deepCopyRecursive(original, copyFn, renameFn, visited)
   % create a shallow copy first
-  other = original.copy() ;
+  if isempty(copyFn)
+    other = original.copy() ;
+  else
+    other = copyFn(original) ;
+  end
+  
+  % set unique ID for the new layer
+  other.id = Layer.uniqueId() ;
   
   % rename if necessary
-  other.name = rename(other.name) ;
+  other.name = renameFn(other.name) ;
 
   % pointer to the copied object, to be reused by any subsequent deep
   % copied layer that refers to the original object. this also marks it
@@ -83,7 +103,7 @@ function other = deepCopyRecursive(original, rename, visited)
       if visited.isKey(in.id)  % already seen/copied this original object
         other.inputs{i} = visited(in.id) ;  % use the copy
       else  % unseen/uncopied object, recurse on it and use the new copy
-        other.inputs{i} = deepCopyRecursive(in, rename, visited) ;
+        other.inputs{i} = deepCopyRecursive(in, copyFn, renameFn, visited) ;
       end
       
       in.enableCycleChecks = true ;

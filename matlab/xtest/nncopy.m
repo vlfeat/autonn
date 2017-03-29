@@ -53,10 +53,10 @@ classdef nncopy < nntest
       
       % call copy
       if sharedLayer == 0  % no shared layer
-        other = net.deepCopy(@rename) ;
+        other = net.deepCopy('renameFn', @rename) ;
       else
         shared = sequence{sharedLayer} ;
-        other = net.deepCopy(shared, @rename) ;
+        other = net.deepCopy('share', shared, 'renameFn', @rename) ;
       end
       
       % get copied layers, in forward order
