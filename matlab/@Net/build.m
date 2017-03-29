@@ -28,26 +28,10 @@ function build(net, varargin)
     rootLayer.sequentialNames() ;
   end
 
+  % merge redundant inputs, this allow special inputs like
+  % Input('testMode') to be used anywhere
+  rootLayer.mergeRedundantInputs() ;
   
-  % list all layer objects, in forward order
-  objs = rootLayer.find() ;
-  
-  % merge redundant Input objects with the same name into one.
-  % this is safe because an Input has no info other than the name string,
-  % and allows special inputs like Input('testMode') to be used anywhere.
-  lookup = struct() ;  % lookup table of input name to respective object
-  for k = 1:numel(objs)
-    in = objs{k}.inputs ;
-    for i = 1:numel(in)
-      if isa(in{i}, 'Input')
-        if ~isfield(lookup, in{i}.name)  % add this Input object to lookup table
-          lookup.(in{i}.name) = in{i} ;
-        else  % an Input with that name exists, reuse it
-          objs{k}.inputs{i} = lookup.(in{i}.name) ;
-        end
-      end
-    end
-  end
   
   % list objects again, now that redundant Inputs are merged
   objs = rootLayer.find() ;

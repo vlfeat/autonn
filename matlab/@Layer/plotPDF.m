@@ -1,4 +1,4 @@
-function plotPDF(net)
+function plotPDF(obj)
 %PLOTPDF
 %   Displays the network topology in a PDF. Requires the DOT command line
 %   program.
@@ -10,7 +10,8 @@ function plotPDF(net)
 % the terms of the BSD license (see the COPYING file).
 
   % gather all layers
-  layers = net.find() ;
+  obj.mergeRedundantInputs() ;
+  layers = obj.find() ;
   
   % ensure non-empty, unique names
   names = cellfun(@(o) {o.name}, layers) ;

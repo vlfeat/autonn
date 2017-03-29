@@ -474,6 +474,29 @@ classdef Layer < matlab.mixin.Copyable
         fprintf('(Use disp(%s) to show all properties)\n', name) ;
       end
     end
+    
+    function mergeRedundantInputs(obj)
+      %MERGEREDUNDANTINPUTS Merge Input layers with the same name into one
+
+      % this is safe because Input has no info other than name and gpu, and
+      % allows special inputs like Input('testMode') to be used anywhere.
+      objs = obj.find() ;  % list all layers in forward order
+      lookup = struct() ;  % lookup table of input name to respective object
+      for k = 1:numel(objs)
+        in = objs{k}.inputs ;
+        for i = 1:numel(in)
+          if isa(in{i}, 'Input')
+            if ~isfield(lookup, in{i}.name)  % add this Input to lookup table
+              lookup.(in{i}.name) = in{i} ;
+            else  % an Input with that name exists, reuse it
+              original = lookup.(in{i}.name) ;
+              original.gpu = original.gpu || in{i}.gpu ;  % merge GPU state
+              objs{k}.inputs{i} = original ;
+            end
+          end
+        end
+      end
+    end
   end
   
   methods(Access = protected)
