@@ -1,8 +1,9 @@
-function print(net)
-%PRINT
-%   Displays the network topology in a PDF. Requires DOT.
+function plotPDF(net)
+%PLOTPDF
+%   Displays the network topology in a PDF. Requires the DOT command line
+%   program.
 
-% Copyright (C) 2016 Karel Lenc, Andrea Vedaldi, Joao F. Henriques.
+% Copyright (C) 2016-2017 Karel Lenc, Andrea Vedaldi, Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under
@@ -17,29 +18,50 @@ function print(net)
     'PRINT requires all layers to have names (e.g., with LAYER.SEQUENTIALNAMES).') ;
   assert(numel(unique(names)) == numel(names), ...
     'PRINT requires all layers to have unique names.') ;
-
+  
   str = {} ;
-  str{end+1} = sprintf('digraph DagNN {\n\tfontsize=12\n') ;
-  font_style = 'fontsize=12 fontname="helvetica"';
+  str{end+1} = sprintf('digraph {\n\tfontsize=12\n') ;
+  font = 'fontsize=12';
   
   for k = 1:numel(layers)
     layer = layers{k} ;
+    
+    isFunction = false ;
+    hasValue = false ;
     if isa(layer, 'Param')
-      % Param
-      sz = size(layer.value) ;
-      label=sprintf('{{%s} | {%s | %s }}', layer.name, pdims(sz), pmem(4*prod(sz))) ;
-      str{end+1} = sprintf('\t%s [label="%s" shape=record style="solid,rounded,filled" color=lightsteelblue4 fillcolor=lightsteelblue %s ]\n', ...
-        layer.name, label, font_style) ;
+      fill = 'lightsteelblue';
+      border = 'lightsteelblue4';
+      hasValue = true ;
+    elseif isa(layer, 'Input')
+      fill = 'lightsalmon';
+      border = 'lightsalmon4';
+    elseif isa(layer, 'Selector')
+      fill = 'palegreen';
+      border = 'palegreen4';
     else
-      % other layers
+      isFunction = true ;
+    end
+    
+    if ~isFunction
+      % special layer (Param, Input, Selector)
+      if hasValue  % display size and memory
+        sz = size(layer.value) ;
+        label = sprintf('{{%s} | {%s | %s }}', layer.name, pdims(sz), pmem(4*prod(sz))) ;
+      else
+        label = sprintf('{ %s | %s }', layer.name, class(layer)) ;
+      end
+      str{end+1} = sprintf('\t%s [label="%s" shape=record style="solid,rounded,filled" color=%s fillcolor=%s %s ]\n', ...
+        layer.name, label, border, fill, font) ;
+    else
+      % standard (functional) layers
       if ~isempty(layer.func)
         func = func2str(layer.func) ;
       else
         func = class(layer) ;
       end
       label = sprintf('{ %s | %s }', layer.name, func) ;
-      str{end+1} = sprintf('\t%s [label="%s" shape=record style="bold,filled" color="tomato4" fillcolor="tomato" %s ]\n', ...
-        layer.name, label, font_style) ;
+      str{end+1} = sprintf('\t%s [label="%s" shape=record style="filled" color="wheat4" fillcolor="floralwhite" %s ]\n', ...
+        layer.name, label, font) ;
     
       for i = 1:numel(layer.inputs)
         if isa(layer.inputs{i}, 'Layer')
