@@ -1,6 +1,6 @@
 function [dop, da, db] = bsxfun_der(op, a, b, dy)
 %BSXFUN_DER
-%   [DA, DB] = BSXFUN_DER(OP, A, B, DY)
+%   [DOP, DA, DB] = BSXFUN_DER(OP, A, B, DY)
 %   Derivative of BSXFUN function. Same syntax as native BSXFUN, plus
 %   derivative. OP is a function handle (@times, @rdivide, @power).
 %   Note the first output is always empty (derivative of OP).
@@ -13,20 +13,22 @@ function [dop, da, db] = bsxfun_der(op, a, b, dy)
 
   if isequal(op, @times)
     da = bsxfun(@times, b, dy) ;
-    if nargout > 1
+    if nargout > 2
       db = bsxfun(@times, a, dy) ;
     end
 
   elseif isequal(op, @rdivide)
     % note: @ldivide is just @rdivide with swapped inputs
     da = bsxfun(@rdivide, dy, b) ;
-    if nargout > 1
+    if nargout > 2
       db = -dy .* bsxfun(@rdivide, a, b .^ 2) ;
     end
 
   elseif isequal(op, @power)
     da = dy .* a .^ (b - 1) .* b ;
-    if nargout > 1  % prevents error if log(a) becomes complex, but is not needed anyway because b is constant
+    if nargout > 2
+      % prevents error if log(a) becomes complex, but is not needed anyway
+      % because b is constant
       db = dy .* (a .^ b) .* log(a) ;
     end
 
@@ -39,7 +41,7 @@ function [dop, da, db] = bsxfun_der(op, a, b, dy)
     if size(a,t) == 1  % this means the original was a singleton dimension
       da = sum(da, t) ;
     end
-    if nargout > 1 && size(b,t) == 1
+    if nargout > 2 && size(b,t) == 1
       db = sum(db, t) ;
     end
   end
