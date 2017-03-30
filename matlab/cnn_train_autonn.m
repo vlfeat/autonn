@@ -1,7 +1,7 @@
 function [net,stats] = cnn_train_autonn(net, imdb, getBatch, varargin)
-%CNN_TRAIN_AUTONN Demonstrates training a CNN using the DagNN wrapper
-%   CNN_TRAIN_AUTONN() is similar to CNN_TRAIN(), but works with
-%   the AutoNN wrapper instead of the SimpleNN wrapper.
+%CNN_TRAIN_AUTONN Demonstrates training a CNN using the AutoNN wrapper
+%   CNN_TRAIN_AUTONN is similar to CNN_TRAIN, but works with the AutoNN
+%   wrapper instead of the SimpleNN wrapper.
 
 % Copyright (C) 2014-17 Andrea Vedaldi and Joao F. Henriques.
 % All rights reserved.

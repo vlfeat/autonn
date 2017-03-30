@@ -1,7 +1,7 @@
 function plotPDF(obj)
-%PLOTPDF
-%   Displays the network topology in a PDF. Requires the DOT command line
-%   program.
+%PLOTPDF Displays the network topology in a PDF
+%   Displays the network topology in a PDF (similar to DagNN.print).
+%   Requires the DOT command line program.
 
 % Copyright (C) 2016-2017 Karel Lenc, Andrea Vedaldi, Joao F. Henriques.
 % All rights reserved.

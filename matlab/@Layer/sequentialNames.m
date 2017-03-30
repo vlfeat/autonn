@@ -1,17 +1,18 @@
 function sequentialNames(varargin)
-% OBJ.SEQUENTIALNAMES()
-% Sets layer names sequentially, based on their function handle and
-% execution order. E.g.: conv1, conv2, pool1...
-% Only empty names are set.
+%SEQUENTIALNAMES Sets names of all unnamed layers based on type and order
+% OBJ.SEQUENTIALNAMES() replaces empty layer names with new names
+% sequentially, based on their function handle and execution order. OBJ
+% is the network output layer.
+% Example layer names are 'conv1', 'conv2', 'pool1'.
 %
-% LAYER.SEQUENTIALNAMES(OBJ1, OBJ2, ...)
-% Same but considering a network with outputs OBJ1, OBJ2, ...
+% Layer.SEQUENTIALNAMES(OBJ1, OBJ2, ...) is the same, but considering a
+% network with several outputs OBJ1, OBJ2, ...
 %
-% LAYER.SEQUENTIALNAMES(..., MODIFIER)
-% Specifies a function handle to be evaluated on each name, possibly
-% modifying it (e.g. append a prefix or suffix).
+% SEQUENTIALNAMES(..., MODIFIER) also specifies a function handle to be
+% evaluated on each name, possibly modifying it (e.g. to append a prefix or
+% suffix).
 %
-% See also WORKSPACENAMES.
+% See also Layer.workspaceNames.
 
 % Copyright (C) 2016 Joao F. Henriques.
 % All rights reserved.

@@ -1,23 +1,36 @@
 function objs = find(obj, varargin)
-% OBJS = OBJ.FIND()
-% OBJS = OBJ.FIND(NAME/FUNC/CLASS)
-% Finds layers, starting at the given output layer. The search
-% criteria can be a layer name, a function handle, or a class name
-% (such as 'Input' or 'Param').
-% By default a cell array is returned, which may be empty.
+%FIND Searches for layers that meet the specified criteria
+%   OBJS = OBJ.FIND() returns all the Layer objects involved in the
+%   computation of a Layer OBJ. This is done by recursing over OBJ's
+%   inputs, collecting all the Layers found along the way. The list of
+%   objects is returned in the order of a forward pass.
 %
-% OBJS = OBJ.FIND(..., N)
-% Returns only the Nth object that fits the criteria, in the order of
-% a forward pass (e.g. from the first layer). If N is negative, it is
-% found in the order of a backward pass (e.g. from the last layer,
-% which corresponds to N = -1).
-% Raises an error if no object is found.
+%   OBJS = OBJ.FIND(CRITERIA) only returns Layers that meet a specified
+%   search criteria. The criteria can be a layer name (string), a function
+%   handle, or a class name (such as 'Input' or 'Param'). A cell array is
+%   returned, which may be empty if no layer meets the criteria.
 %
-% OBJS = OBJ.FIND(..., 'depth', D)
-% Only recurses D depth levels (i.e., D=1 means that only OBJ's
-% inputs will be searched).
+%   OBJS = OBJ.FIND(..., N) returns only the Nth object that meets the
+%   criteria, in the order of a forward pass.
+%
+%   This syntax is guaranteed to return a single layer, or raise an error
+%   if no object is found. If N is negative, it is found in the order of a
+%   backward pass (e.g. N = -1 corresponds to the last layer that meets
+%   the criteria).
+%
+%   OBJS = OBJ.FIND(..., 'depth', D) restricts the recursion to D depth
+%   levels (e.g., D = 1 means that only OBJ's direct inputs are searched).
+%
+%   Example:
+%     images = Input() ;
+%     conv1 = vl_nnconv(images, 'size', [3 3 1 100]) ;
+%     relu = vl_nnrelu(conv1) ;
+%     conv2 = vl_nnconv(relu, 'size', [3 3 100 10]) ;
+%
+%     conv2.find(@vl_nnconv)  % returns {conv1, conv2}
+%     conv2.find(@vl_nnconv, 1)  % returns conv1
 
-% Copyright (C) 2016 Joao F. Henriques.
+% Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under

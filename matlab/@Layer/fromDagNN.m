@@ -1,5 +1,5 @@
 function netOutputs = fromDagNN(dag, customFn)
-%LAYER.FROMDAGNN
+%LAYER.FROMDAGNN Converts a DagNN object to the AutoNN framework
 %   OUTPUTS = Layer.fromDagNN(DAG) converts a MatConvNet DagNN object, DAG,
 %   into the AutoNN framework (i.e., a set of recursively nested Layer
 %   objects).

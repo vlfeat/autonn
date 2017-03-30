@@ -1,5 +1,5 @@
 function y = vl_nnaffinegrid(x, sz, dzdy)
-%VL_NNAFFINEGRID Affine grid generator
+%VL_NNAFFINEGRID Affine grid generator for Spatial Transformer Networks
 %   Y = VL_NNAFFINEGRID(X, SZ) generates an affine grid for a spatial
 %   transformer (see VL_NNBILINEARSAMPLER). SZ is the size of the images
 %   (2 elements vector of height and width).

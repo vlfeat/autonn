@@ -272,12 +272,13 @@ classdef Layer < matlab.mixin.Copyable
     % use other logical operators instead (&, |).
     
     function y = eq(a, b, same)
-      % EQ(A, B), A == B
-      % Returns a Layer that tests equality of the outputs of two Layers
-      % (one of them may be constant).
-      % EQ(A, B, 'sameInstance')
-      % Checks if two variables refer to the same Layer instance (i.e.,
-      % calls the == operator for handle classes).
+%EQ Overloaded equality operator, or test for Layer instance equality
+%   EQ(A, B), A == B returns a Layer that tests equality of the outputs of
+%   two Layers (one of them may be constant).
+%
+%   EQ(A, B, 'sameInstance') checks if two variables refer to the same
+%   Layer instance (i.e., calls the == operator for handle classes).
+
       if nargin <= 2
         y = Layer(@eq, a, b) ;
         y.numInputDer = 0 ;  % non-differentiable
@@ -447,10 +448,10 @@ classdef Layer < matlab.mixin.Copyable
     end
     
     function display(obj, name)
-      % DISPLAY(OBJ)
-      % Overload DISPLAY to show hyperlinks in command window, allowing one to
-      % interactively traverse the network. Note that the builtin DISP is
-      % unchanged.
+%OBJ.DISPLAY() Display layer information
+%   OBJ.DISPLAY() overloads DISPLAY to show hyperlinks in command window,
+%   allowing one to interactively traverse the network. Note that the
+%   builtin DISP is unchanged.
       if nargin < 2
         name = inputname(1) ;
       end
@@ -485,7 +486,7 @@ classdef Layer < matlab.mixin.Copyable
     end
     
     function mergeRedundantInputs(obj)
-      %MERGEREDUNDANTINPUTS Merge Input layers with the same name into one
+%MERGEREDUNDANTINPUTS Merges Input layers with the same name into one
 
       % this is safe because Input has no info other than name and gpu, and
       % allows special inputs like Input('testMode') to be used anywhere.
@@ -532,12 +533,13 @@ classdef Layer < matlab.mixin.Copyable
     end
     
     function idx = getNextRecursion(obj, visited)
-      % Used by findRecursive, cycleCheckRecursive, deepCopyRecursive, etc,
+      % used by findRecursive, cycleCheckRecursive, deepCopyRecursive, etc,
       % to avoid redundant recursions in very large networks.
-      % Returns indexes of inputs to recurse on, that have not been visited
+      % returns indexes of inputs to recurse on, that have not been visited
       % yet during this operation. The list of layers seen so far is
-      % managed efficiently with the dictionary VISITED.
-      
+      % managed efficiently with the dictionary VISITED (created with
+      % Layer.initializeRecursion).
+
       valid = false(1, numel(obj.inputs)) ;
       for i = 1:numel(obj.inputs)
         if isa(obj.inputs{i}, 'Layer')
@@ -568,13 +570,15 @@ classdef Layer < matlab.mixin.Copyable
   
   methods (Static)
     function varargout = create(func, args, varargin)
-      % Create a layer with given function handle FUNC and arguments
-      % cell array ARGS, optionally setting additional properties as
-      % name-value pairs (numInputDer). numOutputs is inferred.
-      % Unlike the Layer constructor, Layer.create supports multiple
-      % outputs.
-      % This function is not meant to be called directly; instead see
-      % Layer.fromFunction.
+%CREATE Creates a layer from a function handle and arguments
+%   OBJ = Layer.create(@FUNC, ARGS) creates OBJ of type Layer that, when
+%   evaluated, calls the function FUNC with arguments given in a cell array
+%   ARGS. Some elements of ARGS may be Layer objects, which allows
+%   composing layers into networks.
+%
+%   Layer.create(..., 'option', value, ...) accepts additional options.
+%   See 'help Layer.fromFunction' for more information.
+
       assert(isa(func, 'function_handle'), 'Argument must be a valid function handle.') ;
       
       opts.numInputDer = [] ;
@@ -594,23 +598,21 @@ classdef Layer < matlab.mixin.Copyable
     end
     
     function workspaceNames(modifier)
-      % LAYER.WORKSPACENAMES()
-      % Sets layer names based on the name of the corresponding variables
-      % in the caller's workspace. Only empty names are set.
-      %
-      % LAYER.WORKSPACENAMES(MODIFIER)
-      % Specifies a function handle to be evaluated on each name, possibly
-      % modifying it (e.g. append a prefix or suffix).
-      %
-      % See also SEQUENTIALNAMES.
-      %
-      % Example:
-      %    images = Input() ;
-      %    Layer.workspaceNames() ;
-      %    >> images.name
-      %    ans =
-      %       'images'
-      
+%WORKSPACENAMES Sets names of unnamed layers based on the current workspace
+% Layer.workspaceNames() replaces empty layer names with new names, based
+% on the names of the corresponding variables in the caller's workspace.
+%
+% Layer.workspaceNames(MODIFIER) also specifies a function handle to be
+% evaluated on each name, possibly modifying it (e.g. to append a prefix or
+% suffix).
+%
+% See also Layer.sequentialNames.
+%
+% Example:
+%   images = Input() ;
+%   Layer.workspaceNames() ;
+%   images.name  % returns 'images'
+
       if nargin < 1, modifier = @deal ; end
       
       varNames = evalin('caller','who') ;
