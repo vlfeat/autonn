@@ -1,12 +1,37 @@
 classdef Param < Layer
-%Param
-%   Defines a network parameter (such as a convolution's weights).
+%Param Defines a learnable network parameter
+%   Defines a network parameter, such as a convolution's filter bank.
+%
 %   Note that some functions (e.g. vl_nnconv, vl_nnbnorm) can create and
-%   initialize Param objects automatically. Such behavior is optional,
-%   since they can use any other layer's output in their arguments, not
-%   just Params.
+%   initialize Param objects automatically. See help Layer.vl_nnconv,
+%   Layer.vl_nnbnorm for more details.
+%
+%   Param('option', value, ...) accepts the following options:
+%
+%   `value`:: []
+%     Initial parameter value. This must always be specified.
+%
+%   `name`:: []
+%     Specifies the layer name, which is optional. Names can be filled in
+%     automatically with Layer.workspaceNames() or obj.sequentialNames().
+%
+%   `gpu`:: true
+%     Automatically moves the parameter to the GPU if running the network
+%     in GPU mode.
+%
+%   `learningRate`:: 1
+%     Factor used to adjust a parameter's learning rate.
+%
+%   `weightDecay`:: 1
+%     Factor used to adjust a parameter's weight decay.
+%
+%   `trainMethod`:: 'gradient'
+%     Training method, specified as a string:
+%       * 'gradient' is the default training method (SGD).
+%       * 'average' uses a running average, used mostly by vl_nnbnorm.
+%       * 'none' disables learning, freezing the parameter's initial value.
 
-% Copyright (C) 2016 Joao F. Henriques.
+% Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under

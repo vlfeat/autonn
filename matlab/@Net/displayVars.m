@@ -2,12 +2,12 @@ function displayVars(net, varargin)
 %DISPLAYVARS
 %   Simple table of information on each var, and corresponding derivative.
 %
-%   NET.DISPLAYVARS(VARS)
-%   Uses the given variables list, rather than NET.VARS. This is useful
-%   for debugging inside calls to NET.EVAL, where NET.VARS is empty and
+%   OBJ.DISPLAYVARS(VARS)
+%   Uses the given variables list, rather than OBJ.VARS. This is useful
+%   for debugging inside calls to OBJ.EVAL, where OBJ.VARS is empty and
 %   a local variable VARS is used instead, for performance reasons.
 %
-%   NET.DISPLAYVARS(___, 'OPT', VAL, ...) accepts the following options:
+%   OBJ.DISPLAYVARS(___, 'OPT', VAL, ...) accepts the following options:
 %
 %   `showRange`:: `true`
 %      If set to true, shows columns with the minimum and maximum for each

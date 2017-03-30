@@ -1,6 +1,7 @@
 classdef Var < Param
-%Var
-%   Defines an explicit variable in the network, with a given value.
+%Var Defines a network variable explicitly
+%   Var('value', VALUE) defines an explicit variable in the network, with a
+%   given value.
 %
 %   Most of the time this is not needed; variables are created implicitly
 %   to hold the values of any Inputs, Params, and output values computed by

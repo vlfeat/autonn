@@ -44,7 +44,16 @@ classdef Layer < matlab.mixin.Copyable
 %   coding effort), but sometimes we may know of more efficient ways to
 %   compute some derivatives. In these cases defining a new custom layer is
 %   helpful. It also allows extending the framework with new core Matlab
-%   operators. See help Layer.fromFunction.
+%   operators.
+%
+%   A generator for a custom layer can be obtained with Layer.fromFunction,
+%   or a custom layer can be created immediately with Layer.create.
+%
+%   A more low-level way to create a Layer is to call the constructor
+%   directly. Layer(@func, arg1, arg2, ...) creates a layer that calls the
+%   function handle func with the following arguments. Note that only
+%   Layer.fromFunction and Layer.create support layers with multiple
+%   outputs (like vl_nnlstm).
 %
 %Network evaluation
 %   The computational graphs defined with Layer are evaluated by the Net

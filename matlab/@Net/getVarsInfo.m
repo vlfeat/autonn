@@ -1,7 +1,7 @@
 function info = getVarsInfo(net)
-%GETVARSINFO
-%   INFO = NET.GETVARSINFO()
-%   Returns a struct INFO with information on each variable. Fields:
+%GETVARSINFO Retrieves network variables information as a struct
+%   INFO = OBJ.GETVARSINFO() returns a struct INFO with information on each
+%   variable. The fields are:
 %
 %   `type`::
 %     Type of layer that outputs this var ('input', 'param', or 'layer').
@@ -11,9 +11,9 @@ function info = getVarsInfo(net)
 %
 %   `index`::
 %     Reference for the layer that outputs this var.
-%     If type is 'layer', contains its index in NET.FORWARD.
-%     If type is 'param', contains its index in NET.PARAMS.
-%     If type is 'input', this is 0 (use name for struct NET.INPUTS).
+%     If type is 'layer', contains its index in OBJ.FORWARD.
+%     If type is 'param', contains its index in OBJ.PARAMS.
+%     If type is 'input', this is 0 (use name for struct OBJ.INPUTS).
 %
 %   `outputArgPos`::
 %     For layers with multiple outputs, this is the index (argument

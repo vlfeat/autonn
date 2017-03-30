@@ -1,6 +1,19 @@
 classdef Input < Layer
-%Input
-%   Defines a network input (such as images or labels).
+%Input Defines a network input (such as images or labels)
+%   The Input class defines a network input, and is generally the starting
+%   point for building a network. See 'help Layer' for more.
+%
+%   Input('option', value, ...) accepts the following options:
+%
+%   `name`:: []
+%     Specifies the layer name. Inputs can be created with no arguments,
+%     leaving the name property empty, but it must be filled in before
+%     compilation. This can be done manually (obj.name = 'name'), or
+%     automatically with Layer.workspaceNames() or obj.sequentialNames().
+%
+%   `gpu`:: false
+%     Marks the Input as containing a GPU array. This means that Net.eval
+%     will automatically convert it to a gpuArray, if running in GPU mode.
 
 % Copyright (C) 2016 Joao F. Henriques.
 % All rights reserved.
@@ -18,7 +31,9 @@ classdef Input < Layer
       opts.gpu = false ;
       
       if isscalar(varargin) && ischar(varargin{1})
-        opts.name = varargin{1} ;  % special syntax, just pass in the name (possibly deprecate in the future?)
+        % special syntax, just pass in the name (possibly deprecate in the
+        % future?)
+        opts.name = varargin{1} ;
       else
         opts = vl_argparse(opts, varargin, 'nonrecursive') ;
       end

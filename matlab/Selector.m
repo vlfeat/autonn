@@ -1,10 +1,14 @@
 classdef Selector < Layer
-%Selector
-%   Used to implement layers with multiple outputs.
-%   This layer simply returns the Nth output of its input layer, where N
-%   is the INDEX property.
+%Selector Selects a single output of a multiple-outputs layer
+%   The Selector is used internally to implement layers with multiple
+%   outputs.
+%
+%   Selector(LAYER, N) simply returns the Nth output of LAYER, where N > 1.
+%   When a Selector is not used, a multiple-output Layer object LAYER
+%   returns only its first output; a Selector allows one to retrieve the
+%   other outputs.
 
-% Copyright (C) 2016 Joao F. Henriques.
+% Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under

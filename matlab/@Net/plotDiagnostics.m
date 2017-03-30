@@ -1,6 +1,6 @@
 function plotDiagnostics(net, numPoints)
 %PLOTDIAGNOSTICS
-%   NET.PLOTDIAGNOSTICS(NUMPOINTS)
+%   OBJ.PLOTDIAGNOSTICS(NUMPOINTS)
 %   Shows a plot of min/max/mean values over tensors, for vars and their
 %   derivatives that have diagnostics enabled.
 %

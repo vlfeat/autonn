@@ -1,7 +1,7 @@
 function optimizeVars(net, opts, objs)
 %OPTIMIZEVARS
 %   Variable allocation optimizations, such as ReLU short-circuiting.
-%   Called by BUILD.
+%   Called by COMPILE.
 %
 %   Assumes BUILDORDER was called, deciding the execution order (OBJS
 %   contains the ordered layers), and assigning all needed output vars
