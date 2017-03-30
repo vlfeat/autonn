@@ -1,7 +1,8 @@
-function build(net, varargin)
-%BUILD
-%   Constructor for a Net, taking as input one or more Layers (the
-%   network's outputs).
+function compile(net, varargin)
+%COMPILE Compile network
+%   Main constructor for a Net, taking as input one or more Layers (the
+%   network's outputs), and compiling them into a sequence of function
+%   calls.
 
 % Copyright (C) 2016 Joao F. Henriques.
 % All rights reserved.
