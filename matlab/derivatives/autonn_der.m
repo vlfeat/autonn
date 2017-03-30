@@ -122,9 +122,5 @@ function dx = gather_der(x, dy)
   end
 end
 
-function varargout = root_der(varargin)
-  % copy the output derivative to all input derivatives (see ROOT).
-  varargout = cell(1, numel(varargin) - 1) ;
-  varargout(:) = varargin(end) ;
-end
+
 
