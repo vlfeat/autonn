@@ -210,11 +210,18 @@ function build(net, varargin)
   end
 
   
-  % compute fan-out of parameters
-  inputVars = [net.forward.inputVars] ;  % all indexes of input vars, possibly repeated
-%   counts = accumarray(inputVars(:), ones(numel(inputVars), 1), [numVars, 1]) ;  % histogram them
-%   counts = num2cell(counts) ;
-%   [info.fanOutCount] = counts{:} ;
+  % compute fan-out of parameters; this is useful to update batch-norm
+  % moments with a moving average (cnn_train_autonn>accumulateGradientsAuto
+  % NN). fan-out is the number of outgoing variables of a Param. take extra
+  % care to *not* include edges that will not back-prop a derivative.
+  % inputVars will concatenate indexes of all input vars, possibly repeated
+  inputVars = cell(size(net.backward)) ;
+  for k = 1:numel(net.backward)
+    layer = net.backward(k) ;
+    inputVars{k} = layer.inputVars(layer.inputArgPos <= layer.numInputDer) ;
+  end
+  inputVars = [inputVars{:}] ;
+  % fan-out is just the number of occurences of the parameter in inputVars
   for k = 1:numel(net.params)
     net.params(k).fanout = nnz(inputVars == net.params(k).var) ;
   end
