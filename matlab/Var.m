@@ -23,9 +23,9 @@ classdef Var < Param
 % the terms of the BSD license (see the COPYING file).
 
   methods
-    function obj = Var(value, varargin)
-      obj@Param('value',value, 'trainMethod','none', ...
-        'weightDecay',0, 'learningRate',0)
+    function obj = Var(varargin)
+      obj@Param('trainMethod','none', 'weightDecay',0, ...
+        'learningRate',0, varargin{:})
     end
   end
 end
