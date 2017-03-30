@@ -97,8 +97,10 @@ classdef Layer < matlab.mixin.Copyable
   end
   
   methods (Static)
+    varargout = create(func, args, varargin)
     netOutputs = fromDagNN(dag)
     generator = fromFunction(func, varargin)
+    workspaceNames(modifier)
   end
   
   methods
@@ -271,22 +273,6 @@ classdef Layer < matlab.mixin.Copyable
     % note: short-circuited scalar operators (&&, ||) cannot be overloaded,
     % use other logical operators instead (&, |).
     
-    function y = eq(a, b, same)
-%EQ Overloaded equality operator, or test for Layer instance equality
-%   EQ(A, B), A == B returns a Layer that tests equality of the outputs of
-%   two Layers (one of them may be constant).
-%
-%   EQ(A, B, 'sameInstance') checks if two variables refer to the same
-%   Layer instance (i.e., calls the == operator for handle classes).
-
-      if nargin <= 2
-        y = Layer(@eq, a, b) ;
-        y.numInputDer = 0 ;  % non-differentiable
-      else
-        assert(isequal(same, 'sameInstance'), 'The only accepted extra flag for EQ is ''sameInstance''.') ;
-        y = eq@handle(a, b) ;
-      end
-    end
     function y = ne(a, b)
       y = Layer(@ne, a, b) ;
       y.numInputDer = 0 ;  % non-differentiable
@@ -446,48 +432,20 @@ classdef Layer < matlab.mixin.Copyable
       error(['BSXFUN is already called implicitly for all binary operators. ' ...
         'Use the corresponding math operator instead of BSXFUN.']) ;
     end
-    
-    function display(obj, name)
-%OBJ.DISPLAY() Display layer information
-%   OBJ.DISPLAY() overloads DISPLAY to show hyperlinks in command window,
-%   allowing one to interactively traverse the network. Note that the
-%   builtin DISP is unchanged.
-      if nargin < 2
-        name = inputname(1) ;
-      end
-      fprintf('\n%s', name) ;
-      
-      if builtin('numel', obj) ~= 1  % non-scalar, use standard display
-        fprintf(' =\n\n') ;
-        disp(obj) ;
-        return
-      end
-      
-      if numel(name) > 30, fprintf('\n'); end  % line break for long names
-      showLinks = usejava('desktop') ;
-      fprintf(' = ') ;
-      obj.displayCustom(name, showLinks) ;
-      
-      if ~isempty(obj.source)  % show source-code origin
-        [~, file, ext] = fileparts(obj.source(1).file) ;
-        if ~showLinks
-          fprintf('Defined in %s%s, line %i.\n', file, ext, obj.source(1).line) ;
-        else
-          fprintf('Defined in <a href="matlab:opentoline(''%s'',%i)">%s%s, line %i</a>.\n', ...
-            obj.source(1).file, obj.source(1).line, file, ext, obj.source(1).line) ;
-        end
-      end
-      
-      if showLinks
-        fprintf('(<a href="matlab:disp(%s)">Show all properties</a>)\n', name) ;
-      else
-        fprintf('(Use disp(%s) to show all properties)\n', name) ;
-      end
+  end
+  
+  methods(Access = protected)
+    function other = copyElement(obj)
+      % copyElement is used by matlab.mixin.Copyable.copy to customize the
+      % copy operation. ensure the ID of the copied object is unique.
+      other = copyElement@matlab.mixin.Copyable(obj) ;
+      other.id = Layer.uniqueId() ;
     end
-    
+  end
+  
+  methods (Access = {?Net, ?Layer})
     function mergeRedundantInputs(obj)
-%MERGEREDUNDANTINPUTS Merges Input layers with the same name into one
-
+      % merges Input layers with the same name into one.
       % this is safe because Input has no info other than name and gpu, and
       % allows special inputs like Input('testMode') to be used anywhere.
       objs = obj.find() ;  % list all layers in forward order
@@ -507,18 +465,7 @@ classdef Layer < matlab.mixin.Copyable
         end
       end
     end
-  end
-  
-  methods(Access = protected)
-    function other = copyElement(obj)
-      % copyElement is used by matlab.mixin.Copyable.copy to customize the
-      % copy operation. ensure the ID of the copied object is unique.
-      other = copyElement@matlab.mixin.Copyable(obj) ;
-      other.id = Layer.uniqueId() ;
-    end
-  end
-  
-  methods (Access = {?Net, ?Layer})
+    
     function cycleCheckRecursive(obj, root, visited)
       if eq(obj, root, 'sameInstance')
         error('MatConvNet:CycleCheckFailed', 'Input assignment creates a cycle in the network.') ;
@@ -569,61 +516,6 @@ classdef Layer < matlab.mixin.Copyable
   end
   
   methods (Static)
-    function varargout = create(func, args, varargin)
-%CREATE Creates a layer from a function handle and arguments
-%   OBJ = Layer.create(@FUNC, ARGS) creates OBJ of type Layer that, when
-%   evaluated, calls the function FUNC with arguments given in a cell array
-%   ARGS. Some elements of ARGS may be Layer objects, which allows
-%   composing layers into networks.
-%
-%   Layer.create(..., 'option', value, ...) accepts additional options.
-%   See 'help Layer.fromFunction' for more information.
-
-      assert(isa(func, 'function_handle'), 'Argument must be a valid function handle.') ;
-      
-      opts.numInputDer = [] ;
-      opts.numOutputs = [] ;
-      opts = vl_argparse(opts, varargin) ;
-      
-      % main output
-      varargout = cell(1, nargout) ;
-      varargout{1} = Layer(func, args{:}) ;
-      varargout{1}.numOutputs = nargout ;  % infer number of layer outputs from this function call
-      varargout{1}.numInputDer = opts.numInputDer ;
-      
-      % selectors for any additional outputs
-      for i = 2:nargout
-        varargout{i} = Selector(varargout{1}, i) ;
-      end
-    end
-    
-    function workspaceNames(modifier)
-%WORKSPACENAMES Sets names of unnamed layers based on the current workspace
-% Layer.workspaceNames() replaces empty layer names with new names, based
-% on the names of the corresponding variables in the caller's workspace.
-%
-% Layer.workspaceNames(MODIFIER) also specifies a function handle to be
-% evaluated on each name, possibly modifying it (e.g. to append a prefix or
-% suffix).
-%
-% See also Layer.sequentialNames.
-%
-% Example:
-%   images = Input() ;
-%   Layer.workspaceNames() ;
-%   images.name  % returns 'images'
-
-      if nargin < 1, modifier = @deal ; end
-      
-      varNames = evalin('caller','who') ;
-      for i = 1:numel(varNames)
-        layer = evalin('caller', varNames{i}) ;
-        if isa(layer, 'Layer') && isempty(layer.name)
-          layer.name = modifier(varNames{i}) ;
-        end
-      end
-    end
-    
     function setDiagnostics(obj, value)
       if iscell(obj)  % applies recursively to nested cell arrays
         for i = 1:numel(obj)
@@ -636,6 +528,7 @@ classdef Layer < matlab.mixin.Copyable
     
     % overloaded native Matlab functions, static (first argument is not a
     % Layer object, call with Layer.rand(...)).
+    
     function y = rand(obj, varargin)
       y = Layer(@rand, obj, varargin{:}) ;
       y.numInputDer = 0 ;  % non-differentiable
