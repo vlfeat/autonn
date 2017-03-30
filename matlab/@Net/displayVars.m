@@ -118,11 +118,13 @@ for i = 1:numel(vars)
   if isa(v, 'gpuArray')
     str = [str 'GPU '] ;
   end
-  if any(isnan(v(:)))
-    str = [str 'NaN '] ;
-  end
-  if any(isinf(v(:)))
-    str = [str 'Inf '] ;
+  if isnumeric(v)
+    if any(isnan(v(:)))
+      str = [str 'NaN '] ;
+    end
+    if any(isinf(v(:)))
+      str = [str 'Inf '] ;
+    end
   end
   if isempty(str)
     flags{i} = ' ' ;  % no flags, must still have a space
