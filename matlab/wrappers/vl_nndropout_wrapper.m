@@ -1,5 +1,6 @@
 function y = vl_nndropout_wrapper(x, mask, test, dzdy)
-%VL_NNDROPOUT_WRAPPER
+%VL_NNDROPOUT_WRAPPER AutoNN wrapper for MatConvNet's vl_nndropout
+%   This wrapper bypasses the dropout operation when in test mode.
 
 % Copyright (C) 2017 Joao F. Henriques.
 % All rights reserved.

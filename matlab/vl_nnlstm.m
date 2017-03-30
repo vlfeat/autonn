@@ -58,7 +58,7 @@ function varargout = vl_nnlstm(x, hp, cp, W, b, varargin)
 %   [1] Donahue et al., "Long-term Recurrent Convolutional Networks for
 %   for Visual Recognition and Description", CVPR 2015. (pg. 3)
 
-% Copyright (C) 2016 Ankush Gupta and Joao F. Henriques.
+% Copyright (C) 2016 Ankush Gupta, Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under

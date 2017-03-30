@@ -2,7 +2,7 @@ function dzdx = slice_der(x, varargin)
 %SLICE_DER Derivative for the slicing operator
 %   This is a dense derivative computation of slicing (e.g. x(:,:,1:3,10)).
 %   A fast sparse derivative computation (e.g. for single-element accesses)
-%   is implemented in Net.eval. SLICE_DER is only called when there are
+%   is implemented in Net.eval. It only calls SLICE_DER when there are
 %   repeated indexes.
 
 % Copyright (C) 2017 Joao F. Henriques.

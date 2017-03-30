@@ -1,13 +1,13 @@
 function [y, dzdg, dzdb, moments] = vl_nnbnorm_wrapper(x, g, b, moments, test, varargin)
-%VL_NNBNORM_WRAPPER
+%VL_NNBNORM_WRAPPER AutoNN wrapper for MatConvNet's vl_nnbnorm
 %   VL_NNBNORM has a non-standard interface (returns a derivative for the
 %   moments, even though they are not an input), so we must wrap it.
-%   VL_NNBNORM_SETUP replaces a standard VL_NNBNORM call with this one.
+%   Layer.vl_nnbnorm replaces a standard VL_NNBNORM call with this one.
 %
 %   This also lets us supports nice features like setting the parameter
 %   sizes automatically (e.g. building a net with VL_NNBNORM(X) is valid).
 
-% Copyright (C) 2016 Joao F. Henriques.
+% Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under

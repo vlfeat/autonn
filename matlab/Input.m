@@ -15,7 +15,7 @@ classdef Input < Layer
 %     Marks the Input as containing a GPU array. This means that Net.eval
 %     will automatically convert it to a gpuArray, if running in GPU mode.
 
-% Copyright (C) 2016 Joao F. Henriques.
+% Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under

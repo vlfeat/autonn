@@ -1,13 +1,13 @@
 function derFunc = autonn_der(func)
 %AUTONN_DER
-%   AUTONN_DER is only called by Net during construction.
+%   AUTONN_DER is only called by Net during compilation.
 %
 %   Given a function handle, returns the function handle for its
 %   derivative. It has the same name as the function, followed by '_der'.
 %
 %   Small derivative functions are defined as subfunctions here.
 
-% Copyright (C) 2016 Joao Henriques.
+% Copyright (C) 2016-2017 Joao Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under
