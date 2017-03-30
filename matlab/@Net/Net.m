@@ -86,8 +86,8 @@ classdef Net < handle
         end
       end
 
-      % build Net from a list of Layers
-      net.build(varargin{:}) ;
+      % compile Net from a list of Layers
+      net.compile(varargin{:}) ;
     end
     
     function move(net, device)

@@ -5,7 +5,7 @@ function out = root(varargin)
 %   their values because this is not needed.
 %
 %   The root layer exists purely to simplify some internal logic; there
-%   should be no need to create root layers outside of Net.build.
+%   should be no need to create root layers outside of Net.compile.
 
   out = [] ;
 
