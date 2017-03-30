@@ -1,5 +1,5 @@
 function layer = vl_nnconv(varargin)
-%VL_NNCONV
+%VL_NNCONV CNN convolution
 %   Y = Layer.vl_nnconv(X, F, B) computes the convolution of the image X
 %   with the filter bank F and biases B. See help vl_nnconv for more
 %   details.
@@ -9,14 +9,12 @@ function layer = vl_nnconv(varargin)
 %   returned. X, F and B can be other Layers, including Params, or
 %   constants.
 %
+%   Y = Layer.vl_nnconv(X, 'size', SZ) automatically creates parameters F
+%   and B, initialized with random filters of size SZ and zero bias. The
+%   filters are normally-distributed, with Xavier scaling by default.
+%
 %   In addition to those defined by MatConvNet's vl_nnconv, the overloaded
 %   VL_NNCONV(..., 'option', value, ...) accepts the following options:
-%
-%   `size`:: []
-%     If non-empty, automatically sets F and B to new Param objects,
-%     initialized with random filters and zero biases of the given size.
-%     The filters are normally-distributed, with Xavier scaling by default.
-%     When using this syntax, F and B must be omitted.
 %
 %   `hasBias`:: true
 %     Allows disabling the creation of the bias Param in the syntax above.
