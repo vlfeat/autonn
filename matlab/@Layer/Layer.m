@@ -1,5 +1,5 @@
 classdef Layer < matlab.mixin.Copyable
-%Layer Main building block for defining new networks
+%LAYER Main building block for defining new networks
 %   The Layer object is the main building block for defining networks in
 %   the AutoNN framework. It specifies a function call in a computational
 %   graph.
@@ -101,6 +101,10 @@ classdef Layer < matlab.mixin.Copyable
     netOutputs = fromDagNN(dag)
     generator = fromFunction(func, varargin)
     workspaceNames(modifier)
+  end
+  
+  methods (Access = protected)
+    displayCustom(obj, varName, showLinks)
   end
   
   methods

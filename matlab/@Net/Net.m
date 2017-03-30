@@ -1,5 +1,5 @@
 classdef Net < handle
-%Net Compiled network that can be evaluated on data
+%NET Compiled network that can be evaluated on data
 %   While Layer objects are used to easily define a network topology
 %   (build-time), a Net object compiles them to a format that can be
 %   executed quickly (run-time).
@@ -53,7 +53,7 @@ classdef Net < handle
   end
 
   methods (Access = private)
-    build(net, varargin)
+    compile(net, varargin)
     optimizeVars(net, opts, objs)
   end
   

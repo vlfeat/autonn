@@ -1,13 +1,13 @@
 function plotDiagnostics(net, numPoints)
-%PLOTDIAGNOSTICS
-%   OBJ.PLOTDIAGNOSTICS(NUMPOINTS)
-%   Shows a plot of min/max/mean values over tensors, for vars and their
-%   derivatives that have diagnostics enabled.
+%PLOTDIAGNOSTICS Creates or updates diagnostics plot
+%   OBJ.PLOTDIAGNOSTICS(NUMPOINTS) shows a plot of min/max/mean values over
+%   tensors, for variables (and their derivatives) that have diagnostics
+%   enabled.
+%
+%   To enable diagnostics for the output variable of a given Layer, set its
+%   DIAGNOSTICS property to TRUE.
 %
 %   NUMPOINTS specifies the number of samples in the plot's rolling buffer.
-%
-%   To enable diagnostics for the output var of a given Layer, set its
-%   DIAGNOSTICS property to TRUE.
 
 % Copyright (C) 2016 Joao F. Henriques.
 % All rights reserved.

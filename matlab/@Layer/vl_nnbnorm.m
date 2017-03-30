@@ -1,5 +1,5 @@
 function layer = vl_nnbnorm(varargin)
-%VL_NNBNORM CNN batch normalisation
+%VL_NNBNORM Overload for CNN batch normalisation
 %   Y = Layer.vl_nnbnorm(X) applies batch normalization to the input X,
 %   creating all needed parameters automatically. See help vl_nnbnorm for
 %   more details.

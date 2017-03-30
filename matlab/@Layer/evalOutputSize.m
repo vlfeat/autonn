@@ -1,14 +1,14 @@
 function sz = evalOutputSize(obj, varargin)
-% SZ = OBJ.EVALOUTPUTSIZE('INPUT1', SZ1, 'INPUT2', SZ2, ...)
-% Computes the output size of a Layer, given input names and respective
-% sizes. Note that the size is computed by compiling and evaluating a
-% network, which always outputs reliable sizes but can be computationally
-% expensive.
+%EVALOUTPUTSIZE Computes output size of a Layer
+%   SZ = OBJ.EVALOUTPUTSIZE('INPUT1', SZ1, 'INPUT2', SZ2, ...) computes the
+%   output size of a Layer, given input names and respective sizes. Note
+%   that the size is computed by compiling and evaluating a network, which
+%   always outputs reliable sizes but can be computationally expensive.
 %
-% SZ = OBJ.EVALOUTPUTSIZE(LAYERS, 'INPUT1', SZ1, 'INPUT2', SZ2, ...)
-% Evaluates output sizes of multiple Layers, given in cell array LAYERS.
-% The corresponding outputs sizes are also returned in a cell array.
-% Note that they must be part of the computational graph of OBJ.
+%   SZ = OBJ.EVALOUTPUTSIZE(LAYERS, 'INPUT1', SZ1, 'INPUT2', SZ2, ...)
+%   evaluates output sizes of multiple Layers, given in cell array LAYERS.
+%   The corresponding outputs sizes are also returned in a cell array. Note
+%   that they must be part of the computational graph of OBJ.
 
 % NOTE: The upside of compiling a dummy network is that there's no need to
 % specify size calculations for all layers by hand. This is especially

@@ -1,5 +1,5 @@
 function layer = vl_nnwsum(varargin)
-%VL_NNWSUM Differentiable weighted sum
+%VL_NNWSUM Overload for differentiable weighted sum
 %   Y = Layer.vl_nnwsum(A, B, ..., 'weights', W) returns a weighted sum of
 %   inputs, i.e. Y = W(1) * A + W(2) * B + ...
 %   See help vl_nnwsum for more details.

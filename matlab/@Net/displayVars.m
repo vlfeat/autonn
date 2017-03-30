@@ -1,7 +1,5 @@
 function displayVars(net, varargin)
-%DISPLAYVARS
-%   Simple table of information on each var, and corresponding derivative.
-%
+%DISPLAYVARS Display table with information on variables and derivatives
 %   OBJ.DISPLAYVARS(VARS)
 %   Uses the given variables list, rather than OBJ.VARS. This is useful
 %   for debugging inside calls to OBJ.EVAL, where OBJ.VARS is empty and
@@ -21,8 +19,7 @@ function displayVars(net, varargin)
 %      If set to true, shows hyperlinks that print the syntax to access
 %      the value of each variable (e.g. 'net.vars{INDEX}').
 
-
-% Copyright (C) 2016 Joao F. Henriques.
+% Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under
