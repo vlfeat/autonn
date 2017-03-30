@@ -26,13 +26,16 @@ classdef Param < Layer
   methods
     function obj = Param(varargin)
       opts.name = [] ;
-      opts.value = [] ;
+      opts.value = 'unspecified' ;
       opts.weightDecay = 1 ;
       opts.learningRate = 1 ;
       opts.trainMethod = 'gradient' ;
       opts.gpu = true ;
       
       opts = vl_argparse(opts, varargin, 'nonrecursive') ;
+      
+      assert(~isequal(opts.value, 'unspecified'), ...
+        'Must specify the VALUE property when creating a Param.')
       
       obj.name = opts.name ;
       obj.value = opts.value ;
