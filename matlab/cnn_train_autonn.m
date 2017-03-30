@@ -337,7 +337,7 @@ for t=1:params.batchSize:numel(subset)
   batchTime = time - stats.time ;
   stats.num = num ;
   stats.time = time ;
-  stats = params.extractStatsFn(stats, net, batchSize / numGpus) ;
+  stats = params.extractStatsFn(stats, net, batchSize / max(1, numGpus)) ;
   currentSpeed = batchSize / batchTime ;
   averageSpeed = (t + batchSize - 1) / time ;
   if t == 3*params.batchSize + 1
