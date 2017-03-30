@@ -1,9 +1,14 @@
 function layer = vl_nnwsum(varargin)
-%VL_NNWSUM_SETUP
-%   Setup a weighted sum layer, by merging any other weighted sums in its
-%   inputs.
+%VL_NNWSUM Differentiable weighted sum
+%   Y = Layer.vl_nnwsum(A, B, ..., 'weights', W) returns a weighted sum of
+%   inputs, i.e. Y = W(1) * A + W(2) * B + ...
+%   See help vl_nnwsum for more details.
+%
+%   This method overloads the vl_nnwsum function for Layer objects, so that
+%   instead of executing vl_nnwsum, a new Layer object is returned. The
+%   arguments A, B, ... can be Layer objects, or constants.
 
-% Copyright (C) 2016 Joao F. Henriques.
+% Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under

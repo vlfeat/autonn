@@ -1,11 +1,10 @@
 function varargout = vl_nnwsum(varargin)
 %VL_NNWSUM Differentiable weighted sum
-%   Y = VL_NNWSUM(A, B, ..., 'weights', W)
-%   Weighted sum of inputs. Each element of vector W denotes the weight of
-%   the corresponding input.
+%   Y = VL_NNWSUM(A, B, ..., 'weights', W) returns a weighted sum of
+%   inputs, i.e. Y = W(1) * A + W(2) * B + ...
 %
-%   [DA, DB, ...] = VL_NNWSUM(A, B, ..., DZDY, 'weights', W)
-%   Projected derivatives of the same operation with respect to all inputs,
+%   [DA, DB, ...] = VL_NNWSUM(A, B, ..., DZDY, 'weights', W) returns the
+%   projected derivatives of the same operation with respect to all inputs,
 %   except for weights W, which are assumed constant.
 
 % Copyright (C) 2016 Joao F. Henriques.

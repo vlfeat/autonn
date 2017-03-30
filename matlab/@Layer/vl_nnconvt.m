@@ -9,9 +9,7 @@ function layer = vl_nnconvt(varargin)
 %   returned. X, F and B can be other Layers, including Params, or
 %   constants.
 %
-%   In addition to those defined by MatConvNet's vl_nnconvt, the overloaded
-%   VL_NNCONVT(..., 'option', value, ...) accepts the same options as
-%   Layer.vl_nnconv.
+%   The overloaded method accepts the same options as Layer.vl_nnconv.
 
   % simply create a conv layer first, then switch the function handle
 
