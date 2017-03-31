@@ -52,6 +52,6 @@
 %   dynamic_subplot    - Dynamically reflowing subplots, to maintain aspect ratio
 %
 % Examples
-%   examples/minimal   - Minimal examples of working regression and LSTM (start here)
-%   examples/cnn       - CNN examples with ImageNet, MNIST and toy data
-%   examples/rnn       - RNN and LSTM language model example on Shakespeare's texts
+%   examples/minimal   - Directory with minimal examples: regression and LSTM (start here)
+%   examples/cnn       - Directory with CNN examples: ImageNet, MNIST and toy data
+%   examples/rnn       - Directory with RNN/LSTM language model example on Shakespeare text
