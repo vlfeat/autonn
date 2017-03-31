@@ -453,7 +453,7 @@ classdef Layer < matlab.mixin.Copyable
       for k = 1:numel(objs)
         in = objs{k}.inputs ;
         for i = 1:numel(in)
-          if isa(in{i}, 'Input')
+          if isa(in{i}, 'Input') && ~isempty(in{i}.name)
             if ~isfield(lookup, in{i}.name)  % add this Input to lookup table
               lookup.(in{i}.name) = in{i} ;
             else  % an Input with that name exists, reuse it
