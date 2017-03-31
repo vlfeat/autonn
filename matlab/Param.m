@@ -1,5 +1,5 @@
 classdef Param < Layer
-%Param Defines a learnable network parameter
+%PARAM Defines a learnable network parameter
 %   Defines a network parameter, such as a convolution's filter bank.
 %
 %   Note that some functions (e.g. vl_nnconv, vl_nnbnorm) can create and

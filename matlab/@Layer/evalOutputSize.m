@@ -1,5 +1,5 @@
 function sz = evalOutputSize(obj, varargin)
-%EVALOUTPUTSIZE Computes output size of a Layer
+%EVALOUTPUTSIZE Computes output size of a layer
 %   SZ = OBJ.EVALOUTPUTSIZE('INPUT1', SZ1, 'INPUT2', SZ2, ...) computes the
 %   output size of a Layer, given input names and respective sizes. Note
 %   that the size is computed by compiling and evaluating a network, which

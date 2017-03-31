@@ -1,5 +1,5 @@
 function setParameterServer(net, ps, paramValues)
-%SETPARAMETERSERVER  Set a parameter server for the parameter derivatives
+%SETPARAMETERSERVER Sets up a parameter server for multi-GPU training
 %   OBJ.SETPARAMETERSERVER(PS) uses the specified ParameterServer PS to
 %   store and accumulate parameter derivatives across multiple MATLAB
 %   processes.

@@ -1,5 +1,5 @@
 function layer = vl_nnconvt(varargin)
-%VL_NNCONVT Overload for CNN convolution transpose
+%VL_NNCONVT Additional options for vl_nnconvt (CNN deconvolution)
 %   Y = Layer.vl_nnconvt(X, F, B) computes the convolution-transpose of the
 %   image X with the filter bank F and biases B. See help vl_nnconvt for
 %   more details.

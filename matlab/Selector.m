@@ -1,5 +1,5 @@
 classdef Selector < Layer
-%Selector Selects a single output of a multiple-outputs layer
+%SELECTOR Selects a single output of a multiple-outputs layer
 %   The Selector is used internally to implement layers with multiple
 %   outputs.
 %

@@ -1,5 +1,5 @@
 classdef Input < Layer
-%Input Defines a network input (such as images or labels)
+%INPUT Defines a network input (such as images or labels)
 %   The Input class defines a network input, and is generally the starting
 %   point for building a network. See 'help Layer' for more.
 %

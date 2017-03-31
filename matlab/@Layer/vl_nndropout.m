@@ -1,5 +1,5 @@
 function layer = vl_nndropout(x, varargin)
-%VL_NNDROPOUT Overload for CNN dropout
+%VL_NNDROPOUT Additional options for vl_nndropout (CNN dropout)
 %   Y = Layer.vl_nndropout(X) applies dropout to the data X. See help
 %   vl_nndropout for more details.
 %

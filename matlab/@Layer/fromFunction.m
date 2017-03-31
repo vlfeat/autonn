@@ -1,5 +1,5 @@
 function generator = fromFunction(func, varargin)
-%FROMFUNCTION Define new custom layer
+%FROMFUNCTION Generator for new custom layer type
 %   GENERATOR = Layer.fromFunction(FUNC) returns a generator for Layer
 %   objects with the function FUNC (i.e., a custom layer).
 %

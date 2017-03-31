@@ -1,52 +1,57 @@
-% AUTONN
+% AutoNN - Table of Contents
 %
-% Files
-%   setup_autonn - Sets up AutoNN, by adding its folders to the Matlab path
-%
-% MATLAB
-%
-% Files
-%   cnn_train_autonn - Demonstrates training a CNN using the AutoNN wrapper
-%   dynamic_subplot  - Dynamically reflowing subplots, to maintain aspect ratio
-%   Input            - Input Defines a network input (such as images or labels)
-%   Param            - Param Defines a learnable network parameter
-%   Selector         - Selector Selects a single output of a multiple-outputs layer
-%   Var              - Var Defines a network variable explicitly
-%   vl_argparsepos   - Parse list of param.-value pairs, with positional arguments
-%   vl_nnaffinegrid  - Affine grid generator for Spatial Transformer Networks
-%   vl_nnlstm        - Long Short-Term Memory cell (LSTM)
-%   vl_nnlstm_params - Initialize the learnable parameters for an LSTM
-%   vl_nnmask        - CNN dropout mask generator
-%   vl_nnwsum        - Differentiable weighted sum
-%
-% @LAYER
-%
-% Files
-%   create          - Creates a layer from a function handle and arguments
-%   deepCopy        - Copies a network or subnetwork, optionally sharing some layers
-%   display         - Display layer information
-%   eq              - Overloaded equality operator, or test for Layer instance equality
-%   evalOutputSize  - Computes output size of a Layer
-%   find            - Searches for layers that meet the specified criteria
-%   fromDagNN       - Converts a DagNN object to the AutoNN framework
-%   fromFunction    - Define new custom layer
-%   Layer           - Main building block for defining new networks
-%   plotPDF         - Displays the network topology in a PDF
-%   sequentialNames - Sets names of all unnamed layers based on type and order
-%   vl_nnbnorm      - Overload for CNN batch normalisation
-%   vl_nnconv       - Overload for CNN convolution
-%   vl_nnconvt      - Overload for CNN convolution transpose
-%   vl_nndropout    - Overload for CNN dropout
-%   vl_nnwsum       - Overload for differentiable weighted sum
-%   workspaceNames  - Sets names of unnamed layers based on the current workspace
-%
-% @NET
-%
-% Files
-%   compile            - Compile network
-%   displayVars        - Display table with information on variables and derivatives
-%   eval               - Network evaluation, including back-propagation to compute derivatives
-%   getVarsInfo        - Retrieves network variables information as a struct
+% Classes
+%   Layer              - Main building block for defining new networks
 %   Net                - Compiled network that can be evaluated on data
+%   Input              - Defines a network input (such as images or labels)
+%   Param              - Defines a learnable network parameter
+%   Selector           - Selects a single output of a multiple-outputs layer
+%   Var                - Defines a network variable explicitly
+%
+% Layer methods
+%   display            - Display layer information
+%   find               - Searches for layers that meet the specified criteria
+%   deepCopy           - Copies a network or subnetwork, optionally sharing some layers
+%   evalOutputSize     - Computes output size of a layer
+%   plotPDF            - Displays the network topology in a PDF
+%   workspaceNames     - Sets names of unnamed layers based on the current workspace
+%   sequentialNames    - Sets names of all unnamed layers based on type and order
+%
+% Layer overloaded methods
+%   Operators          - Many functions and operators are overloaded, see: methods('Layer')
+%   MatConvNet layers  - All MatConvNet layer functions are overloaded, see: methods('Layer')
+%   vl_nnconv          - Additional options for vl_nnconv (CNN convolution)
+%   vl_nnconvt         - Additional options for vl_nnconvt (CNN deconvolution)
+%   vl_nnbnorm         - Additional options for vl_nnbnorm (CNN batch normalisation)
+%   vl_nndropout       - Additional options for vl_nndropout (CNN dropout)
+%   eq                 - Overloaded equality operator, or test for Layer instance equality
+%
+% Layer static methods
+%   fromDagNN          - Converts a DagNN object to the AutoNN framework
+%   fromFunction       - Generator for new custom layer type
+%   create             - Creates a layer from a function handle and arguments
+%
+% Net methods
+%   eval               - Network evaluation, including back-propagation to compute derivatives
+%   displayVars        - Display table with information on variables and derivatives
+%   getVarsInfo        - Retrieves network variables information as a struct
 %   plotDiagnostics    - Creates or updates diagnostics plot
-%   setParameterServer - Set a parameter server for the parameter derivatives
+%   setParameterServer - Sets up a parameter server for multi-GPU training
+%
+% Extra CNN blocks
+%   vl_nnlstm          - Long Short-Term Memory cell (LSTM)
+%   vl_nnlstm_params   - Initialize the learnable parameters for an LSTM
+%   vl_nnaffinegrid    - Affine grid generator for Spatial Transformer Networks
+%   vl_nnmask          - CNN dropout mask generator
+%   vl_nnwsum          - Differentiable weighted sum
+%
+% Utilities
+%   setup_autonn       - Sets up AutoNN, by adding its folders to the Matlab path
+%   cnn_train_autonn   - Demonstrates training a CNN using the AutoNN wrapper
+%   vl_argparsepos     - Parse list of param.-value pairs, with positional arguments
+%   dynamic_subplot    - Dynamically reflowing subplots, to maintain aspect ratio
+%
+% Examples
+%   examples/minimal   - Minimal examples of working regression and LSTM (start here)
+%   examples/cnn       - CNN examples with ImageNet, MNIST and toy data
+%   examples/rnn       - RNN and LSTM language model example on Shakespeare's texts
