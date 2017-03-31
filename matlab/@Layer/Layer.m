@@ -103,10 +103,6 @@ classdef Layer < matlab.mixin.Copyable
     workspaceNames(modifier)
   end
   
-  methods (Access = protected)
-    displayCustom(obj, varName, showLinks)
-  end
-  
   methods
     function obj = Layer(func, varargin)  % wrap a function call
       obj.saveStack() ;  % record source file and line number, for debugging
