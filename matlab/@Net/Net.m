@@ -208,6 +208,11 @@ classdef Net < handle
         end
       elseif isa(var, 'Layer')
         idx = var.outputVar(1) ;
+      elseif iscell(var)
+        idx = zeros(size(var)) ;
+        for i = 1:numel(idx)
+          idx(i) = net.getVarIndex(var{i}, errorIfNotFound) ;
+        end
       else
         assert(isnumeric(var), 'VAR must either be a layer name, a Layer object, or var indexes.') ;
         idx = var ;
