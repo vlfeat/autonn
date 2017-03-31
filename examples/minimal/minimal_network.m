@@ -19,7 +19,7 @@ y = Input() ;
 prediction = vl_nnconv(x, 'size', [1, 1, 4, 3]) ;
 
 % define loss, and classification error
-loss = vl_nnsoftmaxloss(prediction, y) ;
+loss = vl_nnloss(prediction, y) ;
 error = vl_nnloss(prediction, y, 'loss','classerror') ;
 
 % assign names based on workspace variables, and compile net
