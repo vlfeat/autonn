@@ -21,7 +21,7 @@ Extract the AutoNN files somewhere, then pull up a Matlab console and get confor
 
 ## Defining networks ##
 
-A deep neural network is a computational graph. With AutoNN, this graph is created by composing overloaded operators of special objects, much like in other modern frameworks that shall not be named. We start by defining one of the network's inputs:
+A deep neural network is a particular case of a computational graph. With AutoNN, this graph is created by composing overloaded operators of special objects, much like in other modern frameworks that shall not be named. We start by defining one of the network's inputs:
 
 ```Matlab
 images = Input()
@@ -33,7 +33,7 @@ We can then define the first operation, a convolution with a given kernel shape,
 conv1 = vl_nnconv(images, 'size', [5, 5, 1, 20])
 ```
 
-The resulting object has class `Layer`. The `Input` we created earlier also subclasses `Layer`. All MatConvNet functions are overloaded in the `Layer` class, so that instead of running them immediately, they instead produce a new `Layer` object.
+The resulting object has class `Layer`. The `Input` that we created earlier also subclasses `Layer`. All the MatConvNet functions are overloaded by the `Layer` class, so that instead of running them immediately, they instead produce a new `Layer` object. It is this nested structure of `Layer` objects that defines the network's topology.
 
 According to the deep learning mantra, what this network needs is *more layers*. For demonstration purposes, we'll add just one pooling layer and another convolution:
 
@@ -44,7 +44,7 @@ conv2 = vl_nnconv(pool1, 'size', [5, 5, 20, 10]);
 
 The `vl_nnconv` syntax we used creates parameters for filters and biases automatically, initialized with the [Xavier](http://www.jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf) method (see `help Layer.vl_nnconv` for other initialization options).
 
-We can, of course, also create these parameters explicitly. They are objects of class `Param` (again, a subclass of `Layer`), and on creation we specify their initial value:
+We could, of course, also create these parameters explicitly. They are objects of class `Param` (again, a subclass of `Layer`), and on creation we specify their initial value:
 
 ```Matlab
 filters = Param('value', 0.01 * randn(5, 5, 1, 20, 'single'));
@@ -57,11 +57,11 @@ Our `conv1` layer could then, alternatively, be defined as:
 conv1_alt = vl_nnconv(images, filters, biases);
 ```
 
-This follows the function signature for MatConvNet's `vl_nnconv` function exactly (which can be checked with `help vl_nnconv`). The difference is that, instead of calling `vl_nnconv` immediately, the function call's signature is stored in a `Layer` object, for later evaluation.
+This follows the function signature for MatConvNet's `vl_nnconv` function exactly (which can be checked with `help vl_nnconv`). The difference is that, instead of calling `vl_nnconv` immediately, the function call's signature is stored in a new `Layer` object, for later evaluation.
 
 Note also that the filters and biases for `vl_nnconv` don't have to be of class `Param`. They could be any other `Layer` (i.e., the output of a subnetwork), or simple Matlab arrays (and thus constant).
 
-There is generally no restriction in what options and arguments you use, since the list of arguments is stored as-is. This property extends to other functions, and to any custom layers that you may define. A layer type is just a function handle that accepts arbitrary arguments, and when running in backward mode (to compute derivatives), AutoNN will simply pass it extra derivative arguments, which can be easily detected by the function to act accordingly.
+There is generally no restriction in what options and arguments you use, since the list of arguments is stored as-is. This property extends to other functions, and to any custom layers that you may define. A layer type (both standard and custom) is just a function handle that accepts arbitrary arguments. To execute it in backward mode, computing a derivative, AutoNN will simply pass it an *extra* derivative argument, which can be easily detected by the function to act accordingly.
 
 
 ## Math functions ##
@@ -127,7 +127,21 @@ The derivative of the loss with respect to a variable (a layer's output) can the
 net.getDer('relu1')
 ```
 
-The access methods for network variables are `getValue`/`setValue`, and for their derivatives `getDer`/`setDer`. Using these elements, we can compose an SGD training loop. Simple examples of such loops are included in the directory `examples/minimal`. For more demanding tasks, it's probably best to use the `cnn_train_autonn` function, which supports different solvers (such as AdaGrad, RMSProp, AdaDelta, ADAM), multi-GPU training, checkpointing, and more.
+The access methods for network variables are `getValue`/`setValue`, and for their derivatives `getDer`/`setDer`.
+
+For serious training tasks, we should use the highly optimized GPU routines of MatConvNet and Matlab's `gpuArray`. We first need to select a GPU (e.g. GPU #1) with `gpuDevice(1)`. We can then mark the `images` input to be automatically transferred to the GPU, as follows:
+
+```Matlab
+images.gpu = true;
+```
+
+Note that this has to be done *before* compiling the network. The `gpu` property of `Param` objects is true by default. To actually enable the GPU computations, use:
+
+```Matlab
+net.move('gpu');
+```
+
+Using these elements, we can compose an SGD training loop. Simple examples of such loops are included in the directory `examples/minimal`. For more demanding tasks, it's probably best to use the `cnn_train_autonn` function, which supports different solvers (such as AdaGrad, RMSProp, AdaDelta, ADAM), multi-GPU training, checkpointing, and more.
 
 
 
