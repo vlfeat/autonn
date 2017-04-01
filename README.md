@@ -33,16 +33,16 @@ We can then define the first operation, a convolution with a given kernel shape,
 conv1 = vl_nnconv(images, 'size', [5, 5, 1, 20])
 ```
 
-The resulting object has class `Layer`. The `Input` that we created earlier also subclasses `Layer`. All the MatConvNet functions are overloaded by the `Layer` class, so that instead of running them immediately, they instead produce a new `Layer` object. It is this nested structure of `Layer` objects that defines the network's topology.
+The resulting object has class `Layer`. The `Input` that we created earlier also subclasses `Layer`. All the MatConvNet functions are overloaded by the `Layer` class, so that instead of running them immediately, they will produce a new `Layer` object. It is this nested structure of `Layer` objects that defines the network's topology.
 
-According to the deep learning mantra, what this network needs is *more layers*. For demonstration purposes, we'll add just one pooling layer and another convolution:
+According to the deep learning mantra, we obviously need to *add more layers*. For demonstration purposes, we'll add just one pooling layer and another convolution:
 
 ```Matlab
 pool1 = vl_nnpool(conv1, 2, 'stride', 2);
 conv2 = vl_nnconv(pool1, 'size', [5, 5, 20, 10]);
 ```
 
-The `vl_nnconv` syntax we used creates parameters for filters and biases automatically, initialized with the [Xavier](http://www.jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf) method (see `help Layer.vl_nnconv` for other initialization options).
+The syntax for `vl_nnconv` shown above creates parameters for filters and biases automatically, initialized with the [Xavier](http://www.jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf) method (see `help Layer.vl_nnconv` for other initialization options).
 
 We could, of course, also create these parameters explicitly. They are objects of class `Param` (again, a subclass of `Layer`), and on creation we specify their initial value:
 
@@ -101,13 +101,15 @@ labels = Input();
 loss = vl_nnloss(conv2, labels);
 ```
 
-Before compilation, we would like to assign nice names to the layers we defined - preferably the same names as the variables we used. This can be done automatically:
+To help debug the compiled network, and identify our inputs, we would like to assign nice names to the layers we defined - preferably the same names as the variables we used. This can be done automatically:
 
 ```Matlab
 Layer.workspaceNames();
 ```
 
-Only previously unnamed layers will be set. Similarly, `loss.sequentialNames()` would fill in unnamed layers involved in the computation of `loss`, using intuitive names like `convN` for the N'th convolutional layer, and `convN_filters` for the corresponding filters. To ensure all layers have names, network compilation will call this function. A layer's `name` property can also be set explicitly.
+You can then check that `loss.name = 'loss'`, and so on for all the other workspace variables. Only previously unnamed layers will be set.
+
+Alternatively, `loss.sequentialNames()` would fill in unnamed layers involved in the computation of `loss`, using intuitive names like `convN` for the N'th convolutional layer, and `convN_filters` for the corresponding filters. To ensure that all layers have names, network compilation will call this function.
 
 Finally, we compile the network by passing the loss to the `Net` constructor:
 
