@@ -1,0 +1,29 @@
+Methods for class Layer:
+
+Layer                 gpuArray              plotPDF               vl_nnconv             
+abs                   gt                    plus                  vl_nnconvt            
+all                   horzcat               power                 vl_nncrop             
+and                   inv                   rdivide               vl_nndropout          
+any                   ipermute              repmat                vl_nnloss             
+bsxfun                ldivide               reshape               vl_nnlstm             
+cat                   le                    sequentialNames       vl_nnnoffset          
+colon                 log                   size                  vl_nnnormalize        
+copy                  lt                    sqrt                  vl_nnnormalizelp      
+ctranspose            max                   squeeze               vl_nnpdist            
+deepCopy              mean                  subsref               vl_nnpool             
+display               min                   sum                   vl_nnrelu             
+displayCustom         minus                 times                 vl_nnsigmoid          
+end                   mldivide              transpose             vl_nnsoftmax          
+eq                    mrdivide              uminus                vl_nnsoftmaxloss      
+evalOutputSize        mtimes                uplus                 vl_nnspnorm           
+exp                   ne                    vertcat               vl_nnwsum             
+find                  not                   vl_nnaffinegrid       xor                   
+gather                or                    vl_nnbilinearsampler  
+ge                    permute               vl_nnbnorm            
+
+Static methods:
+
+create                inf                   randi                 workspaceNames        
+eye                   nan                   randn                 zeros                 
+fromDagNN             ones                  randperm              
+fromFunction          rand                  setDiagnostics        

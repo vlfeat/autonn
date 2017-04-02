@@ -65,12 +65,14 @@ figure(3) ; plot(outputs) ;
 xlabel('Iteration') ; ylabel('Loss') ;
 ```
 
+All of MatConvNet's layer functions are overloaded, as well as a growing list of Matlab math operators and functions. The derivatives for these functions are defined whenever possible, so that they can be composed to create differentiable models. A full list can be found [here](matlab/@Layer/methods.txt).
+
 
 # Documentation #
 
 ## Tutorial ##
 
-The easiest way to learn more is to follow this short [tutorial](https://github.com/vlfeat/autonn/blob/master/TUTORIAL.md). It covers all the basic concepts and a good portion of the API.
+The easiest way to learn more is to follow this short [tutorial](TUTORIAL.md). It covers all the basic concepts and a good portion of the API.
 
 
 ## Help pages ##
