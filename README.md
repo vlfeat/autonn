@@ -25,7 +25,7 @@ s = load('fisheriris.mat') ;
 data_x = single(s.meas.') ;  % features-by-samples matrix
 [~, ~, data_y] = unique(s.species) ;  % convert strings to class labels
 
-% define inputs and params
+% define inputs and parameters
 x = Input() ;
 y = Input() ;
 w = Param('value', 0.01 * randn(3, 4, 'single')) ;

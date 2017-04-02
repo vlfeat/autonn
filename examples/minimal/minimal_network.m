@@ -15,7 +15,7 @@ data_x = single(reshape(s.meas.', 1, 1, 4, [])) ;  % features in 3rd channel
 x = Input() ;
 y = Input() ;
 
-% predict using a conv layer. create and initialize params automatically
+% predict using a convolutional layer. create and initialize parameters automatically
 prediction = vl_nnconv(x, 'size', [1, 1, 4, 3]) ;
 
 % define loss, and classification error
