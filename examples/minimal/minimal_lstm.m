@@ -48,7 +48,7 @@ net = Net(loss, err) ;
 
 
 % simple SGD
-lr = 0.2 ;  % learning rate
+learningRate = 0.2 ;
 iters = 1500 ;  % number of iterations
 
 losses = zeros(1, iters) ;
@@ -77,7 +77,7 @@ for iter = 1:iters,
   dw = net.getDer(params) ;
   
   for k = 1:numel(params),
-    w{k} = w{k} - lr * dw{k} ;
+    w{k} = w{k} - learningRate * dw{k} ;
   end
   
   net.setValue(params, w) ;

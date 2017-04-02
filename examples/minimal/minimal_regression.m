@@ -30,7 +30,7 @@ net = Net(loss) ;
 
 
 % simple SGD
-lr = 1e-5 ;
+learningRate = 1e-5 ;
 outputs = zeros(1, 100) ;
 rng(0) ;
 
@@ -42,8 +42,8 @@ for iter = 1:100,
   net.eval({x, data_x(:,idx), y, data_y(idx)'}) ;
   
   % update weights
-  net.setValue(w, net.getValue(w) - lr * net.getDer(w)) ;
-  net.setValue(b, net.getValue(b) - lr * net.getDer(b)) ;
+  net.setValue(w, net.getValue(w) - learningRate * net.getDer(w)) ;
+  net.setValue(b, net.getValue(b) - learningRate * net.getDer(b)) ;
   
   % plot loss
   outputs(iter) = net.getValue(loss) ;

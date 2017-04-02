@@ -29,7 +29,7 @@ net = Net(loss, error) ;
 
 
 % simple SGD
-lr = 1e-3 ;
+learningRate = 1e-3 ;
 outputs = zeros(1, 100) ;
 rng(0) ;
 params = [net.params.var] ;
@@ -46,7 +46,7 @@ for iter = 1:100,
   dw = net.getDer(params) ;
   
   for k = 1:numel(params),
-    w{k} = w{k} - lr * dw{k} ;
+    w{k} = w{k} - learningRate * dw{k} ;
   end
   
   net.setValue(params, w) ;
