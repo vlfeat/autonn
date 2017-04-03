@@ -1,6 +1,8 @@
 
 # AutoNN #
-AutoNN builds on [MatConvNet](http://www.vlfeat.org/matconvnet/)'s low-level functions and Matlab's math operators, to create a modern deep learning API with native automatic differentiation. The guiding principles are:
+AutoNN is a functional wrapper for [MatConvNet](http://www.vlfeat.org/matconvnet/), implementing automatic differentiation.
+
+It builds on MatConvNet's low-level functions and Matlab's math operators, to create a modern deep learning API with automatic differentiation at its core. The guiding principles are:
 
 - Concise syntax for fast research prototyping, mixing math and deep network blocks freely.
 - No boilerplate code to create custom layers, implemented as Matlab functions operating on GPU arrays.
