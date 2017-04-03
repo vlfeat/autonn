@@ -32,7 +32,7 @@
 %   create             - Creates a layer from a function handle and arguments
 %
 % Net methods
-%   eval               - Network evaluation, including back-propagation to compute derivatives
+%   eval               - Network evaluation, including backpropagation to compute derivatives
 %   displayVars        - Display table with information on variables and derivatives
 %   getVarsInfo        - Retrieves network variables information as a struct
 %   plotDiagnostics    - Creates or updates diagnostics plot

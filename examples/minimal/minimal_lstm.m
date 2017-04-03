@@ -41,7 +41,7 @@ loss = vl_nnloss(prediction, y, 'loss', 'logistic') ;
 err = vl_nnloss(prediction, y, 'loss','binaryerror') ;
 
 
-% assign names based on workspace variables, and compile net
+% use workspace variables' names as the layers' names, and compile net
 Layer.workspaceNames() ;
 net = Net(loss, err) ;
 

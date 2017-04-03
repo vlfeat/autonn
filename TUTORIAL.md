@@ -50,7 +50,7 @@ There is generally no restriction in what options and arguments you use, since t
 
 ## Math functions ##
 
-The `Layer` class overloads many math operators and native Matlab functions. Their derivatives are defined, so that it is possible to back-propagate derivatives through complex formulas.
+The `Layer` class overloads many math operators and native Matlab functions. Their derivatives are defined, so that it is possible to backpropagate derivatives through complex formulas.
 
 Let's say one of your colleagues suggested that you test your network with [weight normalization](https://arxiv.org/abs/1602.07868). Scanning the paper, you see that it consists of normalizing the filters to unit norm, and then multiplying by a learned scalar parameter `g`, before feeding them to the convolution (eq. 2).
 
@@ -59,7 +59,7 @@ Normally you'd need to worry about computing the derivatives and creating some v
 ```Matlab
 filters = Param('value', randn(5, 5, 1, 20, 'single'));
 g = Param('value', 1);
-filters_wn = filters ./ sum(filters(:).^2) * g;
+filters_wn = (filters ./ sum(filters(:).^2)) * g;
 ```
 
 These filters can then be used in a convolutional layer:
@@ -69,7 +69,7 @@ These filters can then be used in a convolutional layer:
 conv1_wn = vl_nnconv(images, filters_wn, biases);
 ```
 
-During network evaluation, the derivatives will be back-propagated correctly through the math operators and into the learnable parameters.
+During network evaluation, the derivatives will be backpropagated correctly through the math operators and into the learnable parameters.
 
 The full list of overloads can be seen with `methods('Layer')`, or [here](matlab/@Layer/methods.txt). Some examples are array slicing and concatenation, element-wise algebra, reduction operations such as max or sum, and matrix algebra, including solving linear systems.
 
@@ -101,16 +101,16 @@ Finally, we compile the network by passing the loss to the `Net` constructor:
 net = Net(loss);
 ```
 
-This is now ready to run! Use the `eval` method to process some inputs, performing back-propagation:
+This is now ready to run! Use the `eval` method to process some inputs, performing backpropagation:
 
 ```Matlab
-net.eval({'images', rand(28, 28), 'labels', 1});
+net.eval({'images', rand(28, 28, 'single'), 'labels', 1});
 ```
 
 The derivative of the loss with respect to a variable (a layer's output) can then be accessed with `getDer`:
 
 ```Matlab
-net.getDer('relu1')
+net.getDer('pool1')
 ```
 
 The access methods for network variables are `getValue`/`setValue`, and for their derivatives `getDer`/`setDer`.

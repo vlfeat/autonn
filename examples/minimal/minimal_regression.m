@@ -23,7 +23,7 @@ prediction = w * x + b ;
 % compute least-squares loss
 loss = sum(sum((prediction - y).^2)) ;
 
-% assign names based on workspace variables, and compile net
+% use workspace variables' names as the layers' names, and compile net
 Layer.workspaceNames() ;
 net = Net(loss) ;
 

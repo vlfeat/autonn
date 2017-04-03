@@ -1,7 +1,7 @@
 function eval(net, inputs, mode, derOutput, accumulateParamDers)
-%EVAL Network evaluation, including back-propagation to compute derivatives
+%EVAL Network evaluation, including backpropagation to compute derivatives
 %   OBJ.EVAL(INPUTS) evaluates a network on some inputs, running both
-%   forward and back-propagation. INPUTS = {'input1', value1, 'input2',
+%   forward and backpropagation. INPUTS = {'input1', value1, 'input2',
 %   value2, ...} is a cell array with input layer names (layers of class
 %   Input) and their values (for example, images and labels).
 %
@@ -11,7 +11,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
 %   INPUTS can also contain Input layer objects instead of their names.
 %
 %   OBJ.EVAL(INPUTS, MODE) allows specifying one of the mode strings:
-%     * 'normal' performs forward and back-propagation (the default).
+%     * 'normal' performs forward and backpropagation (the default).
 %     * 'forward' performs only the forward computation (no derivatives).
 %     * 'test' is like 'forward', but sets the testMode input to true,
 %       which can be used by layers to behave differently in test mode
@@ -23,7 +23,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
 %   default is DEROUTPUT = 1.
 %
 %   OBJ.EVAL(INPUTS, MODE, DEROUTPUT, false) prevents the network from
-%   clearing the derivatives of parameters before back-propagation. This
+%   clearing the derivatives of parameters before backpropagation. This
 %   means that parameter derivatives will be accumulated from a previous
 %   run. This behavior may be useful to implement sub-batches.
 

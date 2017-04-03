@@ -22,7 +22,7 @@ prediction = vl_nnconv(x, 'size', [1, 1, 4, 3]) ;
 loss = vl_nnloss(prediction, y) ;
 error = vl_nnloss(prediction, y, 'loss','classerror') ;
 
-% assign names based on workspace variables, and compile net
+% use workspace variables' names as the layers' names, and compile net
 Layer.workspaceNames() ;
 net = Net(loss, error) ;
 

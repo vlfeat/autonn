@@ -99,7 +99,7 @@ loss = vl_nnloss(prediction, nextChar, 'loss', 'softmaxlog') ;
 err = vl_nnloss(prediction, nextChar, 'loss', 'classerror') ;
 
 
-% assign names and compile network
+% use workspace variables' names as the layers' names, and compile net
 Layer.workspaceNames() ;
 net = Net(loss, err) ;
 

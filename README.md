@@ -6,7 +6,7 @@ It builds on MatConvNet's low-level functions and Matlab's math operators, to cr
 
 - Concise syntax for fast research prototyping, mixing math and deep network blocks freely.
 - No boilerplate code to create custom layers, implemented as Matlab functions operating on GPU arrays.
-- Minimal execution kernel for back-propagation, with a focus on speed.
+- Minimal execution kernel for backpropagation, with a focus on speed.
 
 Compared to the previous [wrappers](http://www.vlfeat.org/matconvnet/wrappers/) for MatConvNet, AutoNN is less verbose and has lower computational overhead.
 
@@ -39,7 +39,7 @@ prediction = w * x + b ;
 % compute least-squares loss
 loss = sum(sum((prediction - y).^2)) ;
 
-% assign names based on workspace variables, and compile net
+% use workspace variables' names as the layers' names, and compile net
 Layer.workspaceNames() ;
 net = Net(loss) ;
 
