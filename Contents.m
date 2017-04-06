@@ -28,6 +28,7 @@
 %
 % Layer static methods
 %   fromDagNN          - Converts a DagNN object to the AutoNN framework
+%   fromCompiledNet    - Decompiles a Net back into Layer objects
 %   fromFunction       - Generator for new custom layer type
 %   create             - Creates a layer from a function handle and arguments
 %

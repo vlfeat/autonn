@@ -1,5 +1,5 @@
 function netOutputs = fromCompiledNet(net)
-%FROMCOMPILEDNET Converts a compiled Net object to a cell array 
+%FROMCOMPILEDNET Decompiles a Net back into Layer objects
 %   OUTPUTS = Layer.fromCompiledNet(NET) decompiles a compiled network (of
 %   class Net), into their original Layer objects (i.e., a set of
 %   recursively nested Layer objects).
