@@ -98,8 +98,9 @@ classdef Layer < matlab.mixin.Copyable
   
   methods (Static)
     varargout = create(func, args, varargin)
-    netOutputs = fromDagNN(dag)
     generator = fromFunction(func, varargin)
+    netOutputs = fromCompiledNet(net)
+    netOutputs = fromDagNN(dag)
     workspaceNames(modifier)
   end
   
