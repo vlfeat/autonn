@@ -52,50 +52,38 @@ function netOutputs = fromCompiledNet(net)
   
 
   % main decompilation code.
-
-  % handles of all created Layer handles, empty if not processed.
-  % executed layers go first, followed by Inputs, then Params.
-  layers = cell(1, numel(forward) + numel(fieldnames(net.inputs)) + numel(net.params)) ;
-
-  % mapping between each layer and its output var
-  assert(~isempty(net.vars)) ;
-  var2layer = zeros(size(net.vars)) ;
   
-  % set up mapping for executed layers
+  % create reverse look-up for output vars in the execution order
+  var2forward = zeros(size(forward));
   for k = 1:numel(forward)
-    assert(isscalar([forward(k).outputVar]), ...  % TO DO: handle this case
-      'Converting layers with multiple outputs is not supported yet.') ;
-    
-    var2layer(forward(k).outputVar) = k ;
+    var2forward(forward(k).outputVar) = k ;
   end
+
+  % create a cell array 'layers' that will contain all created Layers,
+  % indexed by their output vars. e.g., if layer L outputs var V, then
+  % layers{V} = L.
+  assert(~isempty(net.vars)) ;
+  layers = cell(size(net.vars)) ;
   
-  % set up mapping for Input layers, and create them
+  % create Input layers
   inputNames = fieldnames(net.inputs) ;
-  offset = numel(forward) ;
   
   for k = 1:numel(inputNames)
     var = net.inputs.(inputNames{k}) ;  % the var index
-    
-    layers{offset + k} = Input('name', inputNames{k}, 'gpu', net.isGpuVar(var)) ;
-    
-    var2layer(var) = offset + k ;
+    layers{var} = Input('name', inputNames{k}, 'gpu', net.isGpuVar(var)) ;
   end
   
-  % set up mapping for Param layers, and create them
-  offset = numel(forward) + numel(fieldnames(net.inputs)) ;
-  
+  % create Param layers
   for k = 1:numel(net.params)
     p = net.params(k) ;
     
-    layers{offset + k} = Param('name', p.name, 'value', net.vars{p.var}, ...
+    layers{p.var} = Param('name', p.name, 'value', net.vars{p.var}, ...
       'gpu', net.isGpuVar(p.var), 'learningRate', p.learningRate, ...
       'weightDecay', p.weightDecay, 'trainMethod', p.trainMethod) ;
-    
-    var2layer(p.var) = offset + k ;
   end
   
-  % recursively process the layers, starting with the last one (root)
-  rootLayer = convertLayer(numel(forward)) ;
+  % recursively process the vars, starting with the last one (root)
+  rootLayer = convertLayer(numel(net.vars) - 1) ;
   
   if ~isequal(rootLayer.func, @root)
     % single output
@@ -110,30 +98,38 @@ function netOutputs = fromCompiledNet(net)
   
   
   % process a single layer, and recurse on its inputs
-  function obj = convertLayer(layerIdx)
+  function obj = convertLayer(varIdx)
     % if this layer has already been processed, return its handle
-    if ~isempty(layers{layerIdx})
-      obj = layers{layerIdx} ;
+    if ~isempty(layers{varIdx})
+      obj = layers{varIdx} ;
       return
     end
     
-    layer = forward(layerIdx) ;
+    layer = forward(var2forward(varIdx)) ;
     args = layer.args ;
     
     % recurse on input Layers; they must be defined before this one.
     % this fills in the args list with the resulting Layer objects.
     for i = 1:numel(layer.inputVars)
-      args{layer.inputArgPos(i)} = convertLayer(var2layer(layer.inputVars(i))) ;
+      args{layer.inputArgPos(i)} = convertLayer(layer.inputVars(i)) ;
     end
     
     % now create a Layer with those arguments
     obj = Layer(layer.func, args{:}) ;
     
     % retrieve the number of input derivatives from the backward struct
-    obj.numInputDer = backward(end - layerIdx + 1).numInputDer ;
+    obj.numInputDer = backward(end - var2forward(varIdx) + 1).numInputDer ;
     
+    % store in the 'layers' cell array so other references to the same var
+    % will fetch the same layer
     obj.name = layer.name ;
+    layers{layer.outputVar(1)} = obj ;
     
-    layers{layerIdx} = obj ;
+    % if the layer has multiple outputs, create a Selector for each of the
+    % outputs after the first one
+    for i = 2:numel(layer.outputVar)
+      layers{layer.outputVar(i)} = Selector(obj, i) ;
+    end
   end
 end
+
