@@ -50,7 +50,8 @@ function sz = evalOutputSize(obj, varargin)
   % been defined, or hasn't been connected to this Layer yet).
   
   % compile and evaluate network
-  net = Net(obj, 'sequentialNames',false, 'shortCircuit',false, 'forwardOnly',true) ;
+  net = Net(obj, 'sequentialNames',false, 'shortCircuit',false, ...
+    'optimizeGraph',false, 'forwardOnly',true) ;
   net.eval(inputs, 'forward') ;
   
   % retrieve values of given layers, and return their sizes

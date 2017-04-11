@@ -14,6 +14,7 @@ function compile(net, varargin)
   % parse options after the other inputs
   opts.sequentialNames = true ;
   opts.shortCircuit = true ;
+  opts.optimizeGraph = true ;
   opts.forwardOnly = false ;  % used mainly by evalOutputSize for faster build
   [opts, netOutputs] = vl_argparsepos(opts, varargin) ;
   
@@ -34,7 +35,9 @@ function compile(net, varargin)
   rootLayer.mergeRedundantInputs() ;
   
   % do graph optimizations, e.g. merging redundant weighted sums
-  rootLayer = rootLayer.optimizeGraph() ;
+  if opts.optimizeGraph
+    rootLayer = rootLayer.optimizeGraph() ;
+  end
   
   % list all layers again, now that they may have changed
   objs = rootLayer.find() ;
