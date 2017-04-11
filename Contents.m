@@ -44,7 +44,6 @@
 %   vl_nnlstm_params   - Initialize the learnable parameters for an LSTM
 %   vl_nnaffinegrid    - Affine grid generator for Spatial Transformer Networks
 %   vl_nnmask          - CNN dropout mask generator
-%   vl_nnwsum          - Differentiable weighted sum
 %
 % Utilities
 %   setup_autonn       - Sets up AutoNN, by adding its folders to the Matlab path

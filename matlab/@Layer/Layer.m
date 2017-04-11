@@ -83,7 +83,7 @@ classdef Layer < matlab.mixin.Copyable
     meta = []  % optional meta properties
     source = []  % call stack (source files and line numbers) where this Layer was created
     diagnostics = []  % whether to plot the mean, min and max of the Layer's output var. empty for automatic (network outputs only).
-    optimize = true  % whether to optimize this Layer, function-dependent (e.g. merge vl_nnwsum)
+    optimize = []  % whether to optimize this Layer (e.g. merge vl_nnwsum), empty for function-dependent default
   end
   
   properties (SetAccess = {?Net}, GetAccess = public)
@@ -324,6 +324,10 @@ classdef Layer < matlab.mixin.Copyable
     % factors are merged into a single vl_nnwsum by the Layer constructor.
     % singleton expansion (bsxfun) is enabled when possible.
     
+    function y = vl_nnwsum(obj, varargin)
+      y = Layer(@vl_nnwsum, obj, varargin{:}) ;
+    end
+    
     function c = plus(a, b)
       c = vl_nnwsum(a, b, 'weights', [1, 1]) ;
     end
@@ -442,6 +446,10 @@ classdef Layer < matlab.mixin.Copyable
       other = copyElement@matlab.mixin.Copyable(obj) ;
       other.id = Layer.uniqueId() ;
     end
+  end
+  
+  methods (Access = {?Net, ?Layer})
+    rootLayer = optimizeGraph(rootLayer)
   end
   
   methods (Access = {?Net, ?Layer})

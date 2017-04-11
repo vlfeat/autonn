@@ -33,8 +33,10 @@ function compile(net, varargin)
   % Input('testMode') to be used anywhere
   rootLayer.mergeRedundantInputs() ;
   
+  % do graph optimizations, e.g. merging redundant weighted sums
+  rootLayer = rootLayer.optimizeGraph() ;
   
-  % list objects again, now that redundant Inputs are merged
+  % list all layers again, now that they may have changed
   objs = rootLayer.find() ;
   
   % allocate an output variable to each one, sequentially
