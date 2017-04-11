@@ -1,6 +1,6 @@
 
 # AutoNN #
-AutoNN is a functional wrapper for [MatConvNet](http://www.vlfeat.org/matconvnet/), implementing automatic differentiation.
+AutoNN (cf. [auton](https://en.wikipedia.org/wiki/Auton)) is a functional wrapper for [MatConvNet](http://www.vlfeat.org/matconvnet/), implementing automatic differentiation.
 
 It builds on MatConvNet's low-level functions and Matlab's math operators, to create a modern deep learning API with automatic differentiation at its core. The guiding principles are:
 
@@ -8,7 +8,7 @@ It builds on MatConvNet's low-level functions and Matlab's math operators, to cr
 - No boilerplate code to create custom layers, implemented as Matlab functions operating on GPU arrays.
 - Minimal execution kernel for backpropagation, with a focus on speed.
 
-Compared to the previous [wrappers](http://www.vlfeat.org/matconvnet/wrappers/) for MatConvNet, AutoNN is less verbose and has lower computational overhead.
+Compared to the SimpleNN and DagNN [wrappers](http://www.vlfeat.org/matconvnet/wrappers/) for MatConvNet, AutoNN is less verbose and has lower computational overhead.
 
 
 # Requirements #
@@ -19,52 +19,51 @@ Compared to the previous [wrappers](http://www.vlfeat.org/matconvnet/wrappers/) 
 
 # AutoNN in a nutshell #
 
-Add MatConvNet and AutoNN to the path (with the `vl_setupnn` and `setup_autonn` functions, respectively), then run the following:
+Defining an objective function with AutoNN is as simple as:
 
 ```Matlab
-% load simple data
-s = load('fisheriris.mat') ;
-data_x = single(s.meas.') ;  % features-by-samples matrix
-[~, ~, data_y] = unique(s.species) ;  % convert strings to class labels
-
-% define inputs and parameters
+% define inputs and learnable parameters
 x = Input() ;
 y = Input() ;
-w = Param('value', 0.01 * randn(3, 4, 'single')) ;
-b = Param('value', 0.01 * randn(3, 1, 'single')) ;
+w = Param('value', randn(1, 100)) ;
+b = Param('value', 0) ;
 
 % combine them using math operators, which define the prediction
 prediction = w * x + b ;
 
-% compute least-squares loss
+% define a loss
 loss = sum(sum((prediction - y).^2)) ;
 
-% use workspace variables' names as the layers' names, and compile net
-Layer.workspaceNames() ;
+% compile and run the network
 net = Net(loss) ;
+net.eval({x, rand(100, 1), y, 0.5}) ;
 
-% simple SGD
-learningRate = 1e-5 ;
-outputs = zeros(1, 100) ;
-rng(0) ;
+% display parameter derivatives
+net.getDer(w)
+```
 
-for iter = 1:100,
-  % draw minibatch
-  idx = randperm(numel(data_y), 50) ;
+Here's a simplified 20-layer ResNet:
+
+```Matlab
+images = Input() ;
+
+% initial convolution
+x = vl_nnconv(images, 'size', [3 3 3 64], 'stride', 4) ;
+
+% iterate blocks
+for k = 1:20
+  % compose a residual block, based on the previous output
+  res = vl_nnconv(x, 'size', [3 3 64 64], 'pad', 1) ;  % convolution
+  res = vl_nnbnorm(res) ;  % batch-normalization
+  res = vl_nnrelu(res) ;  % ReLU
   
-  % evaluate network
-  net.eval({x, data_x(:,idx), y, data_y(idx)'}) ;
-  
-  % update weights
-  net.setValue(w, net.getValue(w) - learningRate * net.getDer(w)) ;
-  net.setValue(b, net.getValue(b) - learningRate * net.getDer(b)) ;
-  
-  % plot loss
-  outputs(iter) = net.getValue(loss) ;
+  % add it to the previous output
+  x = x + res ;
 end
 
-figure(3) ; plot(outputs) ;
-xlabel('Iteration') ; ylabel('Loss') ;
+% pool features across spatial dimensions, and do final prediction
+pooled = mean(mean(x, 1), 2) ;
+prediction = vl_nnconv(pooled, 'size', [1 1 64 1000]) ;
 ```
 
 All of MatConvNet's layer functions are overloaded, as well as a growing list of Matlab math operators and functions. The derivatives for these functions are defined whenever possible, so that they can be composed to create differentiable models. A full list can be found [here](matlab/@Layer/methods.txt).
