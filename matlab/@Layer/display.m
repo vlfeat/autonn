@@ -19,6 +19,10 @@ function display(obj, name)
   showLinks = usejava('desktop') ;
   fprintf(' = ') ;
   obj.displayCustom(name, showLinks) ;
+  
+  if showLinks
+    fprintf('[<a href="matlab:disp(%s)">+</a>]\n', name) ;
+  end
 
   if ~isempty(obj.source)  % show source-code origin
     [~, file, ext] = fileparts(obj.source(1).file) ;
@@ -29,11 +33,7 @@ function display(obj, name)
         obj.source(1).file, obj.source(1).line, file, ext, obj.source(1).line) ;
     end
   end
-
-  if showLinks
-    fprintf('(<a href="matlab:disp(%s)">Show all properties</a>)\n', name) ;
-  else
-    fprintf('(Use disp(%s) to show all properties)\n', name) ;
-  end
+  
+  fprintf('\n') ;
 end
 

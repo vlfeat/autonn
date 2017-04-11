@@ -51,6 +51,6 @@ function displayCustom(obj, varName, showLinks)
       fprintf(', ') ;
     end
   end
-  fprintf(')\n') ;
+  fprintf(') ') ;
 end
 
