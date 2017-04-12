@@ -460,8 +460,13 @@ w = net.getValue(paramVars) ;
 dw = net.getDer(paramVars) ;
 if isscalar(paramVars), w = {w} ; dw = {dw} ; end
 
-% allow memory to be released, for parameters and their derivatives
-net.setValue([paramVars, paramVars + 1], cell(1, 2 * numel(paramVars))) ;
+if ~params.plotDiagnostics
+  % allow memory to be released, for parameters and their derivatives
+  net.setValue([paramVars, paramVars + 1], cell(1, 2 * numel(paramVars))) ;
+else
+  % free only parameter memory, as we still need the gradients for plotting the diagnostics
+  net.setValue(paramVars, cell(size(paramVars))) ;
+end
 
 for p=1:numel(net.params)
   if ~isempty(parserv)
