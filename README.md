@@ -97,7 +97,9 @@ The ImageNet and MNIST examples work exactly the same as the corresponding MatCo
 # Gratuitous screenshots #
 
 *Training diagnostics plot*
+
 ![Diagnostics](doc/diagnostics.png)
 
 *Graph topology plot*
+
 ![Graph](doc/graph.png)
