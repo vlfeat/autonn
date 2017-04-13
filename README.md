@@ -42,6 +42,8 @@ net.eval({x, rand(100, 1), y, 0.5}) ;
 net.getDer(w)
 ```
 
+AutoNN also allows you to use MatConvNet layers and custom functions.
+
 Here's a simplified 20-layer ResNet:
 
 ```Matlab
@@ -73,7 +75,7 @@ All of MatConvNet's layer functions are overloaded, as well as a growing list of
 
 ## Tutorial ##
 
-The easiest way to learn more is to follow this short [tutorial](TUTORIAL.md). It covers all the basic concepts and a good portion of the API.
+The easiest way to learn more is to follow this short [tutorial](doc/TUTORIAL.md). It covers all the basic concepts and a good portion of the API.
 
 
 ## Help pages ##
@@ -91,3 +93,11 @@ The `examples` directory has heavily-commented samples. These can be grouped in 
 
 The ImageNet and MNIST examples work exactly the same as the corresponding MatConvNet examples, except for the network definitions. There is also a text LSTM example (`examples/rnn/rnn_lstm_shakespeare.m`), and a CNN on toy data (`examples/cnn/cnn_toy_data_autonn.m`), which provides a good starting point for training on custom datasets.
 
+
+# Gratuitous screenshots #
+
+*Training diagnostics plot*
+![Diagnostics](doc/diagnostics.png)
+
+*Graph topology plot*
+![Graph](doc/graph.png)
