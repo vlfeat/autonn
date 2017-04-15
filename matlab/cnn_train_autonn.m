@@ -191,7 +191,7 @@ for epoch=start+1:opts.numEpochs
   end
   
   if ~isempty(opts.postEpochFn)
-    if nargout(opts.postEpochFn) == 0
+    if nargout(opts.postEpochFn) <= 0
       opts.postEpochFn(net, params, state) ;
     else
       lr = opts.postEpochFn(net, params, state) ;
