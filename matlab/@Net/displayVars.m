@@ -102,12 +102,10 @@ for i = 1:numel(vars)
   
   if opts.showLinks
     % link to show variable's value
-    title = info(i).name ;
-    if mod(i, 2) == 0
-      title = [title ' derivative'] ;
-    end
-    values{i} = sprintf('<a href="matlab:figure(''Name'',''%s'');vl_tshow(%s{%d});colorbar">%s</a>', ...
-      title, varname, i, values{i}) ;
+    tshow_link = sprintf('<a href=`matlab:figure;vl_tshow(%s{%d});colorbar`>show</a>', varname, i);
+    
+    values{i} = sprintf('<a href="matlab:disp(strrep(''%s{%d} (%s)'',''`'',char(34)))">%s</a>', ...
+      varname, i, tshow_link, values{i}) ;
   end
   
   % flags (GPU, NaN, Inf)
