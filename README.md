@@ -101,7 +101,7 @@ The ImageNet and MNIST examples work exactly the same as the corresponding MatCo
 
 # Screenshots #
 
-Some gratuitous screenshots, even though this is an API:
+Some gratuitous screenshots, though the important bits are in the code above really:
 
 *Training diagnostics plot*
 
