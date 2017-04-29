@@ -31,11 +31,15 @@ function info = getVarsInfo(net)
 % the terms of the BSD license (see the COPYING file).
 
 
-  % number of vars, independent of net.vars (which is empty during eval).
-  % just go through var references and find the highest index
-  numVars = max([net.forward.outputVar, net.params.var, structfun(@deal, net.inputs)']) ;
-  if mod(numVars, 2) == 1  % odd-valued count; should be even to account for last var's derivative
-    numVars = numVars + 1 ;
+  if ~isempty(net.vars)
+    numVars = numel(net.vars) ;
+  else
+    % net.vars may be empty during eval, so find the total number of vars
+    % independently. go through var references and find the highest index.
+    numVars = max([net.forward.outputVar, net.params.var, structfun(@deal, net.inputs)']) ;
+    if mod(numVars, 2) == 1  % odd-valued count; should be even to account for last var's derivative
+      numVars = numVars + 1 ;
+    end
   end
 
   info = Net.initStruct(numVars, 'type', 'name', 'index', 'outputArgPos', 'isDer') ;

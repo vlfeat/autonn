@@ -45,7 +45,11 @@ if isempty(vars)
 end
 
 info = net.getVarsInfo() ;
-assert(numel(info) == numel(vars)) ;
+
+% extend if there are missing (e.g. short-circuited) vars at the end
+if numel(info) < numel(vars)
+  info(end).name = '' ;
+end
 
 
 if opts.showLinks
