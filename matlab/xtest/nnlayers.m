@@ -16,6 +16,10 @@ classdef nnlayers < nntest
       
       do(test, vl_nnconv(x, w, b, 'stride', 3, 'pad', 2)) ;
       
+      do(test, vl_nnconvt(x, w, b)) ;
+      
+      do(test, vl_nnconvt(x, w, b, 'upsample', 3, 'crop', 2)) ;
+      
       do(test, vl_nnpool(x, 2)) ;
       
       do(test, vl_nnpool(x, [2, 2], 'stride', 2, 'pad', 1)) ;
