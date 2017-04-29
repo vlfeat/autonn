@@ -8,6 +8,9 @@ function netOutputs = fromDagNN(dag, customFn)
 %   of the network. These can be composed with other layers, or compiled
 %   into a Net object for training/evaluation.
 %
+%   To convert a SimpleNN, first use DagNN.fromSimpleNN and then use this
+%   function.
+%
 %   Example:
 %     layers = Layer.fromDagNN(myDag) ;
 %     net = Net(layers{:}) ;

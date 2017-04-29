@@ -83,6 +83,11 @@ The easiest way to learn more is to follow this short [tutorial](doc/TUTORIAL.md
 Comprehensive documentation is available by typing `help autonn` into the Matlab console. This lists all the classes and methods, with short descriptions, and provides links to other help pages.
 
 
+## Converting SimpleNN/DagNN models ##
+
+For a quicker start or to load pre-trained models, you may want to import them from the existing wrappers. Check `help Layer.fromDagNN`.
+
+
 ## Examples ##
 
 The `examples` directory has heavily-commented samples. These can be grouped in two categories:
@@ -94,7 +99,9 @@ The `examples` directory has heavily-commented samples. These can be grouped in 
 The ImageNet and MNIST examples work exactly the same as the corresponding MatConvNet examples, except for the network definitions. There is also a text LSTM example (`examples/rnn/rnn_lstm_shakespeare.m`), and a CNN on toy data (`examples/cnn/cnn_toy_data_autonn.m`), which provides a good starting point for training on custom datasets.
 
 
-# Gratuitous screenshots #
+# Screenshots #
+
+Some gratuitous screenshots, even though this is an API:
 
 *Training diagnostics plot*
 

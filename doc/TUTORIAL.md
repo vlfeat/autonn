@@ -1,7 +1,7 @@
 
 # Tutorial #
 
-Extract the AutoNN files somewhere, then pull up a Matlab console and get confortable! The first step is to add MatConvNet to the path (with `vl_setupnn`), as well as AutoNN (with `setup_autonn`).
+Extract the AutoNN files somewhere, then pull up a Matlab console and get confortable! The first step is to add MatConvNet to the path (with `vl_setupnn`), as well as AutoNN (with `setup_autonn`). Note that *no compilation is required* for AutoNN.
 
 ## Defining networks ##
 
