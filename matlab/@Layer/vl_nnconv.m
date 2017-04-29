@@ -41,7 +41,8 @@ function layer = vl_nnconv(varargin)
   % convArgs.
   opts = struct('size', [], 'weightScale', 'xavier', 'hasBias', true, ...
     'learningRate', 1, 'weightDecay', 1) ;
-  [opts, posArgs, convOpts] = vl_argparsepos(opts, varargin) ;
+  [opts, posArgs, convOpts] = vl_argparsepos(opts, varargin, ...
+    'flags', {'CuDNN', 'NoCuDNN', 'Verbose'}) ;
   
   if ~isempty(opts.size)
     % a size was specified, create Params

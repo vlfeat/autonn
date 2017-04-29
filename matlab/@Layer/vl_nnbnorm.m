@@ -45,7 +45,8 @@ function layer = vl_nnbnorm(varargin)
   % parse options. note the defaults for bnorm's Params are set here.
   opts = struct('learningRate', [2 1 0.1], 'weightDecay', 0, ...
     'moments', [], 'testMode', []) ;
-  [opts, posArgs, bnormOpts] = vl_argparsepos(opts, varargin) ;
+  [opts, posArgs, bnormOpts] = vl_argparsepos(opts, varargin, ...
+    'flags', {'CuDNN', 'NoCuDNN'}) ;
   
   if isscalar(opts.learningRate)
     opts.learningRate = opts.learningRate([1 1 1]) ;
