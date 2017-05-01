@@ -599,8 +599,9 @@ end
 function [net, state, stats] = loadState(fileName)
 % -------------------------------------------------------------------------
 load(fileName, 'net', 'state', 'stats') ;
-if ~isfield(net, 'vars')
-  net = dagnn.DagNN.loadobj(net) ;
+if isfield(net, 'layers')
+%   net = dagnn.DagNN.loadobj(net) ;
+  error('The last checkpoint does not contain a valid AutoNN model.') ;
 else
   net = Net(net) ;
 end
