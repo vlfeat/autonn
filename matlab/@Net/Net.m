@@ -46,6 +46,8 @@ classdef Net < handle
     gpu = false  % whether the network is in GPU or CPU mode
     isGpuVar = []  % whether each variable or derivative can be on the GPU
     parameterServer = []  % ParameterServer object, accumulates parameter derivatives across GPUs
+    forwardTime = [] % forward pass function timing
+    backwardTime = [] % backward pass function timing
   end
   properties (SetAccess = public, GetAccess = public)
     meta = []  % optional meta properties

@@ -83,7 +83,9 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
     args(layer.inputArgPos) = vars(layer.inputVars) ;
     
     out = cell(1, max(layer.outputArgPos)) ;
+    time = tic;
     [out{:}] = layer.func(args{:}) ;
+    net.forwardTime(k) = toc(time);
     
     vars(layer.outputVar) = out(layer.outputArgPos);
   end
@@ -114,7 +116,9 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       if ~isequal(layer.func, @slice_wrapper)
         % call function and collect outputs
         out = cell(1, layer.numInputDer) ;
+        time = tic;
         [out{:}] = layer.func(args{:}) ;
+        net.backwardTime(k) = toc(time);
 
         % sum derivatives. the derivative var corresponding to each
         % input comes right next to it in the vars list. note that some
