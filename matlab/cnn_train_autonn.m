@@ -155,6 +155,21 @@ for epoch=start+1:opts.numEpochs
     end
     lastStats = accumulateStats(lastStats) ;
   end
+  
+  if ~isempty(opts.postEpochFn)
+    state.stats = lastStats ;  % allow the func. to read accumulated stats
+    if nargout(opts.postEpochFn) <= 0
+      opts.postEpochFn(net, params, state) ;
+    else  % returned an updated learning rate
+      if nargout(opts.postEpochFn) == 1
+        lr = opts.postEpochFn(net, params, state) ;
+      else  % returned updated/custom stats 
+        [lr, lastStats] = opts.postEpochFn(net, params, state) ;
+      end
+      if ~isempty(lr), opts.learningRate = lr; end
+      if opts.learningRate == 0, break; end
+    end
+  end
 
   stats.train(epoch) = lastStats.train ;
   stats.val(epoch) = lastStats.val ;
@@ -188,16 +203,6 @@ for epoch=start+1:opts.numEpochs
     end
     drawnow ;
     print(1, modelFigPath, '-dpdf') ;
-  end
-  
-  if ~isempty(opts.postEpochFn)
-    if nargout(opts.postEpochFn) <= 0
-      opts.postEpochFn(net, params, state) ;
-    else
-      lr = opts.postEpochFn(net, params, state) ;
-      if ~isempty(lr), opts.learningRate = lr; end
-      if opts.learningRate == 0, break; end
-    end
   end
 end
 
