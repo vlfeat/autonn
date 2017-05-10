@@ -31,6 +31,8 @@ if ~isempty(opts.solver)
   opts.solverOpts = opts.solver() ;
 end
 
+opts.onNanInf = [] ;  % Behavior when variables with NaN/Inf are found: 'error', 'warning' or 'debug' (default: nothing).
+
 opts.momentum = 0.9 ;
 opts.saveSolverState = true ;
 opts.nesterovUpdate = false ;
@@ -324,6 +326,21 @@ for t=1:params.batchSize:numel(subset)
       else
         net.eval(inputs, 'test') ;
       end
+    end
+  end
+  
+  % Check if any vars contain NaN or Inf
+  if ~isempty(params.onNanInf) && ~isa(net, 'dagnn.DagNN') && ...
+    all(cellfun(@(x) isnumeric(x) && gather(all(isfinite(x(:)))), net.vars))
+    switch params.onNanInf
+    case 'error'
+      error('The network contains NaN or Inf values.') ;
+    case 'warning'
+      warning('The network contains NaN or Inf values.') ;
+    otherwise  % 'debug'
+      net.displayVars() ;
+      warning('The network contains NaN or Inf values.') ;
+      keyboard ;
     end
   end
 
