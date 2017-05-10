@@ -100,7 +100,7 @@ classdef Layer < matlab.mixin.Copyable
     varargout = create(func, args, varargin)
     generator = fromFunction(func, varargin)
     netOutputs = fromCompiledNet(net)
-    netOutputs = fromDagNN(dag)
+    netOutputs = fromDagNN(dag, customFn)
     workspaceNames(modifier)
   end
   
