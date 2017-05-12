@@ -30,11 +30,21 @@ function dzdx = slice_der(x, varargin)
     end
   end
   
-  subs_ = cell(size(subs));
-  [subs_{:}] = ndgrid(subs{:});  % enumerate subscripts of all indexed elements
-  ii = sub2ind(size(x), subs_{:});  % convert to linear indexes
-  dzdx = accumarray(ii(:), dzdy(:), [numel(x), 1]);  % accumulate gradients
-  dzdx = reshape(dzdx, size(x));  % reshape back to tensor
+  if isscalar(subs)
+    % faster code path for linear indexes, e.g. x(:), x(1:3)
+    ii = subs{1} ;
+  else
+    % general case, multiple subscripts
+    subs_ = cell(size(subs)) ;
+    [subs_{:}] = ndgrid(subs{:}) ;  % enumerate subscripts of all indexed elements
+    ii = sub2ind(size(x), subs_{:}) ;  % convert to linear indexes
+  end
+  
+  % accumulate gradients
+  dzdx = accumarray(ii(:), dzdy(:), [numel(x), 1]) ;
+  
+  % reshape back to tensor
+  dzdx = reshape(dzdx, size(x)) ;
 
 end
 
