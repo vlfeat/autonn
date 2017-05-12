@@ -331,13 +331,13 @@ for t=1:params.batchSize:numel(subset)
   
   % Check if any vars contain NaN or Inf
   if ~isempty(params.onNanInf) && ~isa(net, 'dagnn.DagNN') && ...
-    all(cellfun(@(x) isnumeric(x) && gather(all(isfinite(x(:)))), net.vars))
+    ~all(cellfun(@(x) ~isnumeric(x) || gather(all(isfinite(x(:)))), net.vars))
     switch params.onNanInf
     case 'error'
       error('The network contains NaN or Inf values.') ;
     case 'warning'
       warning('The network contains NaN or Inf values.') ;
-    otherwise  % 'debug'
+    otherwise  % 'debug'/'break'
       net.displayVars() ;
       warning('The network contains NaN or Inf values.') ;
       keyboard ;
