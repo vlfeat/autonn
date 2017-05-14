@@ -42,10 +42,17 @@ function optimizeVars(net, opts, objs)
        isa(objs{k}.inputs{1}, 'Layer') && ~isa(objs{k}.inputs{1}, 'Param')
 
         % check if any other layer is using the same input
+        used = false ;
         otherInputs = [objInputs{[1:k-1, k+1:end]}] ;  % flatten cell arrays into one
         x = objs{k}.inputs{1} ;
-        if ~any(cellfun(@(o) eq(o, x, 'sameInstance'), otherInputs))
-          
+        for j = 1:numel(otherInputs)
+          if eq(x, otherInputs{j}, 'sameInstance')
+            used = true ;
+            break
+          end
+        end
+        
+        if ~used
           % it's safe, short-circuit it
           objs{k}.outputVar = objs{k}.inputs{1}.outputVar ;
           objs{k}.accumDer = false ;

@@ -460,6 +460,7 @@ classdef Layer < matlab.mixin.Copyable
       objs = obj.find() ;  % list all layers in forward order
       lookup = struct() ;  % lookup table of input name to respective object
       for k = 1:numel(objs)
+        objs{k}.enableCycleChecks = false ;  % faster
         in = objs{k}.inputs ;
         for i = 1:numel(in)
           if isa(in{i}, 'Input') && ~isempty(in{i}.name)
@@ -472,6 +473,7 @@ classdef Layer < matlab.mixin.Copyable
             end
           end
         end
+        objs{k}.enableCycleChecks = true ;
       end
     end
     

@@ -76,7 +76,9 @@ function rootLayer = optimizeGraph(rootLayer)
     weights = [weights{:}] ;
 
     % store the merged inputs list, and the weights as a name-value pair
+    wsums{i}.enableCycleChecks = false ;  % faster
     wsums{i}.inputs = [inputs, {'weights', weights}] ;
+    wsums{i}.enableCycleChecks = true ;
   end
 
 end
