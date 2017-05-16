@@ -12,10 +12,14 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
 %
 %   OBJ.EVAL(INPUTS, MODE) allows specifying one of the mode strings:
 %     * 'normal' performs forward and backpropagation (the default).
-%     * 'forward' performs only the forward computation (no derivatives).
-%     * 'test' is like 'forward', but sets the testMode input to true,
-%       which can be used by layers to behave differently in test mode
-%       (e.g. bypassing dropout, freezing batch-normalization).
+%     * 'test' performs only the forward computation (no derivatives), and
+%       also sets the testMode input to true, which can be used by layers
+%       to behave differently in test mode (e.g. bypassing dropout,
+%       freezing batch-normalization).
+%     * 'forward' performs only the forward computation (no derivatives),
+%       without setting testMode to true.
+%     * 'backward' performs only the backward computation (assumes eval was
+%       ran in forward mode beforehand).
 %
 %   OBJ.EVAL(INPUTS, MODE, DEROUTPUT) also specifies the output derivatives
 %   of the network. This can be a single value, or multiple (one per
@@ -59,7 +63,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
   end
 
   switch mode
-  case {'normal', 'forward'}  % forward and backward modes
+  case {'normal', 'forward', 'backward'}
     testMode = false ;
   case 'test'  % test mode
     testMode = true ;
@@ -77,20 +81,21 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
   net.vars = {} ;  % allows Matlab to release memory when needed
 
   % forward pass
-  for k = 1:numel(forward)
-    layer = forward(k) ;
-    args = layer.args ;
-    args(layer.inputArgPos) = vars(layer.inputVars) ;
-    
-    out = cell(1, max(layer.outputArgPos)) ;
-    [out{:}] = layer.func(args{:}) ;
-    
-    vars(layer.outputVar) = out(layer.outputArgPos);
+  if ~strcmp(mode, 'backward')
+    for k = 1:numel(forward)
+      layer = forward(k) ;
+      args = layer.args ;
+      args(layer.inputArgPos) = vars(layer.inputVars) ;
+
+      out = cell(1, max(layer.outputArgPos)) ;
+      [out{:}] = layer.func(args{:}) ;
+
+      vars(layer.outputVar) = out(layer.outputArgPos);
+    end
   end
 
-
   % backward pass
-  if strcmp(mode, 'normal')
+  if strcmp(mode, 'normal') || strcmp(mode, 'backward')
     % clear all derivatives. derivatives are even-numbered vars.
     clear = repmat([false; true], numel(vars) / 2, 1);
     if accumulateParamDers  % except for params (e.g. to implement sub-batches)
