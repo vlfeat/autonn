@@ -14,6 +14,7 @@ opts.classNames = {} ;
 opts.classDescriptions = {} ;
 opts.averageImage = zeros(3,1) ;
 opts.colorDeviation = zeros(3) ;
+opts.normalization = [5 1 0.0001/5 0.75] ;  % for LRN layer (vl_nnnormalize)
 opts.inputLayer = [] ;
 opts.labelLayer = [] ;
 opts = vl_argparse(opts, varargin) ;
