@@ -25,19 +25,36 @@ end
 
 
 function dx = reshape_der(x, varargin)  %#ok<*DEFNU>
-  dx = reshape(varargin{end}, size(x)) ;
+  dy = varargin{end} ;
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(size(x), 'like', x) ;
+  else
+    dx = reshape(dy, size(x)) ;
+  end
 end
 
-function dx = permute_der(~, dim, dy)
-  dx = ipermute(dy, dim) ;
+function dx = permute_der(x, dim, dy)
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(size(x), 'like', x) ;
+  else
+    dx = ipermute(dy, dim) ;
+  end
 end
 
-function dx = ipermute_der(~, dim, dy)
-  dx = permute(dy, dim) ;
+function dx = ipermute_der(x, dim, dy)
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(size(x), 'like', x) ;
+  else
+    dx = permute(dy, dim) ;
+  end
 end
 
 function dx = squeeze_der(x, dy)
-  dx = reshape(dy, size(x)) ;
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(size(x), 'like', x) ;
+  else
+    dx = reshape(dy, size(x)) ;
+  end
 end
 
 
