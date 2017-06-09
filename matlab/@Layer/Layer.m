@@ -255,6 +255,27 @@ classdef Layer < matlab.mixin.Copyable
     function y = log(obj, varargin)
       y = Layer(@log, obj, varargin{:}) ;
     end
+    function y = sin(obj, varargin)
+      y = Layer(@sin, obj, varargin{:}) ;
+    end
+    function y = cos(obj, varargin)
+      y = Layer(@cos, obj, varargin{:}) ;
+    end
+    function y = tan(obj, varargin)
+      y = Layer(@tan, obj, varargin{:}) ;
+    end
+    function y = asin(obj, varargin)
+      y = Layer(@asin, obj, varargin{:}) ;
+    end
+    function y = acos(obj, varargin)
+      y = Layer(@acos, obj, varargin{:}) ;
+    end
+    function y = atan(obj, varargin)
+      y = Layer(@atan, obj, varargin{:}) ;
+    end
+    function y = atan2(obj, varargin)
+      y = Layer(@atan2, obj, varargin{:}) ;
+    end
     function y = inv(obj, varargin)
       y = Layer(@inv, obj, varargin{:}) ;
     end

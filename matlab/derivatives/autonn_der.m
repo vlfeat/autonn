@@ -78,6 +78,37 @@ function dx = log_der(x, dy)
 end
 
 
+function dx = sin_der(x, dy)
+  dx = dy .* cos(x) ;
+end
+
+function dx = cos_der(x, dy)
+  dx = -dy .* sin(x) ;
+end
+
+function dx = tan_der(x, dy)
+  dx = dy .* sec(x).^2 ;
+end
+
+function dx = asin_der(x, dy)
+  dx = dy ./ sqrt(1 - x.^2) ;
+end
+
+function dx = acos_der(x, dy)
+  dx = -dy ./ sqrt(1 - x.^2) ;
+end
+
+function dx = atan_der(x, dy)
+  dx = dy ./ (x.^2 + 1) ;
+end
+
+function [dy, dx] = atan2_der(y, x, da)
+  r = max(x .* x + y .* y, eps);
+  dx = -y ./ r .* da;
+  dy = x ./ r .* da;
+end
+
+
 function dx = transpose_der(~, dy)
   dx = dy.' ;
 end
