@@ -340,6 +340,10 @@ classdef Layer < matlab.mixin.Copyable
       y = Layer(@all, obj, varargin{:}) ;
       y.numInputDer = 0 ;  % non-differentiable
     end
+    function y = nnz(obj, varargin)
+      y = Layer(@nnz, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
     
     % overloaded math operators. any additions, negative signs and scalar
     % factors are merged into a single vl_nnwsum by the Layer constructor.
