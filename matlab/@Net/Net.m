@@ -90,36 +90,6 @@ classdef Net < handle
       net.compile(varargin{:}) ;
     end
     
-    function move(net, device)
-    %MOVE Move data to CPU or GPU
-    %   OBJ.MOVE(DESTINATION) moves all variables (including derivatives)
-    %   in NET to either the 'gpu' or the 'cpu'. The status of a variable
-    %   (whether it is a gpuArray) is recorded before moving to the CPU,
-    %   and used later to only convert those variables back to the GPU.
-      switch device
-        case 'gpu'
-          % only move vars marked as GPU arrays
-          net.vars(net.isGpuVar) = cellfun(@gpuArray, net.vars(net.isGpuVar), 'UniformOutput',false) ;
-          
-        case 'cpu'
-           % by moving to the CPU we lose the knowledge of which vars are
-           % supposed to be on the GPU, so store that. once on the GPU,
-           % always on the GPU.
-          net.isGpuVar = net.isGpuVar | cellfun('isclass', net.vars, 'gpuArray') ;
-          
-          % move all just to be safe
-          net.vars = cellfun(@gather, net.vars, 'UniformOutput',false) ;
-          
-        otherwise
-          error('Unknown device ''%s''.', device) ;
-      end
-      
-      net.gpu = strcmp(device, 'gpu') ;
-      if isfield(net.inputs, 'gpuMode')
-        net.setValue('gpuMode', net.gpu) ;
-      end
-    end
-    
     function value = getValue(net, var)
       %GETVALUE Returns the value of a given variable
       %   OBJ.GETVALUE(VAR) returns the value of a given variable.
@@ -216,6 +186,40 @@ classdef Net < handle
       else
         assert(isnumeric(var), 'VAR must either be a layer name, a Layer object, or var indexes.') ;
         idx = var ;
+      end
+    end
+    
+    function useGpu(net, index)
+    %MOVE Move data to CPU or GPU
+    %   OBJ.USEGPU(INDEX) enables GPU mode, using the GPU with a given
+    %   index, or CPU mode, in case the INDEX is empty.
+    %
+    %   This is done by calling gpuDevice(INDEX), and converting to
+    %   gpuArrays all variables marked as such. Inputs and Params are
+    %   marked by setting their 'gpu' property to true (Inputs default to
+    %   false, Params to true).
+    %
+    %   The gpuDevice call can be skipped by setting INDEX to 0.
+    
+      if ~isempty(index) && index ~= 0
+        gpuDevice(index) ;
+      end
+      
+      [net.vars, net.isGpuVar] = Net.moveVars(net.vars, net.isGpuVar, ~isempty(index)) ;
+      net.gpu = ~isempty(index) ;
+      if isfield(net.inputs, 'gpuMode')
+        net.setValue('gpuMode', net.gpu) ;
+      end
+    end
+    
+    function move(net, device)
+    %MOVE Move data to CPU or GPU
+    %   OBJ.MOVE(DESTINATION) moves variables to the 'gpu' or the 'cpu'.
+    %   Note that the use of Net.useGpu is preferred.
+      switch device
+      case 'cpu', net.useGpu([]) ;
+      case 'gpu', net.useGpu(0) ;
+      otherwise, error('Must specify ''gpu'' or ''cpu''.') ;
       end
     end
     
