@@ -283,19 +283,20 @@ classdef Net < handle
       s.backward = net.backward ;
       s.inputs = net.inputs ;
       s.params = net.params ;
-      s.gpu = net.gpu ;
-      s.isGpuVar = net.isGpuVar ;
       s.meta = net.meta ;
       s.diagnostics = net.diagnostics ;
       
       % only save var contents corresponding to parameters, all other vars
-      % are transient
+      % are transient. also move them from GPU to CPU, and update GPU-ness.
       s.vars = cell(size(net.vars)) ;
-      s.vars([net.params.var]) = net.vars([net.params.var]) ;
+      s.isGpuVar = net.isGpuVar ;
+      idx = [net.params.var] ;
+      [s.vars(idx), s.isGpuVar(idx)] = Net.moveVars( ...
+        net.vars(idx), net.isGpuVar(idx), false) ;
     end
   end
   
-  methods (Static, Access = private)
+  methods (Static)
     function net = loadobj(s)
     %LOADOBJ Loads the object from a struct (called by constructor)
       net = Net() ;
@@ -304,12 +305,14 @@ classdef Net < handle
       net.vars = s.vars ;
       net.inputs = s.inputs ;
       net.params = s.params ;
-      net.gpu = s.gpu ;
+      net.gpu = false ;
       net.isGpuVar = s.isGpuVar ;
       net.meta = s.meta ;
       net.diagnostics = s.diagnostics ;
     end
-    
+  end
+  
+  methods (Static, Access = private)
     function layer = parseArgs(layer, args)
     %PARSEARGS
     %   Helper function to parse a layer's arguments, storing the constant
@@ -339,6 +342,22 @@ classdef Net < handle
     %   structs).
       varargin(2,:) = {cell(1, n)} ;
       s = orderfields(struct(varargin{:})) ;
+    end
+    
+    function [vars, isGpuVar] = moveVars(vars, isGpuVar, toGpu)
+    %MOVEVARS Move data to CPU/GPU, given as arrays (used by SAVEOBJ/MOVE)
+      if toGpu
+        % only move vars marked as GPU arrays
+        vars(isGpuVar) = cellfun(@gpuArray, vars(isGpuVar), 'UniformOutput',false) ;
+      else
+         % by moving to the CPU we lose the knowledge of which vars are
+         % supposed to be on the GPU, so store that. once on the GPU,
+         % always on the GPU.
+        isGpuVar = isGpuVar | cellfun('isclass', vars, 'gpuArray') ;
+
+        % move all just to be safe
+        vars = cellfun(@gather, vars, 'UniformOutput',false) ;
+      end
     end
   end
 end
