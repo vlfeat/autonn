@@ -13,6 +13,7 @@ function varargout = create(func, args, varargin)
   opts.numInputDer = [] ;
   opts.numOutputs = [] ;
   opts.name = '' ;
+
   opts = vl_argparse(opts, varargin) ;
 
   % main output
