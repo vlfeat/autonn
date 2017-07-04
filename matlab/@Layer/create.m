@@ -12,6 +12,8 @@ function varargout = create(func, args, varargin)
 
   opts.numInputDer = [] ;
   opts.numOutputs = [] ;
+  opts.name = '' ;
+
   opts = vl_argparse(opts, varargin) ;
 
   % main output
@@ -19,6 +21,7 @@ function varargout = create(func, args, varargin)
   varargout{1} = Layer(func, args{:}) ;
   varargout{1}.numOutputs = nargout ;  % infer number of layer outputs from this function call
   varargout{1}.numInputDer = opts.numInputDer ;
+  varargout{1}.name = opts.name ;
 
   % selectors for any additional outputs
   for i = 2:nargout
