@@ -51,7 +51,7 @@ classdef Adam < solvers.Solver
         v{i} = beta2 * v{i} + (1 - beta2) * grad.^2 ;
 
         % update parameters
-        w = w - lr(i) * lr_factor * m{i} ./ (v{i}.^0.5 + eps) ;
+        w{i} = w{i} - lr(i) * lr_factor * m{i} ./ (v{i}.^0.5 + eps) ;
       end
       
       o.m = m ;
