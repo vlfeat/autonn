@@ -42,8 +42,9 @@ classdef Solver < handle
       
       % update moving average parameters (e.g. batch normalization moments)
       is_avg = ([params.trainMethod] == 2) ;
+      lr_avg = [params.learningRate] ;  % independent learning rate
       for i = find(is_avg)
-        w{i} = vl_taccum(1 - lr(i), w{i}, lr(i) / params(i).fanout, dw{i}) ;
+        w{i} = vl_taccum(1 - lr_avg(i), w{i}, lr_avg(i) / params(i).fanout, dw{i}) ;
       end
       
       
