@@ -6,12 +6,13 @@ classdef Dataset < handle
     batchSize = 128  % batch size
     trainSet = []  % indexes of training samples
     valSet = []  % indexes of validation samples
+    prefetch = false
   end
   
   methods
     function args = parseGenericArgs(o, args)
       % called by subclasses to parse generic Dataset arguments
-      args = vl_parseprop(o, args, {'batchSize'}) ;
+      args = vl_parseprop(o, args, {'batchSize', 'prefetch'}) ;
     end
     
     function batches = train(o)
@@ -33,9 +34,6 @@ classdef Dataset < handle
     function batches = partition(o, idx, varargin)
       % partition indexes into batches (stored in a cell array).
       % if IDX is a matrix, each column is a distinct sample.
-      opts.prefetch = false ;
-      opts = vl_argparse(opts, varargin) ;
-      
       if isvector(idx)
         idx = idx(:)' ;  % ensure row-vector
       end
@@ -46,7 +44,7 @@ classdef Dataset < handle
         b = b + 1 ;
       end
       
-      if opts.prefetch
+      if o.prefetch
         batches = [batches; batches(1,2:end), {[]}] ;
       end
     end
