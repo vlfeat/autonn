@@ -7,8 +7,8 @@ classdef Adam < solvers.Solver
     beta2 = 0.999  % decay for second moment tensor
     eps = 1e-8  % additive offset to prevent division by zero
     
-    m = []  % first moment tensor
-    v = []  % second moment tensor
+    m = {}  % first moment tensors
+    v = {}  % second moment tensors
     t = 0  % iteration number, across epochs
   end
   
@@ -18,7 +18,7 @@ classdef Adam < solvers.Solver
       varargin = o.parseGenericArgs(varargin) ;
       
       % parse arguments specific to this solver
-      vl_parseprop(o, varargin, {'momentum'}) ;
+      vl_parseprop(o, varargin, {'beta1', 'beta2', 'eps'}) ;
     end
     
     function w = gradientStep(o, w, dw, lr, decay)

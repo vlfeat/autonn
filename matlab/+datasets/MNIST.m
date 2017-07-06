@@ -6,8 +6,6 @@ classdef MNIST < datasets.Dataset
     images  % images tensor
     dataMean  % image mean
     labels  % labels (1 to 10)
-    trainIdx  % indexes of training samples
-    valIdx  % indexes of validation samples
   end
   
   methods
@@ -33,16 +31,6 @@ classdef MNIST < datasets.Dataset
       end
       images = o.images(:,:,:,idx) ;
       labels = o.labels(idx) ;
-    end
-    
-    function batches = train(o)
-      % shuffle training set, and partition it into batches
-      batches = o.partition(o.trainIdx(randperm(end))) ;
-    end
-    
-    function batches = val(o)
-      % partition validation set into batches
-      batches = o.partition(o.valIdx) ;
     end
   end
   
@@ -86,11 +74,11 @@ classdef MNIST < datasets.Dataset
       fclose(f) ;
       y2=double(y2(9:end)')+1 ;
       
-      o.trainIdx = 1 : numel(y1) ;
-      o.valIdx = numel(y1) + 1 : numel(y1) + numel(y2) ;
+      o.trainSet = 1 : numel(y1) ;
+      o.valSet = numel(y1) + 1 : numel(y1) + numel(y2) ;
       
       im = single(reshape(cat(3, x1, x2),28,28,1,[])) ;
-      o.dataMean = mean(im(:,:,:,o.trainIdx), 4) ;
+      o.dataMean = mean(im(:,:,:,o.trainSet), 4) ;
       o.images = bsxfun(@minus, im, o.dataMean) ;
       o.labels = cat(2, y1, y2) ;
     end

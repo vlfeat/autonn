@@ -3,13 +3,31 @@ classdef Dataset < handle
   %   Detailed explanation goes here
   
   properties
-    batchSize = 128
+    batchSize = 128  % batch size
+    trainSet = []  % indexes of training samples
+    valSet = []  % indexes of validation samples
   end
   
   methods
     function args = parseGenericArgs(o, args)
       % called by subclasses to parse generic Dataset arguments
       args = vl_parseprop(o, args, {'batchSize'}) ;
+    end
+    
+    function batches = train(o)
+      % shuffle training set, and partition it into batches
+      assert(~isempty(o.trainSet), ['To use the default dataset.train() ' ...
+        'method, the training set must be specified (dataset.trainSet).']) ;
+      
+      batches = o.partition(o.trainSet(randperm(end))) ;
+    end
+    
+    function batches = val(o)
+      % partition validation set into batches
+      assert(~isempty(o.valSet), ['To use the default dataset.val() ' ...
+        'method, the validation set must be specified (dataset.valSet).']) ;
+      
+      batches = o.partition(o.valSet) ;
     end
     
     function batches = partition(o, idx, varargin)

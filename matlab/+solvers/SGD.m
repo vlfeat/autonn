@@ -4,7 +4,7 @@ classdef SGD < solvers.Solver
   
   properties
     momentum = 0.9
-    state = []
+    state = {}  % momentum tensors
   end
   
   methods

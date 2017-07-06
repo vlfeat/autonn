@@ -7,8 +7,6 @@ classdef CIFAR10 < datasets.Dataset
     dataMean  % image mean
     labels  % labels (1 to 10)
     labelNames  % string name associated with each numeric label
-    trainIdx  % indexes of training samples
-    valIdx  % indexes of validation samples
     
     contrastNormalization = true
     whitenData = true
@@ -48,16 +46,6 @@ classdef CIFAR10 < datasets.Dataset
       images = o.images(:,:,:,idx) ;
       labels = o.labels(idx) ;
     end
-    
-    function batches = train(o)
-      % shuffle training set, and partition it into batches
-      batches = o.partition(o.trainIdx(randperm(end))) ;
-    end
-    
-    function batches = val(o)
-      % partition validation set into batches
-      batches = o.partition(o.valIdx) ;
-    end
   end
   
   methods (Access = protected)
@@ -93,11 +81,11 @@ classdef CIFAR10 < datasets.Dataset
       data = single(cat(4, data{:}));
       
       % train and validation sample indexes
-      o.trainIdx = find(set == 1) ;
-      o.valIdx = find(set == 3) ;
+      o.trainSet = find(set == 1) ;
+      o.valSet = find(set == 3) ;
 
       % remove mean in any case
-      o.dataMean = mean(data(:,:,:,o.trainIdx), 4);
+      o.dataMean = mean(data(:,:,:,o.trainSet), 4);
       data = bsxfun(@minus, data, o.dataMean);
 
       % normalize by image mean and std as suggested in `An Analysis of
@@ -114,7 +102,7 @@ classdef CIFAR10 < datasets.Dataset
 
       if o.whitenData
         z = reshape(data,[],60000) ;
-        W = z(:,o.trainIdx)*z(:,o.trainIdx)'/60000 ;
+        W = z(:,o.trainSet)*z(:,o.trainSet)'/60000 ;
         [V,D] = eig(W) ;
         % the scale is selected to approximately preserve the norm of W
         d2 = diag(D) ;
