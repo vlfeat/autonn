@@ -8,6 +8,7 @@ function cifar_example(varargin)
   opts.learningRate = 0.001 ;
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
   opts.savePlot = false ;
+  opts.continue = true ;  % continue from last checkpoint if available
   opts = vl_argparse(opts, varargin) ;
   
   try run('../../setup_autonn.m') ; catch; end  % add AutoNN to the path
@@ -53,8 +54,11 @@ function cifar_example(varargin)
   stats = Stats({'objective', 'error'}) ;
   
   % continue from last checkpoint if there is one
-  [filename, startEpoch] = get_last_checkpoint([opts.resultsDir '/epoch-*.mat']) ;
-  if ~isempty(filename)
+  startEpoch = 1 ;
+  if opts.continue
+    [filename, startEpoch] = get_last_checkpoint([opts.resultsDir '/epoch-*.mat']) ;
+  end
+  if startEpoch > 1
     load(filename, 'net', 'stats', 'solver') ;
   end
 
@@ -75,8 +79,8 @@ function cifar_example(varargin)
       solver.step(net) ;
 
       % get current objective and error, and update their average.
-      % also report timing.
-      fprintf('train - %.1fms ', toc() * 1000) ;
+      % also report iteration number and timing.
+      fprintf('train %d - %.1fms ', stats.counts(1) + 1, toc() * 1000);
       stats.update(net) ;
       stats.print() ;
     end
@@ -90,7 +94,7 @@ function cifar_example(varargin)
       tic;
       net.eval({'images', images, 'labels', labels}, 'test') ;
 
-      fprintf('val - %.1fms ', toc() * 1000) ;
+      fprintf('val %d - %.1fms ', stats.counts(1) + 1, toc() * 1000);
       stats.update(net) ;
       stats.print() ;
     end
