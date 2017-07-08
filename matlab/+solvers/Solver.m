@@ -13,14 +13,44 @@ classdef Solver < handle
       args = vl_parseprop(o, args, {'learningRate', 'weightDecay'}) ;
     end
     
-    function step(o, net)
+    function step(o, net, varargin)
+      % takes one step of the solver, using the given network's gradients.
+      % can specify a subset of parameters to affect exclusively, or to
+      % ignore.
+      opts.affectParams = [] ;
+      opts.ignoreParams = [] ;
+      opts = vl_argparse(opts, varargin, 'nonrecursive') ;
+      
       % ensure supported training methods are ordered as expected
       assert(isequal(Param.trainMethods, {'gradient', 'average', 'none'})) ;
-
-      % get parameter values and derivatives
-      params = net.params ;
-      idx = [params.var] ;
       
+      params = net.params ;
+      
+      % select a set of parameters to affect, or ignore
+      affected = [];
+      negate = false;
+      if ~isempty(opts.affectParams)
+        affected = opts.affectParams ;
+        assert(isempty(opts.ignoreParams), ...
+          'Cannot specify parameters to ignore and affect simultaneously.') ;
+        
+      elseif ~isempty(opts.ignoreParams)
+        affected = opts.ignoreParams ;
+        negate = true ;
+      end
+
+      % match variable indexes to params, and keep only specified subset
+      if ~isempty(affected)
+        affectedVars = net.getVarIndex(affected) ;
+        affectParams = ismember([params.var], affectedVars);
+        if negate
+          affectParams = ~affectParams ;
+        end
+        params = params(affectParams) ;
+      end
+      
+      % get parameter values and derivatives
+      idx = [params.var] ;
       w = net.getValue(idx) ;
       dw = net.getDer(idx) ;
       if isscalar(idx)
