@@ -25,18 +25,34 @@ classdef Stats < handle
       % parse arguments
       vl_parseprop(o, varargin, {'smoothenPlots'}) ;
       
-      % initialize with given stat names
+      % register given stat names
+      if nargin > 0
+        o.registerVars(names) ;
+      end
+    end
+    
+    function registerVars(o, names)
+      % registers variables from the source Net (can be given during
+      % construction).
+      if ischar(names)
+        names = {names} ;
+      end
       assert(iscellstr(names)) ;
-      o.names = names ;
-      o.accumulators = zeros(size(names)) ;
-      o.counts = zeros(size(names)) ;
-      o.lastValues = zeros(size(names)) ;
-      o.varIdx = zeros(size(names)) ;
-      o.fromNetwork = true(size(names)) ;
+      names = names(:)' ;  % ensure it's a row vector
+      zero = zeros(size(names)) ;
+      
+      offset = numel(o.names) ;
+      o.names = [o.names, names] ;
+      o.accumulators = [o.accumulators, zero] ;
+      o.counts = [o.counts, zero] ;
+      o.lastValues = [o.lastValues, zero] ;
+      o.varIdx = [o.varIdx, zero] ;
+      o.fromNetwork = [o.fromNetwork, true(size(names))] ;
       
       % name-to-index lookup table
       for i = 1:numel(names)
-        o.lookup.(names{i}) = i ;
+        assert(~isfield(o.lookup, names{i}), 'Variable name already exists.') ;
+        o.lookup.(names{i}) = offset + i ;
       end
     end
     
