@@ -19,7 +19,9 @@ function other = deepCopy(obj, varargin)
 %   `renameFn`:: @deal (no renaming)
 %     Allows renaming the layers, by passing the layer names through the
 %     given function handle. For example, to append the prefix 'streamA_'
-%     to every copied layer, use: 'renameFn', @(name) ['streamA_' name]
+%     to every copied layer, use: 'renameFn', @(name) ['streamA_' name].
+%     Note that special inputs, such as Input('name', 'testMode'), will not
+%     be renamed, because that would change their behavior.
 %
 %   `copyFn`:: [] (simple copy)
 %     Specifies a different function handle to create a shallow copy of
@@ -84,7 +86,9 @@ function other = deepCopyRecursive(original, copyFn, renameFn, visited)
   end
   
   % rename if necessary
-  other.name = renameFn(other.name) ;
+  if ~isa(other, 'Input') || ~strcmp(other.name, 'testMode')
+    other.name = renameFn(other.name) ;
+  end
 
   % pointer to the copied object, to be reused by any subsequent deep
   % copied layer that refers to the original object. this also marks it
