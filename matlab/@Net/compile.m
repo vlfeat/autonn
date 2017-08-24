@@ -63,7 +63,8 @@ function compile(net, varargin)
 
   % allocate memory
   net.forward = Net.initStruct(numel(idx), 'func', 'name', ...
-      'source', 'args', 'inputVars', 'inputArgPos', 'outputVar', 'outputArgPos') ;
+      'source', 'args', 'inputVars', 'inputArgPos', 'outputVar', 'outputArgPos', ...
+      'debugStop') ;
   net.backward = Net.initStruct(numel(idx), 'func', 'name', ...
       'source', 'args', 'inputVars', 'inputArgPos', 'numInputDer', 'accumDer') ;
 
@@ -137,6 +138,7 @@ function compile(net, varargin)
     layer.source = obj.source ;
     layer.outputArgPos = find(obj.outputVar ~= 0) ;  % skip unused outputs
     layer.outputVar = obj.outputVar(layer.outputArgPos) ;
+    layer.debugStop = obj.debugStop ;
     net.forward(k) = Net.parseArgs(layer, obj.inputs) ;
   end
 
