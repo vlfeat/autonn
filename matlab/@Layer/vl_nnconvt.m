@@ -11,10 +11,7 @@ function layer = vl_nnconvt(varargin)
 %
 %   The overloaded method accepts the same options as Layer.vl_nnconv.
 
-  % simply create a conv layer first, then switch the function handle
-
-  layer = vl_nnconv(varargin{:}) ;
-  layer.func = @vl_nnconvt ;
+  layer = vl_nnconv(varargin{:}, 'transpose', true) ;
 
 end
 
