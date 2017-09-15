@@ -86,10 +86,12 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       layer = forward(k) ;
       args = layer.args ;
       args(layer.inputArgPos) = vars(layer.inputVars) ;
-
       out = cell(1, max(layer.outputArgPos)) ;
+      if isfield(layer,'debugStop') && layer.debugStop
+        fprintf('debug stop at layer %s ...\n',layer.name);
+        keyboard
+      end
       [out{:}] = layer.func(args{:}) ;
-
       vars(layer.outputVar) = out(layer.outputArgPos);
     end
   end

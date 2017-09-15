@@ -84,6 +84,7 @@ classdef Layer < matlab.mixin.Copyable
     source = []  % call stack (source files and line numbers) where this Layer was created
     diagnostics = []  % whether to plot the mean, min and max of the Layer's output var. empty for automatic (network outputs only).
     optimize = []  % whether to optimize this Layer (e.g. merge vl_nnwsum), empty for function-dependent default
+    debugStop = false % call `keyboard` during forward pass
   end
   
   properties (SetAccess = {?Net}, GetAccess = public)
