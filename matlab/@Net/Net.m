@@ -50,6 +50,7 @@ classdef Net < handle
   properties (SetAccess = public, GetAccess = public)
     meta = []  % optional meta properties
     diagnostics = []  % list of diagnosed vars (see Net.plotDiagnostics)
+    conserveMemory = 0
   end
 
   methods (Access = private)

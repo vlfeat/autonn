@@ -164,6 +164,14 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
           vars{inputDer} = vars{inputDer} + slice_der(args{:}) ;
         end
       end
+      
+      % this derivative is no longer need, remove it to conserve memory
+      if net.conserveMemory
+          if numel(layer.inputVars)
+            vars{layer.inputVars(end)} = [];
+          end
+      end
+      
     end
   end
 
