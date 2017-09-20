@@ -41,11 +41,13 @@ classdef Net < handle
     forward = []  % forward pass function calls
     backward = []  % backward pass function calls
     vars = {}  % cell array of variables and their derivatives
+    varsFanOut = [] % No. of layers this var is input to. Inf for precious layers
     inputs = []  % struct of network's Inputs, indexed by name
     params = []  % list of Params
     gpu = false  % whether the network is in GPU or CPU mode
     isGpuVar = []  % whether each variable or derivative can be on the GPU
     parameterServer = []  % ParameterServer object, accumulates parameter derivatives across GPUs
+    
   end
   properties (SetAccess = public, GetAccess = public)
     meta = []  % optional meta properties

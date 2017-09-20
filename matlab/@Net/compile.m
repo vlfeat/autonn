@@ -64,7 +64,7 @@ function compile(net, varargin)
   % allocate memory
   net.forward = Net.initStruct(numel(idx), 'func', 'name', ...
       'source', 'args', 'inputVars', 'inputArgPos', 'outputVar', 'outputArgPos', ...
-      'debugStop') ;
+      'debugStop','precious') ;
   net.backward = Net.initStruct(numel(idx), 'func', 'name', ...
       'source', 'args', 'inputVars', 'inputArgPos', 'numInputDer', 'accumDer') ;
 
@@ -139,6 +139,10 @@ function compile(net, varargin)
     layer.outputArgPos = find(obj.outputVar ~= 0) ;  % skip unused outputs
     layer.outputVar = obj.outputVar(layer.outputArgPos) ;
     layer.debugStop = obj.debugStop ;
+    layer.precious = obj.precious; 
+    if numel(obj.numInputDer) && ~obj.numInputDer
+        layer.precious = false;% non-differentiable functions are not precious
+    end
     net.forward(k) = Net.parseArgs(layer, obj.inputs) ;
   end
 
@@ -217,6 +221,17 @@ function compile(net, varargin)
     end
   end
 
+  % compute varsFanOut, which is used to delete variables
+  % not needed for the backwards pass (of non precious layers)
+  net.varsFanOut = zeros(numel(net.vars),1);
+  for k = 1:numel(net.forward)
+      ii = net.forward(k).inputVars;
+      if net.forward(k).precious
+          net.varsFanOut(ii) = Inf; % an inelegant way to prevent deletion of vars in precious layers
+      else
+        net.varsFanOut(ii) =  net.varsFanOut(ii) + 1;
+      end
+  end
   
   % compute fan-out of parameters; this is useful to update batch-norm
   % moments with a moving average (cnn_train_autonn>accumulateGradientsAuto

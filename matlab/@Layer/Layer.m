@@ -85,6 +85,7 @@ classdef Layer < matlab.mixin.Copyable
     diagnostics = []  % whether to plot the mean, min and max of the Layer's output var. empty for automatic (network outputs only).
     optimize = []  % whether to optimize this Layer (e.g. merge vl_nnwsum), empty for function-dependent default
     debugStop = false % call `keyboard` during forward pass
+    precious = true
   end
   
   properties (SetAccess = {?Net}, GetAccess = public)
@@ -211,22 +212,31 @@ classdef Layer < matlab.mixin.Copyable
     
     
     % overloaded native Matlab functions
+    % some of these functions are not precious,
+    % but because they call size on the backpass, need to 
+    % be precious for now
+    
     function y = reshape(obj, varargin)
       y = Layer(@reshape, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
+%       y.precious = false;
     end
     function y = repmat(obj, varargin)
       y = Layer(@repmat, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
+%       y.precious = false;
     end
     function y = permute(obj, varargin)
       y = Layer(@permute, obj, varargin{:}) ;
+%       y.precious = false;
     end
     function y = ipermute(obj, varargin)
       y = Layer(@ipermute, obj, varargin{:}) ;
+%       y.precious = false;
     end
     function y = squeeze(obj, varargin)
       y = Layer(@squeeze, obj, varargin{:}) ;
+%       y.precious = false;
     end
     function y = size(obj, varargin)
       y = Layer(@size, obj, varargin{:}) ;
@@ -234,9 +244,11 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = sum(obj, varargin)
       y = Layer(@sum, obj, varargin{:}) ;
+%       y.precious = false;
     end
     function y = mean(obj, varargin)
       y = Layer(@mean, obj, varargin{:}) ;
+%       y.precious = false;
     end
     function y = max(obj, varargin)
       y = Layer(@max, obj, varargin{:}) ;
@@ -295,7 +307,7 @@ classdef Layer < matlab.mixin.Copyable
     % overloaded relational and logical operators (no derivative).
     % note: short-circuited scalar operators (&&, ||) cannot be overloaded,
     % use other logical operators instead (&, |).
-    
+    % non-differentiable functions are automatically not precious
     function y = ne(a, b)
       y = Layer(@ne, a, b) ;
       y.numInputDer = 0 ;  % non-differentiable
@@ -352,6 +364,7 @@ classdef Layer < matlab.mixin.Copyable
     
     function y = vl_nnwsum(obj, varargin)
       y = Layer(@vl_nnwsum, obj, varargin{:}) ;
+      y.precious = false;
     end
     
     function c = plus(a, b)
@@ -398,9 +411,11 @@ classdef Layer < matlab.mixin.Copyable
     
     function y = transpose(a)
       y = Layer(@transpose, a) ;
+      y.precious = false;
     end
     function y = ctranspose(a)
       y = Layer(@ctranspose, a) ;
+      y.precious = false;
     end
     
     function c = mtimes(a, b)
