@@ -169,13 +169,8 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       % remove derivatives (even input vars)
       % as they are no longer used in the network
     if conserveMemory
-        for i = numel(layer.inputVars):-1:1
-            if ~mod(layer.inputVars(i),2)
-                vars{layer.inputVars(end)} = [];
-            else
-                break;
-            end
-        end
+        idx = ~mod(layer.inputVars,2);
+        vars(layer.inputVars(idx)) = {[]};
     end
 
     end
