@@ -78,12 +78,8 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
   % use local variables for efficiency
   forward = net.forward ;
   vars = net.vars ;
-<<<<<<< HEAD
   vfo = net.varsFanOut ; 
-  conserveMem = net.conserveMemory;
-=======
   conserveMemory = net.conserveMemory;
->>>>>>> refs/remotes/origin/master
   net.vars = {} ;  % allows Matlab to release memory when needed
 
   % forward pass
@@ -183,15 +179,6 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         end
       end
       
-<<<<<<< HEAD
-      % this derivative is no longer need, remove it to conserve memory
-      if conserveMem
-          if numel(layer.inputVars)
-            vars{layer.inputVars(end)} = [];
-          end
-      end
-      
-=======
       % remove derivatives (even input vars)
       % as they are no longer used in the network
     if conserveMemory
@@ -199,7 +186,6 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         vars(layer.inputVars(idx)) = {[]};
     end
 
->>>>>>> refs/remotes/origin/master
     end
   end
 
