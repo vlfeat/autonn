@@ -3,8 +3,8 @@ classdef nnlayers < nntest
     function testLayers(test)
       % use Params for all inputs so we can choose their values now
       x = Param('value', randn(7, 7, 2, 5, test.currentDataType)) ;
-      w = Param('value', randn(3, 3, 2, 2, test.currentDataType)) ;
-      b = Param('value', randn(2, 1, test.currentDataType)) ;
+      w = Param('value', randn(3, 3, 2, 3, test.currentDataType)) ;
+      b = Param('value', randn(3, 1, test.currentDataType)) ;
       labels = Param('value', ones(5, 1)) ;
       Layer.workspaceNames() ;
       
@@ -16,9 +16,9 @@ classdef nnlayers < nntest
       
       do(test, vl_nnconv(x, w, b, 'stride', 3, 'pad', 2)) ;
       
-      do(test, vl_nnconvt(x, w, b)) ;
+      do(test, vl_nnconvt(x, permute(w, [1 2 4 3]), b)) ;
       
-      do(test, vl_nnconvt(x, w, b, 'upsample', 3, 'crop', 2)) ;
+      do(test, vl_nnconvt(x, permute(w, [1 2 4 3]), b, 'upsample', 3, 'crop', 2)) ;
       
       do(test, vl_nnpool(x, 2)) ;
       

@@ -78,6 +78,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
   % use local variables for efficiency
   forward = net.forward ;
   vars = net.vars ;
+  conserveMemory = net.conserveMemory;
   net.vars = {} ;  % allows Matlab to release memory when needed
 
   % forward pass
@@ -86,10 +87,12 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       layer = forward(k) ;
       args = layer.args ;
       args(layer.inputArgPos) = vars(layer.inputVars) ;
-
       out = cell(1, max(layer.outputArgPos)) ;
+      if isfield(layer,'debugStop') && layer.debugStop
+        fprintf('debug stop at layer %s ...\n',layer.name);
+        keyboard
+      end
       [out{:}] = layer.func(args{:}) ;
-
       vars(layer.outputVar) = out(layer.outputArgPos);
     end
   end
@@ -162,6 +165,14 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
           vars{inputDer} = vars{inputDer} + slice_der(args{:}) ;
         end
       end
+      
+      % remove derivatives (even input vars)
+      % as they are no longer used in the network
+    if conserveMemory
+        idx = ~mod(layer.inputVars,2);
+        vars(layer.inputVars(idx)) = {[]};
+    end
+
     end
   end
 

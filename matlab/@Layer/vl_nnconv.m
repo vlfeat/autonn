@@ -40,7 +40,7 @@ function layer = vl_nnconv(varargin)
   % parse options. other options such as 'stride' will be maintained in
   % convArgs.
   opts = struct('size', [], 'weightScale', 'xavier', 'hasBias', true, ...
-    'learningRate', 1, 'weightDecay', 1) ;
+    'learningRate', 1, 'weightDecay', 1, 'transpose', false) ;
   [opts, posArgs, convOpts] = vl_argparsepos(opts, varargin, ...
     'flags', {'CuDNN', 'NoCuDNN', 'Verbose'}) ;
   
@@ -51,7 +51,12 @@ function layer = vl_nnconv(varargin)
     
     if opts.hasBias
       % create bias as the 3rd input
-      posArgs{3} = Param('value', zeros(opts.size(4), 1, 'single'), ...
+      if opts.transpose  % vl_nnconvt, use 3rd dimension of filters
+        biasSize = opts.size(3) ;
+      else  % vl_nnconv, use 4th dimension of filters
+        biasSize = opts.size(4) ;
+      end
+      posArgs{3} = Param('value', zeros(biasSize, 1, 'single'), ...
                      'learningRate', opts.learningRate(max(1,end)), ...
                      'weightDecay', opts.weightDecay(max(1,end))) ;
     else
@@ -74,5 +79,10 @@ function layer = vl_nnconv(varargin)
   end
   
   % create layer
-  layer = Layer(@vl_nnconv, posArgs{:}, convOpts{:}) ;
+  if opts.transpose
+    func = @vl_nnconvt ;
+  else
+    func = @vl_nnconv ;
+  end
+  layer = Layer(func, posArgs{:}, convOpts{:}) ;
 end
