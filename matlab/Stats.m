@@ -27,13 +27,14 @@ classdef Stats < handle
       
       % register given stat names
       if nargin > 0
-        o.registerVars(names) ;
+        o.registerVars(names, true) ;
       end
     end
     
-    function registerVars(o, names)
-      % registers variables from the source Net (can be given during
-      % construction).
+    function registerVars(o, names, fromNetwork)
+      % register new variables to keep track of (can be given during
+      % construction). if fromNetwork is true, they will be fetched
+      % automatically from a network when calling update().
       if ischar(names)
         names = {names} ;
       end
@@ -47,12 +48,18 @@ classdef Stats < handle
       o.counts = [o.counts, zero] ;
       o.lastValues = [o.lastValues, zero] ;
       o.varIdx = [o.varIdx, zero] ;
-      o.fromNetwork = [o.fromNetwork, true(size(names))] ;
+      o.fromNetwork = [o.fromNetwork, zero + fromNetwork] ;
       
       % name-to-index lookup table
       for i = 1:numel(names)
         assert(~isfield(o.lookup, names{i}), 'Variable name already exists.') ;
         o.lookup.(names{i}) = offset + i ;
+      end
+      
+      % insert NaN in existing histories for the new variables
+      sets = fieldnames(o.history) ;
+      for s = 1:numel(sets)
+        o.history.(sets{s})(end + 1 : end + numel(names), :) = NaN ;
       end
     end
     
@@ -194,14 +201,8 @@ classdef Stats < handle
     
     function update_single(o, name, v)
       if ~isfield(o.lookup, name)
-        o.names{end+1} = name ;
-        o.lookup.(name) = numel(o.names) ;
-        
-        o.accumulators(end+1) = 0 ;
-        o.counts(end+1) = 0 ;
-        o.lastValues(end+1) = 0 ;
-        o.varIdx(end+1) = 0 ;
-        o.fromNetwork(end+1) = false ;
+        % add new variable
+        o.registerVars({name}, false) ;
       end
       
       idx = o.lookup.(name) ;
