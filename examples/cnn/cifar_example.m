@@ -1,8 +1,8 @@
 
 function cifar_example(varargin)
   % options (override by calling script with name-value pairs)
-  opts.dataDir = '/data/cifar' ;  % CIFAR10 data location
-  opts.resultsDir = 'data/cifar-example' ;
+  opts.dataDir = [vl_rootnn() '/data/cifar'] ;  % CIFAR10 data location
+  opts.resultsDir = [vl_rootnn() '/data/cifar-example'] ;
   opts.numEpochs = 100 ;
   opts.batchSize = 128 ;
   opts.learningRate = 0.001 ;

@@ -1,8 +1,8 @@
 
 function mnist_example(varargin)
   % options (override by calling script with name-value pairs)
-  opts.dataDir = 'data/mnist' ;  % MNIST data location
-  opts.resultsDir = 'data/mnist-example' ;
+  opts.dataDir = [vl_rootnn() '/data/mnist'] ;  % MNIST data location
+  opts.resultsDir = [vl_rootnn() '/data/mnist-example'] ;
   opts.numEpochs = 20 ;
   opts.batchSize = 128 ;
   opts.learningRate = 0.001 ;
