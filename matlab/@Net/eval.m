@@ -78,7 +78,6 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
   % use local variables for efficiency
   forward = net.forward ;
   vars = net.vars ;
-  vfo = net.varsFanOut ; 
   conserveMemory = net.conserveMemory;
   net.vars = {} ;  % allows Matlab to release memory when needed
 
@@ -96,17 +95,15 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       [out{:}] = layer.func(args{:}) ;
       vars(layer.outputVar) = out(layer.outputArgPos);
       
-      %delete intermediate non precious vars
-      if conserveMem
-          ii = layer.inputVars;
-          vfo(ii) = vfo(ii) - 1;
-          for i = ii
-              if vfo(i) == 0
-                  vars{i} = [];
-              end
+      % delete intermediate non precious vars
+      if conserveMemory
+        if numel(layer.deleteVars)
+          dv = layer.deleteVars;
+          for i = 1:numel(dv)
+            vars(dv(i)) = {cast(size(vars{dv(i)}),'like',vars{dv(i)})};
           end
+        end
       end
-      
     end
   end
 
@@ -135,6 +132,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       if ~isequal(layer.func, @slice_wrapper)
         % call function and collect outputs
         out = cell(1, layer.numInputDer) ;
+        
         [out{:}] = layer.func(args{:}) ;
 
         % sum derivatives. the derivative var corresponding to each
@@ -181,10 +179,10 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       
       % remove derivatives (even input vars)
       % as they are no longer used in the network
-    if conserveMemory
+      if conserveMemory
         idx = ~mod(layer.inputVars,2);
         vars(layer.inputVars(idx)) = {[]};
-    end
+      end
 
     end
   end

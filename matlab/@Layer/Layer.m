@@ -219,24 +219,24 @@ classdef Layer < matlab.mixin.Copyable
     function y = reshape(obj, varargin)
       y = Layer(@reshape, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
-%       y.precious = false;
+      y.precious = false;
     end
     function y = repmat(obj, varargin)
       y = Layer(@repmat, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
-%       y.precious = false;
+      y.precious = false;
     end
     function y = permute(obj, varargin)
       y = Layer(@permute, obj, varargin{:}) ;
-%       y.precious = false;
+      y.precious = false;
     end
     function y = ipermute(obj, varargin)
       y = Layer(@ipermute, obj, varargin{:}) ;
-%       y.precious = false;
+      y.precious = false;
     end
     function y = squeeze(obj, varargin)
       y = Layer(@squeeze, obj, varargin{:}) ;
-%       y.precious = false;
+      y.precious = false;
     end
     function y = size(obj, varargin)
       y = Layer(@size, obj, varargin{:}) ;
@@ -248,7 +248,7 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = mean(obj, varargin)
       y = Layer(@mean, obj, varargin{:}) ;
-%       y.precious = false;
+      y.precious = false;
     end
     function y = max(obj, varargin)
       y = Layer(@max, obj, varargin{:}) ;

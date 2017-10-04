@@ -16,7 +16,9 @@ function compile(net, varargin)
   opts.shortCircuit = true ;
   opts.optimizeGraph = true ;
   opts.forwardOnly = false ;  % used mainly by evalOutputSize for faster build
+  opts.conserveMemory = false; % must be specified during compilation
   [opts, netOutputs] = vl_argparsepos(opts, varargin) ;
+  net.conserveMemory = opts.conserveMemory;
   
   if ~isscalar(netOutputs)
     % several output layers; create a dummy layer to hold them together
@@ -64,7 +66,7 @@ function compile(net, varargin)
   % allocate memory
   net.forward = Net.initStruct(numel(idx), 'func', 'name', ...
       'source', 'args', 'inputVars', 'inputArgPos', 'outputVar', 'outputArgPos', ...
-      'debugStop','precious') ;
+      'debugStop','precious','deleteVars') ;
   net.backward = Net.initStruct(numel(idx), 'func', 'name', ...
       'source', 'args', 'inputVars', 'inputArgPos', 'numInputDer', 'accumDer') ;
 
@@ -140,6 +142,7 @@ function compile(net, varargin)
     layer.outputVar = obj.outputVar(layer.outputArgPos) ;
     layer.debugStop = obj.debugStop ;
     layer.precious = obj.precious; 
+    layer.deleteVars = [];
     if numel(obj.numInputDer) && ~obj.numInputDer
         layer.precious = false;% non-differentiable functions are not precious
     end
@@ -223,15 +226,36 @@ function compile(net, varargin)
 
   % compute varsFanOut, which is used to delete variables
   % not needed for the backwards pass (of non precious layers)
-  net.varsFanOut = zeros(numel(net.vars),1);
-  for k = 1:numel(net.forward)
+  if net.conserveMemory
+    varsFanOut = zeros(numel(net.vars),1);
+    for k = 1:numel(net.forward)
       ii = net.forward(k).inputVars;
       if net.forward(k).precious
-          net.varsFanOut(ii) = Inf; % an inelegant way to prevent deletion of vars in precious layers
+        varsFanOut(ii) = Inf; % prevent deletion of vars in precious layers
       else
-        net.varsFanOut(ii) =  net.varsFanOut(ii) + 1;
+        varsFanOut(ii) =  varsFanOut(ii) + 1;
       end
+    end
   end
+  
+  % precompute deleteVars for fast variable deletion during eval
+  if net.conserveMemory
+    vars_is_prec = true(numel(net.vars),1);
+    for k = 1:numel(net.forward)
+      ii = unique(net.forward(k).inputVars);
+      varsFanOut(ii) = varsFanOut(ii) - 1;
+      dv = varsFanOut(ii) == 0;
+      net.forward(k).deleteVars = ii(dv);
+      vars_is_prec(ii(dv)) = false;
+    end
+    % replace some native functions with non precious versions
+    for k = 1:numel(net.backward)
+      if any(~vars_is_prec(net.backward(k).inputVars))
+        net.backward(k).func = nonprecious_der_wrapper(net.backward(k).func);
+      end
+    end
+  end
+  
   
   % compute fan-out of parameters; this is useful to update batch-norm
   % moments with a moving average (cnn_train_autonn>accumulateGradientsAuto
