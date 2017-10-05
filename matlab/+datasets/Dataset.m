@@ -31,7 +31,7 @@ classdef Dataset < handle
       batches = o.partition(o.valSet) ;
     end
     
-    function batches = partition(o, idx, varargin)
+    function batches = partition(o, idx)
       % partition indexes into batches (stored in a cell array).
       % if IDX is a matrix, each column is a distinct sample.
       if isvector(idx)
