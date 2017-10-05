@@ -57,6 +57,27 @@ function dx = squeeze_der(x, dy)
   end
 end
 
+function dx = flip_der(x, varargin)
+  dy = varargin{end} ;
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(size(x), 'like', x) ;
+  else
+    dx = flip(dy, varargin{1:end-1}) ;  % undo flip
+  end
+end
+
+function dx = rot90_der(x, k, dy)
+  if nargin < 3
+    dy = k ;  % derivative is second argument, not third
+    k = 1 ;
+  end
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(size(x), 'like', x) ;
+  else
+    dx = rot90(dy, -k) ;  % undo rotation
+  end
+end
+
 
 function dx = abs_der(x, dy)
   assert(isreal(dy), 'Complex values not supported by ABS derivative.') ;

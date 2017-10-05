@@ -5,8 +5,8 @@ function sequentialNames(varargin)
 % is the network output layer.
 % Example layer names are 'conv1', 'conv2', 'pool1'.
 %
-% Layer.SEQUENTIALNAMES(OBJ1, OBJ2, ...) is the same, but considering a
-% network with several outputs OBJ1, OBJ2, ...
+% OBJ1.SEQUENTIALNAMES(OBJ2, ...) or SEQUENTIALNAMES(OBJ1, OBJ2, ...) is
+% the same, but considering a network with several outputs OBJ1, OBJ2, ...
 %
 % SEQUENTIALNAMES(..., MODIFIER) also specifies a function handle to be
 % evaluated on each name, possibly modifying it (e.g. to append a prefix or

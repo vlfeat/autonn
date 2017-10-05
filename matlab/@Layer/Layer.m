@@ -234,6 +234,18 @@ classdef Layer < matlab.mixin.Copyable
       y = Layer(@squeeze, obj, varargin{:}) ;
       y.precious = false;
     end
+    function y = flip(obj, varargin)
+      y = Layer(@flip, obj, varargin{:}) ;
+    end
+    function y = flipud(obj)
+      y = Layer(@flip, obj, 1) ;
+    end
+    function y = fliplr(obj)
+      y = Layer(@flip, obj, 2) ;
+    end
+    function y = rot90(obj, varargin)
+      y = Layer(@rot90, obj, varargin{:}) ;
+    end
     function y = size(obj, varargin)
       y = Layer(@size, obj, varargin{:}) ;
       y.numInputDer = 0 ;  % non-differentiable
