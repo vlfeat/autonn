@@ -100,13 +100,12 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         if numel(layer.deleteVars)
           dv = layer.deleteVars;
           for i = 1:numel(dv)
-            vars(dv(i)) = {cast(size(vars{dv(i)}),'like',vars{dv(i)})};
+            vars(dv(i)) = {size(vars{dv(i)})};
           end
         end
       end
     end
   end
-
   % backward pass
   if strcmp(mode, 'normal') || strcmp(mode, 'backward')
     % clear all derivatives. derivatives are even-numbered vars.
@@ -128,11 +127,12 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       args = layer.args ;
       inputArgPos = layer.inputArgPos ;
       args(inputArgPos) = vars(layer.inputVars) ;
-
       if ~isequal(layer.func, @slice_wrapper)
         % call function and collect outputs
         out = cell(1, layer.numInputDer) ;
-        
+        derOut = args{end};
+        in = vars(layer.inputVars)
+        whos('derOut')
         [out{:}] = layer.func(args{:}) ;
 
         % sum derivatives. the derivative var corresponding to each
@@ -168,7 +168,11 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         if ~repeats
           % very efficient, but doesn't handle repeated indexes
           if isequal(vars{inputDer}, 0)  % must initialize with the right size and class
-            vars{inputDer} = zeros(size(vars{inputDer - 1}), 'like', args{end}) ;
+            if conserveMemory
+              vars{inputDer} = zeros(vars{inputDer - 1}, 'like', args{end}) ;
+            else
+              vars{inputDer} = zeros(size(vars{inputDer - 1}), 'like', args{end}) ;
+            end
           end
           vars{inputDer}(subs{:}) = vars{inputDer}(subs{:}) + args{end} ;
         else

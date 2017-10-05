@@ -212,10 +212,6 @@ classdef Layer < matlab.mixin.Copyable
     
     
     % overloaded native Matlab functions
-    % some of these functions are not precious,
-    % but because they call size on the backpass, need to 
-    % be precious for now
-    
     function y = reshape(obj, varargin)
       y = Layer(@reshape, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
@@ -244,7 +240,7 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = sum(obj, varargin)
       y = Layer(@sum, obj, varargin{:}) ;
-%       y.precious = false;
+      y.precious = false;
     end
     function y = mean(obj, varargin)
       y = Layer(@mean, obj, varargin{:}) ;
@@ -294,6 +290,7 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = cat(obj, varargin)
       y = Layer(@cat, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = gpuArray(obj)
       % need to wrap gpuArray so that it is disabled in CPU mode
@@ -446,9 +443,11 @@ classdef Layer < matlab.mixin.Copyable
     
     function y = vertcat(obj, varargin)
       y = Layer(@cat, 1, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = horzcat(obj, varargin)
       y = Layer(@cat, 2, obj, varargin{:}) ;
+      y.precious = false;
     end
     
     function y = colon(obj, varargin)
@@ -460,6 +459,7 @@ classdef Layer < matlab.mixin.Copyable
     function varargout = subsref(a, s)
       if strcmp(s(1).type, '()')
         varargout{1} = Layer(@slice_wrapper, a, s.subs{:}) ;
+        varargout{1}.precious = false;
       else
         [varargout{1:nargout}] = builtin('subsref', a, s) ;
       end

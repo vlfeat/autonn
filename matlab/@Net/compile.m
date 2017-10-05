@@ -224,9 +224,10 @@ function compile(net, varargin)
     end
   end
 
+
+  if net.conserveMemory
   % compute varsFanOut, which is used to delete variables
   % not needed for the backwards pass (of non precious layers)
-  if net.conserveMemory
     varsFanOut = zeros(numel(net.vars),1);
     for k = 1:numel(net.forward)
       ii = net.forward(k).inputVars;
@@ -236,22 +237,21 @@ function compile(net, varargin)
         varsFanOut(ii) =  varsFanOut(ii) + 1;
       end
     end
-  end
-  
-  % precompute deleteVars for fast variable deletion during eval
-  if net.conserveMemory
-    vars_is_prec = true(numel(net.vars),1);
+    
+    % precompute deleteVars for fast variable deletion during eval
+    varsIsPrecious = true(numel(net.vars),1);
+    varsIsPrecious(2:2:end) = false; %derivs are non prec by default
     for k = 1:numel(net.forward)
       ii = unique(net.forward(k).inputVars);
       varsFanOut(ii) = varsFanOut(ii) - 1;
-      dv = varsFanOut(ii) == 0;
+      dv = varsFanOut(ii) == 0; %delete vars that are no longer needed
       net.forward(k).deleteVars = ii(dv);
-      vars_is_prec(ii(dv)) = false;
+      varsIsPrecious(ii(dv)) = false; %these vars are not precious
     end
     % replace some native functions with non precious versions
     for k = 1:numel(net.backward)
-      if any(~vars_is_prec(net.backward(k).inputVars))
-        net.backward(k).func = nonprecious_der_wrapper(net.backward(k).func);
+      if all(~varsIsPrecious(net.backward(k).inputVars))
+        net.backward(k).func = nonprecious_der(net.backward(k).func);
       end
     end
   end
