@@ -101,6 +101,8 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
           dv = layer.deleteVars;
           for i = 1:numel(dv)
             vars(dv(i)) = {size(vars{dv(i)})};
+%             disp('deleting var:');
+%             dv(i)
           end
         end
       end
@@ -130,9 +132,10 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       if ~isequal(layer.func, @slice_wrapper)
         % call function and collect outputs
         out = cell(1, layer.numInputDer) ;
-        derOut = args{end};
-        in = vars(layer.inputVars)
-        whos('derOut')
+        
+%         layer.func
+%         vars(layer.inputVars)
+%         layer.inputVars
         [out{:}] = layer.func(args{:}) ;
 
         % sum derivatives. the derivative var corresponding to each
@@ -181,11 +184,10 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         end
       end
       
-      % remove derivatives (even input vars)
-      % as they are no longer used in the network
+      % remove derivatives that are no longer needed
       if conserveMemory
-        idx = ~mod(layer.inputVars,2);
-        vars(layer.inputVars(idx)) = {[]};
+        vars(layer.deleteVars) = {[]};
+%         disp(['deleting vars: ',num2str(layer.deleteVars)]);
       end
 
     end

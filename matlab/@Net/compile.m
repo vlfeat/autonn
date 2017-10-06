@@ -68,7 +68,7 @@ function compile(net, varargin)
       'source', 'args', 'inputVars', 'inputArgPos', 'outputVar', 'outputArgPos', ...
       'debugStop','precious','deleteVars') ;
   net.backward = Net.initStruct(numel(idx), 'func', 'name', ...
-      'source', 'args', 'inputVars', 'inputArgPos', 'numInputDer', 'accumDer') ;
+      'source', 'args', 'inputVars', 'inputArgPos', 'numInputDer', 'accumDer','deleteVars') ;
 
   if opts.forwardOnly  % empty struct in this case, but with appropriate fields
     net.backward = net.backward([]);
@@ -161,6 +161,7 @@ function compile(net, varargin)
       layer.name = obj.name ;
       layer.source = obj.source ;
       layer.accumDer = obj.accumDer ;
+      layer.deleteVars = [];
       layer = Net.parseArgs(layer, obj.inputs) ;
 
       % figure out position of derivative argument: it's at the end of the
@@ -229,6 +230,7 @@ function compile(net, varargin)
   % compute varsFanOut, which is used to delete variables
   % not needed for the backwards pass (of non precious layers)
     varsFanOut = zeros(numel(net.vars),1);
+    derivsFanOut = zeros(numel(net.vars),1);
     for k = 1:numel(net.forward)
       ii = net.forward(k).inputVars;
       if net.forward(k).precious
@@ -236,21 +238,47 @@ function compile(net, varargin)
       else
         varsFanOut(ii) =  varsFanOut(ii) + 1;
       end
+      
+      % do the same for derivs
+      % di is derivative indices
+      di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
+      % NOTE: derivsFanOut is only nonzero for short circuited layers
+      derivsFanOut(di) = derivsFanOut(di) + 1;
     end
-    
+%     disp('derivs fan out')
+%     derivsFanOut'
+    % emulate forward pass
     % precompute deleteVars for fast variable deletion during eval
     varsIsPrecious = true(numel(net.vars),1);
     varsIsPrecious(2:2:end) = false; %derivs are non prec by default
     for k = 1:numel(net.forward)
-      ii = unique(net.forward(k).inputVars);
+      %deleteVars for forward pass
+      ii = net.forward(k).inputVars; % do you need to call unique here?
       varsFanOut(ii) = varsFanOut(ii) - 1;
       dv = varsFanOut(ii) == 0; %delete vars that are no longer needed
       net.forward(k).deleteVars = ii(dv);
-      varsIsPrecious(ii(dv)) = false; %these vars are not precious
+      varsIsPrecious(ii(dv)) = false; 
+      
+      %deleteVars for backward pass
+      % di is derivative indices
+      di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
+%       disp('computing dv')
+%       net.forward(k).func
+%       di
+%       derivsFanOut(di)
+      derivsFanOut(di) = derivsFanOut(di) - 1;
+%       derivsFanOut(di)
+      dv = derivsFanOut(di) == 0; %delete vars that are no longer needed
+%       dv
+      net.backward(k).deleteVars = di(dv);
+%       di(dv)
     end
+    
+    
     % replace some native functions with non precious versions
     for k = 1:numel(net.backward)
-      if all(~varsIsPrecious(net.backward(k).inputVars))
+      ii = logical(mod(net.backward(k).inputVars,2)); %everything except derivs
+      if ~any(varsIsPrecious(ii))
         net.backward(k).func = nonprecious_der(net.backward(k).func);
       end
     end
