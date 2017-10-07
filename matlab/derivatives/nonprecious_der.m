@@ -36,6 +36,25 @@ function dx = reshape_der_nonprec(x_sz, varargin) %#ok<*DEFNU>
   end
 end
 
+function dx = circshift_der_nonprec(x_sz, K,dim,dy)
+  if nargin < 4 && isscalar(K) % 2016b behavior for scalar K
+    dy = dim;
+    dim = find([x_sz, 2] ~= 1, 1) ;  % find first non-singleton dim
+  elseif nargin < 4 
+    dy = dim;
+  end
+  
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(x_sz, 'like', dy) ;
+  else
+  	if nargin < 4 
+      dx = circshift(dy,-K);
+    else
+      dx = circshift(dy,-K,dim);
+    end
+  end
+end
+
 function dx = sum_der_nonprec(x_sz, dim, dy)
   if nargin < 3
     % one-argument syntax of sum, plus derivative

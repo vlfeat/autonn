@@ -33,6 +33,25 @@ function dx = reshape_der(x, varargin)  %#ok<*DEFNU>
   end
 end
 
+function dx = circshift_der(x, K,dim,dy)
+  if nargin < 4 && isscalar(K) % 2016b behavior for scalar K
+    dy = dim;
+    dim = find([size(x), 2] ~= 1, 1) ;  % find first non-singleton dim
+  elseif nargin < 4 
+    dy = dim;
+  end
+  
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(size(x), 'like', x) ;
+  else
+  	if nargin < 4 
+      dx = circshift(dy,-K);
+    else
+      dx = circshift(dy,-K,dim);
+    end
+  end
+end
+
 function dx = permute_der(x, dim, dy)
   if isscalar(dy) && dy == 0  % special case, no derivative
     dx = zeros(size(x), 'like', x) ;

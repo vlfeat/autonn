@@ -222,6 +222,10 @@ classdef Layer < matlab.mixin.Copyable
       y.numInputDer = 1 ;  % only the first derivative is defined
       y.precious = false;
     end
+    function y = circshift(obj, varargin)
+      y = Layer(@circshift, obj, varargin{:}) ;
+      y.precious = false;
+    end
     function y = permute(obj, varargin)
       y = Layer(@permute, obj, varargin{:}) ;
       y.precious = false;
