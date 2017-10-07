@@ -185,8 +185,9 @@ function compile(net, varargin)
         layer.numInputDer = obj.numInputDer ;
       end
 
-      if layer.numInputDer == 0
+      if layer.numInputDer == 0 && ~net.conserveMemory
         % there are no output derivatives, so this layer can be skipped
+        % if conserveMemory is enabled, do this after deleteVars is computed
         layer.func = @deal ;
         [layer.args, layer.inputArgPos, layer.inputVars] = deal({}, [], []) ;
 
@@ -239,48 +240,45 @@ function compile(net, varargin)
         varsFanOut(ii) =  varsFanOut(ii) + 1;
       end
       
-      % do the same for derivs
-      % di is derivative indices
+      % do the same for derivs, di is derivative indices
       di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
       % NOTE: derivsFanOut is only nonzero for short circuited layers
       derivsFanOut(di) = derivsFanOut(di) + 1;
     end
-%     disp('derivs fan out')
-%     derivsFanOut'
+    
     % emulate forward pass
     % precompute deleteVars for fast variable deletion during eval
     varsIsPrecious = true(numel(net.vars),1);
     varsIsPrecious(2:2:end) = false; %derivs are non prec by default
     for k = 1:numel(net.forward)
       %deleteVars for forward pass
-      ii = net.forward(k).inputVars; % do you need to call unique here?
+      ii = net.forward(k).inputVars;
       varsFanOut(ii) = varsFanOut(ii) - 1;
       dv = varsFanOut(ii) == 0; %delete vars that are no longer needed
       net.forward(k).deleteVars = ii(dv);
       varsIsPrecious(ii(dv)) = false; 
       
-      %deleteVars for backward pass
-      % di is derivative indices
+      % deleteVars for backward pass, di is derivative indices
       di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
-%       disp('computing dv')
-%       net.forward(k).func
-%       di
-%       derivsFanOut(di)
       derivsFanOut(di) = derivsFanOut(di) - 1;
-%       derivsFanOut(di)
       dv = derivsFanOut(di) == 0; %delete vars that are no longer needed
-%       dv
       net.backward(k).deleteVars = di(dv);
-%       di(dv)
     end
     
-    
-    % replace some native functions with non precious versions
-    for k = 1:numel(net.backward)
-      ii = logical(mod(net.backward(k).inputVars,2)); %everything except derivs
-      if ~any(varsIsPrecious(ii))
-        net.backward(k).func = nonprecious_der(net.backward(k).func);
+    % replace non differentiable functions with proxies now that 
+    % deleteVars has been computed
+    % also, replace some native function derivs with non precious versions
+    for k = 1:numel(net.forward)
+      ii = net.forward(k).inputVars;
+      bk = numel(net.forward)-k+1;
+      layer = net.backward(bk);
+      if objs{idx(k)}.numInputDer == 0
+        layer.func = @deal ;
+        [layer.args, layer.inputArgPos, layer.inputVars] = deal({}, [], []) ;
+      elseif all(~varsIsPrecious(ii))
+        layer.func = nonprecious_der(layer.func);
       end
+      net.backward(bk) = layer;
     end
   end
   

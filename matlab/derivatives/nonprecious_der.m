@@ -87,6 +87,27 @@ function dx = mean_der_nonprec(x_sz, dim, dy)
   dx = repmat(dy, reps) / x_sz(dim) ;
 end
 
+function dx = flip_der_nonprec(x_sz, varargin)
+  dy = varargin{end} ;
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(x_sz, 'like',dy) ;
+  else
+    dx = flip(dy, varargin{1:end-1}) ;  % undo flip
+  end
+end
+
+function dx = rot90_der_nonprec(x_sz, k, dy)
+  if nargin < 3
+    dy = k ;  % derivative is second argument, not third
+    k = 1 ;
+  end
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(x_sz, 'like', dy) ;
+  else
+    dx = rot90(dy, -k) ;  % undo rotation
+  end
+end
+
 
 function varargout = cat_der_nonprec(dim, varargin)
 %see CAT_DER. varargin holds sizes instead of tensors.
@@ -121,6 +142,37 @@ function varargout = cat_der_nonprec(dim, varargin)
   end
   varargout{1} = 0 ;  % DIM derivative
 
+end
+
+
+function varargout = vl_nnwsum_nonprec(varargin)
+%see VL_NNWSUM.
+  assert(numel(varargin) >= 2 && isequal(varargin{end-1}, 'weights'), ...
+    'Must supply the ''weights'' property.') ;
+
+  w = varargin{end} ;  % vector of scalar weights
+  n = numel(varargin) - 2 ;
+  
+  % this is only over called during the backward pass
+  if n == numel(w) + 1
+      % backward function (the last argument is the derivative)
+      dy = varargin{n} ;
+      n = n - 1 ;
+      
+      varargout = cell(1, n) ;
+      for k = 1:n
+        dx = dy ;
+        for t = 1:ndims(dy)  % sum derivatives along expanded dimensions (by bsxfun)
+          if varargin{k}(t) == 1  % original was a singleton dimension
+            dx = sum(dx, t) ;
+          end
+        end
+        varargout{k} = w(k) * dx ;
+      end
+      
+  else
+    error('The number of weights does not match the number of inputs.') ;
+  end
 end
 
 

@@ -92,18 +92,14 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         fprintf('debug stop at layer %s ...\n',layer.name);
         keyboard
       end
+%       layer.name
       [out{:}] = layer.func(args{:}) ;
       vars(layer.outputVar) = out(layer.outputArgPos);
       
       % delete intermediate non precious vars
-      if conserveMemory
-        if numel(layer.deleteVars)
-          dv = layer.deleteVars;
-          for i = 1:numel(dv)
-            vars(dv(i)) = {size(vars{dv(i)})};
-%             disp('deleting var:');
-%             dv(i)
-          end
+      if conserveMemory && numel(layer.deleteVars)
+        for i = 1:numel(layer.deleteVars)
+          vars(layer.deleteVars(i)) = {size(vars{layer.deleteVars(i)})};
         end
       end
     end
@@ -132,10 +128,6 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       if ~isequal(layer.func, @slice_wrapper)
         % call function and collect outputs
         out = cell(1, layer.numInputDer) ;
-        
-%         layer.func
-%         vars(layer.inputVars)
-%         layer.inputVars
         [out{:}] = layer.func(args{:}) ;
 
         % sum derivatives. the derivative var corresponding to each
@@ -158,7 +150,6 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         % args = {X, I1, I2, ..., DYDZ}, derivative of X(I1, I2, ...).
         inputDer = layer.inputVars(1) + 1 ;  % index of input derivative var
         subs = args(2:end-1) ;  % indexing subscripts
-        
         % there's a fast sparse update that doesn't handle repeated
         % indexes, and a slow one that does. to do: MEX file.
         repeats = false ;  % check for repeated indexes
@@ -171,11 +162,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         if ~repeats
           % very efficient, but doesn't handle repeated indexes
           if isequal(vars{inputDer}, 0)  % must initialize with the right size and class
-            if conserveMemory
-              vars{inputDer} = zeros(vars{inputDer - 1}, 'like', args{end}) ;
-            else
               vars{inputDer} = zeros(size(vars{inputDer - 1}), 'like', args{end}) ;
-            end
           end
           vars{inputDer}(subs{:}) = vars{inputDer}(subs{:}) + args{end} ;
         else
@@ -187,7 +174,6 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       % remove derivatives that are no longer needed
       if conserveMemory
         vars(layer.deleteVars) = {[]};
-%         disp(['deleting vars: ',num2str(layer.deleteVars)]);
       end
 
     end

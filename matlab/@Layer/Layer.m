@@ -236,15 +236,19 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = flip(obj, varargin)
       y = Layer(@flip, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = flipud(obj)
       y = Layer(@flip, obj, 1) ;
+      y.precious = false;
     end
     function y = fliplr(obj)
       y = Layer(@flip, obj, 2) ;
+      y.precious = false;
     end
     function y = rot90(obj, varargin)
       y = Layer(@rot90, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = size(obj, varargin)
       y = Layer(@size, obj, varargin{:}) ;
@@ -471,7 +475,7 @@ classdef Layer < matlab.mixin.Copyable
     function varargout = subsref(a, s)
       if strcmp(s(1).type, '()')
         varargout{1} = Layer(@slice_wrapper, a, s.subs{:}) ;
-        varargout{1}.precious = false;
+%         varargout{1}.precious = false; TODO: make nonprec
       else
         [varargout{1:nargout}] = builtin('subsref', a, s) ;
       end
