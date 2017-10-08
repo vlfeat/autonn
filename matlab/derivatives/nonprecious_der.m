@@ -129,7 +129,7 @@ end
 
 
 function varargout = cat_der_nonprec(dim, varargin)
-%see CAT_DER. varargin holds sizes instead of tensors.
+%CAT_DER
   dzdy = varargin{end} ;
   
   if isscalar(dzdy)
@@ -150,11 +150,10 @@ function varargout = cat_der_nonprec(dim, varargin)
   varargout = cell(1, numel(varargin)) ;
   
   for i = 1 : numel(varargin) - 1
-    if i >1
-      sz = varargin{i}(dim) ;
-    else
-      sz = 1; % size of dim variable
-    end
+    % get size of this input along DIM; 0 if it is empty in any dimension.
+    sz = varargin{i}(dim) * ~isempty(varargin{i}) ;
+    
+    % retrieve corresponding derivative, by slicing dzdy
     idx{dim} = start : start + sz - 1 ;
     varargout{i + 1} = dzdy(idx{:}) ;
     start = start + sz ;

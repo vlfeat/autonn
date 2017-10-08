@@ -92,10 +92,8 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         fprintf('debug stop at layer %s ...\n',layer.name);
         keyboard
       end
-%       layer.name
       [out{:}] = layer.func(args{:}) ;
       vars(layer.outputVar) = out(layer.outputArgPos);
-      
       % delete intermediate non precious vars
       if conserveMemory && numel(layer.deleteVars)
         for i = 1:numel(layer.deleteVars)
