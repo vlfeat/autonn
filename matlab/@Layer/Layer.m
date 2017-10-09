@@ -240,6 +240,9 @@ classdef Layer < matlab.mixin.Copyable
     function y = rot90(obj, varargin)
       y = Layer(@rot90, obj, varargin{:}) ;
     end
+    function y = circshift(obj, varargin)
+      y = Layer(@circshift, obj, varargin{:}) ;
+    end
     function y = size(obj, varargin)
       y = Layer(@size, obj, varargin{:}) ;
       y.numInputDer = 0 ;  % non-differentiable
