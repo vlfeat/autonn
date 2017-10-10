@@ -97,6 +97,23 @@ function dx = rot90_der(x, k, dy)
   end
 end
 
+function dx = circshift_der(x, k, dim, dy)
+  if nargin < 4
+    dy = dim ;  % DIM missing. derivative is third argument, not fourth
+    if isscalar(dy) && dy == 0  % special case, no derivative
+      dx = zeros(size(x), 'like', x) ;
+    else
+      dx = circshift(dy, -k) ;  % undo circular shift
+    end
+  else
+    if isscalar(dy) && dy == 0  % special case, no derivative
+      dx = zeros(size(x), 'like', x) ;
+    else
+      dx = circshift(dy, -k, dim) ;  % undo circular shift
+    end
+  end
+end
+
 
 function dx = abs_der(x, dy)
   assert(isreal(dy), 'Complex values not supported by ABS derivative.') ;
