@@ -102,6 +102,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       end
     end
   end
+  
   % backward pass
   if strcmp(mode, 'normal') || strcmp(mode, 'backward')
     % clear all derivatives. derivatives are even-numbered vars.
@@ -123,6 +124,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       args = layer.args ;
       inputArgPos = layer.inputArgPos ;
       args(inputArgPos) = vars(layer.inputVars) ;
+      
       if ~isequal(layer.func, @slice_wrapper)
         % call function and collect outputs
         out = cell(1, layer.numInputDer) ;
@@ -148,6 +150,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         % args = {X, I1, I2, ..., DYDZ}, derivative of X(I1, I2, ...).
         inputDer = layer.inputVars(1) + 1 ;  % index of input derivative var
         subs = args(2:end-1) ;  % indexing subscripts
+        
         % there's a fast sparse update that doesn't handle repeated
         % indexes, and a slow one that does. to do: MEX file.
         repeats = false ;  % check for repeated indexes
