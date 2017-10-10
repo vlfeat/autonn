@@ -151,7 +151,7 @@ function varargout = cat_der_nonprec(dim, varargin)
   
   for i = 1 : numel(varargin) - 1
     % get size of this input along DIM; 0 if it is empty in any dimension.
-    sz = varargin{i}(dim) * ~isempty(varargin{i}) ;
+    sz = varargin{i}(dim) * all(varargin{i}~=0) ;
     
     % retrieve corresponding derivative, by slicing dzdy
     idx{dim} = start : start + sz - 1 ;

@@ -278,6 +278,23 @@ function compile(net, varargin)
       elseif all(~varsIsPrecious(ii))
         layer.func = nonprecious_der(layer.func);
       end
+      
+      % take size of constant arguments in cat and vl_nnwsum
+      % then update arguments for backward function
+      if any(strcmp({'cat_der_nonprec','vl_nnwsum_nonprec'},func2str(layer.func)))
+        const_arg_pos = 1:numel(layer.args);
+        const_arg_pos(layer.inputArgPos) = 0; %ignore layer arguments
+        if strcmp('cat_der_nonprec',func2str(layer.func))
+          const_arg_pos(1) = 0; %ignore dim argument
+        else
+          const_arg_pos(end-1:end) = 0; %ignore weights
+        end
+        % extract constant argument positions
+        const_arg_pos = const_arg_pos(const_arg_pos~=0);
+        %replace with size
+        layer.args(const_arg_pos) = cellfun(@(c) size(c),layer.args(const_arg_pos),...
+          'UniformOutput',false);
+      end
       net.backward(bk) = layer;
     end
   end
