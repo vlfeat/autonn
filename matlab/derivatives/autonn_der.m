@@ -40,7 +40,13 @@ function dx = shiftdim_der(x, varargin)
   elseif numel(varargin) == 1 % remove singelton behavior y = shiftdim(x);
     dx = reshape(dy,size(x)); % re add singeltons
   else
-    dx = shiftdim(dy,-varargin{2}); % unshift dimensions
+    n = varargin{1};
+    if n<0
+      dx = reshape(dy,size(x)); % remove singletons
+    else
+      n = mod(n,ndims(x));
+      dx = ipermute(dy,[n+1:ndims(x),1:n]); %unshift
+    end
   end
 end
 
