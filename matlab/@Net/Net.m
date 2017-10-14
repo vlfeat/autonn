@@ -46,11 +46,11 @@ classdef Net < handle
     gpu = false  % whether the network is in GPU or CPU mode
     isGpuVar = []  % whether each variable or derivative can be on the GPU
     parameterServer = []  % ParameterServer object, accumulates parameter derivatives across GPUs
+    conserveMemory = false % Delete intermediate derivatives on backward pass
   end
   properties (SetAccess = public, GetAccess = public)
     meta = []  % optional meta properties
     diagnostics = []  % list of diagnosed vars (see Net.plotDiagnostics)
-    conserveMemory = false % Delete intermediate derivatives on backward pass
   end
 
   methods (Access = private)
