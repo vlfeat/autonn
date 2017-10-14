@@ -33,6 +33,17 @@ function dx = reshape_der(x, varargin)  %#ok<*DEFNU>
   end
 end
 
+function dx = shiftdim_der(x, varargin) 
+  dy = varargin{end} ;
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(size(x), 'like', x) ;
+  elseif numel(varargin) == 1 % remove singelton behavior y = shiftdim(x);
+    dx = reshape(dy,size(x)); % re add singeltons
+  else
+    dx = shiftdim(dy,-varargin{2}); % unshift dimensions
+  end
+end
+
 function dx = permute_der(x, dim, dy)
   if isscalar(dy) && dy == 0  % special case, no derivative
     dx = zeros(size(x), 'like', x) ;
