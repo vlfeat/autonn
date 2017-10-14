@@ -112,10 +112,18 @@ function dx = circshift_der(x, k, dim, dy)
   end
 end
 
-
 function dx = abs_der(x, dy)
-  assert(isreal(dy), 'Complex values not supported by ABS derivative.') ;
-  dx = dy .* sign(x) ;
+  if isreal(x)
+    dx = dy .* sign(x) ;
+  else
+    x_re = real(x);
+    x_im = imag(x);
+    mag = x_re.^2 + x_im.^2; 
+    dy = (.5)*dy.*mag.^(-.5); % dx of sqrt
+    dx_re = 2*dy.*x_re; % dx of .^2
+    dx_im = 2*dy.*x_im;
+    dx = dx_re + dx_im*sqrt(-1); % make deriv complex
+  end
 end
 
 function dx = sqrt_der(x, dy)
