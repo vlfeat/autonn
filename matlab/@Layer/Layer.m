@@ -307,6 +307,44 @@ classdef Layer < matlab.mixin.Copyable
       y = Layer(@gather, obj) ;
     end
     
+    % overloaded matrix creation operators (no derivative).
+    function y = rand(obj, varargin)
+      y = Layer(@rand, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = randi(obj, varargin)
+      y = Layer(@randi, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = randn(obj, varargin)
+      y = Layer(@randn, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = randperm(obj, varargin)
+      y = Layer(@randperm, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = zeros(obj, varargin)
+      y = Layer(@zeros, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = ones(obj, varargin)
+      y = Layer(@ones, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = inf(obj, varargin)
+      y = Layer(@inf, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = nan(obj, varargin)
+      y = Layer(@nan, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = eye(obj, varargin)
+      y = Layer(@eye, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    
     % overloaded relational and logical operators (no derivative).
     % note: short-circuited scalar operators (&&, ||) cannot be overloaded,
     % use other logical operators instead (&, |).
@@ -576,46 +614,6 @@ classdef Layer < matlab.mixin.Copyable
       else
         obj.diagnostics = value ;
       end
-    end
-    
-    % overloaded native Matlab functions, static (first argument is not a
-    % Layer object, call with Layer.rand(...)).
-    
-    function y = rand(obj, varargin)
-      y = Layer(@rand, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = randi(obj, varargin)
-      y = Layer(@randi, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = randn(obj, varargin)
-      y = Layer(@randn, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = randperm(obj, varargin)
-      y = Layer(@randperm, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = zeros(obj, varargin)
-      y = Layer(@zeros, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = ones(obj, varargin)
-      y = Layer(@ones, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = inf(obj, varargin)
-      y = Layer(@inf, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = nan(obj, varargin)
-      y = Layer(@nan, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = eye(obj, varargin)
-      y = Layer(@eye, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
     end
   end
   

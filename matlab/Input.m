@@ -31,8 +31,7 @@ classdef Input < Layer
       opts.gpu = false ;
       
       if isscalar(varargin) && ischar(varargin{1})
-        % special syntax, just pass in the name (possibly deprecate in the
-        % future?)
+        % special syntax, just pass in the name
         opts.name = varargin{1} ;
       else
         opts = vl_argparse(opts, varargin, 'nonrecursive') ;
