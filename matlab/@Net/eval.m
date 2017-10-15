@@ -94,9 +94,15 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       end
       [out{:}] = layer.func(args{:}) ;
       vars(layer.outputVar) = out(layer.outputArgPos);
+      % delete intermediate non precious vars
+      if conserveMemory && numel(layer.deleteVars)
+        for i = 1:numel(layer.deleteVars)
+          vars(layer.deleteVars(i)) = {size(vars{layer.deleteVars(i)})};
+        end
+      end
     end
   end
-
+  
   % backward pass
   if strcmp(mode, 'normal') || strcmp(mode, 'backward')
     % clear all derivatives. derivatives are even-numbered vars.
@@ -118,7 +124,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       args = layer.args ;
       inputArgPos = layer.inputArgPos ;
       args(inputArgPos) = vars(layer.inputVars) ;
-
+      
       if ~isequal(layer.func, @slice_wrapper)
         % call function and collect outputs
         out = cell(1, layer.numInputDer) ;
@@ -157,7 +163,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         if ~repeats
           % very efficient, but doesn't handle repeated indexes
           if isequal(vars{inputDer}, 0)  % must initialize with the right size and class
-            vars{inputDer} = zeros(size(vars{inputDer - 1}), 'like', args{end}) ;
+              vars{inputDer} = zeros(size(vars{inputDer - 1}), 'like', args{end}) ;
           end
           vars{inputDer}(subs{:}) = vars{inputDer}(subs{:}) + args{end} ;
         else
@@ -166,12 +172,10 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         end
       end
       
-      % remove derivatives (even input vars)
-      % as they are no longer used in the network
-    if conserveMemory
-        idx = ~mod(layer.inputVars,2);
-        vars(layer.inputVars(idx)) = {[]};
-    end
+      % remove derivatives that are no longer needed
+      if conserveMemory
+        vars(layer.deleteVars) = {[]};
+      end
 
     end
   end

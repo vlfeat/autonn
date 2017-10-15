@@ -16,7 +16,9 @@ function compile(net, varargin)
   opts.shortCircuit = true ;
   opts.optimizeGraph = true ;
   opts.forwardOnly = false ;  % used mainly by evalOutputSize for faster build
+  opts.conserveMemory = false; % must be specified during compilation
   [opts, netOutputs] = vl_argparsepos(opts, varargin) ;
+  net.conserveMemory = opts.conserveMemory;
   
   if ~isscalar(netOutputs)
     % several output layers; create a dummy layer to hold them together
@@ -64,9 +66,9 @@ function compile(net, varargin)
   % allocate memory
   net.forward = Net.initStruct(numel(idx), 'func', 'name', ...
       'source', 'args', 'inputVars', 'inputArgPos', 'outputVar', 'outputArgPos', ...
-      'debugStop') ;
+      'debugStop','precious','deleteVars') ;
   net.backward = Net.initStruct(numel(idx), 'func', 'name', ...
-      'source', 'args', 'inputVars', 'inputArgPos', 'numInputDer', 'accumDer') ;
+      'source', 'args', 'inputVars', 'inputArgPos', 'numInputDer', 'accumDer','deleteVars') ;
 
   if opts.forwardOnly  % empty struct in this case, but with appropriate fields
     net.backward = net.backward([]);
@@ -139,6 +141,11 @@ function compile(net, varargin)
     layer.outputArgPos = find(obj.outputVar ~= 0) ;  % skip unused outputs
     layer.outputVar = obj.outputVar(layer.outputArgPos) ;
     layer.debugStop = obj.debugStop ;
+    layer.precious = obj.precious; 
+    layer.deleteVars = [];
+    if numel(obj.numInputDer) && ~obj.numInputDer
+        layer.precious = false;% non-differentiable functions are not precious
+    end
     net.forward(k) = Net.parseArgs(layer, obj.inputs) ;
   end
 
@@ -154,6 +161,7 @@ function compile(net, varargin)
       layer.name = obj.name ;
       layer.source = obj.source ;
       layer.accumDer = obj.accumDer ;
+      layer.deleteVars = [];
       layer = Net.parseArgs(layer, obj.inputs) ;
 
       % figure out position of derivative argument: it's at the end of the
@@ -177,8 +185,9 @@ function compile(net, varargin)
         layer.numInputDer = obj.numInputDer ;
       end
 
-      if layer.numInputDer == 0
+      if layer.numInputDer == 0 && ~net.conserveMemory
         % there are no output derivatives, so this layer can be skipped
+        % if conserveMemory is enabled, do this after deleteVars is computed
         layer.func = @deal ;
         [layer.args, layer.inputArgPos, layer.inputVars] = deal({}, [], []) ;
 
@@ -217,6 +226,79 @@ function compile(net, varargin)
     end
   end
 
+
+  if net.conserveMemory
+  % compute varsFanOut, which is used to delete variables
+  % not needed for the backwards pass (of non precious layers)
+    varsFanOut = zeros(numel(net.vars),1);
+    derivsFanOut = zeros(numel(net.vars),1);
+    for k = 1:numel(net.forward)
+      ii = net.forward(k).inputVars;
+      if net.forward(k).precious
+        varsFanOut(ii) = Inf; % prevent deletion of vars in precious layers
+      else
+        varsFanOut(ii) =  varsFanOut(ii) + 1;
+      end
+      
+      % do the same for derivs, di is derivative indices
+      di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
+      % NOTE: derivsFanOut is only nonzero for short circuited layers
+      derivsFanOut(di) = derivsFanOut(di) + 1;
+    end
+    
+    % emulate forward pass
+    % precompute deleteVars for fast variable deletion during eval
+    varsIsPrecious = true(numel(net.vars),1);
+    varsIsPrecious(2:2:end) = false; %derivs are non prec by default
+    for k = 1:numel(net.forward)
+      %deleteVars for forward pass
+      ii = net.forward(k).inputVars;
+      varsFanOut(ii) = varsFanOut(ii) - 1;
+      dv = varsFanOut(ii) == 0; %delete vars that are no longer needed
+      net.forward(k).deleteVars = ii(dv);
+      varsIsPrecious(ii(dv)) = false; 
+      
+      % deleteVars for backward pass, di is derivative indices
+      di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
+      derivsFanOut(di) = derivsFanOut(di) - 1;
+      dv = derivsFanOut(di) == 0; %delete vars that are no longer needed
+      net.backward(k).deleteVars = di(dv);
+    end
+    
+    % replace non differentiable functions with proxies now that 
+    % deleteVars has been computed
+    % also, replace some native function derivs with non precious versions
+    for k = 1:numel(net.forward)
+      ii = net.forward(k).inputVars;
+      bk = numel(net.forward)-k+1;
+      layer = net.backward(bk);
+      if objs{idx(k)}.numInputDer == 0
+        layer.func = @deal ;
+        [layer.args, layer.inputArgPos, layer.inputVars] = deal({}, [], []) ;
+      elseif all(~varsIsPrecious(ii))
+        layer.func = nonprecious_der(layer.func);
+      end
+      
+      % take size of constant arguments in cat and vl_nnwsum
+      % then update arguments for backward function
+      if any(strcmp({'cat_der_nonprec','vl_nnwsum_nonprec'},func2str(layer.func)))
+        const_arg_pos = 1:numel(layer.args);
+        const_arg_pos(layer.inputArgPos) = 0; %ignore layer arguments
+        if strcmp('cat_der_nonprec',func2str(layer.func))
+          const_arg_pos(1) = 0; %ignore dim argument
+        else
+          const_arg_pos(end-1:end) = 0; %ignore weights
+        end
+        % extract constant argument positions
+        const_arg_pos = const_arg_pos(const_arg_pos~=0);
+        %replace with size
+        layer.args(const_arg_pos) = cellfun(@(c) size(c),layer.args(const_arg_pos),...
+          'UniformOutput',false);
+      end
+      net.backward(bk) = layer;
+    end
+  end
+  
   
   % compute fan-out of parameters; this is useful to update batch-norm
   % moments with a moving average (cnn_train_autonn>accumulateGradientsAuto

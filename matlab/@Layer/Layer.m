@@ -85,6 +85,7 @@ classdef Layer < matlab.mixin.Copyable
     diagnostics = []  % whether to plot the mean, min and max of the Layer's output var. empty for automatic (network outputs only).
     optimize = []  % whether to optimize this Layer (e.g. merge vl_nnwsum), empty for function-dependent default
     debugStop = false % call `keyboard` during forward pass
+    precious = true
   end
   
   properties (SetAccess = {?Net}, GetAccess = public)
@@ -214,10 +215,12 @@ classdef Layer < matlab.mixin.Copyable
     function y = reshape(obj, varargin)
       y = Layer(@reshape, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
+      y.precious = false;
     end
     function y = repmat(obj, varargin)
       y = Layer(@repmat, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
+      y.precious = false;
     end
     function y = repelem(obj,varargin)
       y = Layer(@repelem,obj,varargin{:});
@@ -225,30 +228,38 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = permute(obj, varargin)
       y = Layer(@permute, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = ipermute(obj, varargin)
       y = Layer(@ipermute, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = shiftdim(obj, varargin)
       y = Layer(@shiftdim, obj, varargin{:}) ;
     end
     function y = squeeze(obj, varargin)
       y = Layer(@squeeze, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = flip(obj, varargin)
       y = Layer(@flip, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = flipud(obj)
       y = Layer(@flip, obj, 1) ;
+      y.precious = false;
     end
     function y = fliplr(obj)
       y = Layer(@flip, obj, 2) ;
+      y.precious = false;
     end
     function y = rot90(obj, varargin)
       y = Layer(@rot90, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = circshift(obj, varargin)
       y = Layer(@circshift, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = size(obj, varargin)
       y = Layer(@size, obj, varargin{:}) ;
@@ -256,9 +267,11 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = sum(obj, varargin)
       y = Layer(@sum, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = mean(obj, varargin)
       y = Layer(@mean, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = max(obj, varargin)
       y = Layer(@max, obj, varargin{:}) ;
@@ -304,6 +317,7 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = cat(obj, varargin)
       y = Layer(@cat, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = gpuArray(obj)
       % need to wrap gpuArray so that it is disabled in CPU mode
@@ -355,7 +369,7 @@ classdef Layer < matlab.mixin.Copyable
     % overloaded relational and logical operators (no derivative).
     % note: short-circuited scalar operators (&&, ||) cannot be overloaded,
     % use other logical operators instead (&, |).
-    
+    % non-differentiable functions are automatically not precious
     function y = ne(a, b)
       y = Layer(@ne, a, b) ;
       y.numInputDer = 0 ;  % non-differentiable
@@ -412,6 +426,7 @@ classdef Layer < matlab.mixin.Copyable
     
     function y = vl_nnwsum(obj, varargin)
       y = Layer(@vl_nnwsum, obj, varargin{:}) ;
+      y.precious = false;
     end
     
     function c = plus(a, b)
@@ -458,9 +473,11 @@ classdef Layer < matlab.mixin.Copyable
     
     function y = transpose(a)
       y = Layer(@transpose, a) ;
+      y.precious = false;
     end
     function y = ctranspose(a)
       y = Layer(@ctranspose, a) ;
+      y.precious = false;
     end
     
     function c = mtimes(a, b)
@@ -491,9 +508,11 @@ classdef Layer < matlab.mixin.Copyable
     
     function y = vertcat(obj, varargin)
       y = Layer(@cat, 1, obj, varargin{:}) ;
+      y.precious = false;
     end
     function y = horzcat(obj, varargin)
       y = Layer(@cat, 2, obj, varargin{:}) ;
+      y.precious = false;
     end
     
     function y = colon(obj, varargin)
@@ -505,6 +524,7 @@ classdef Layer < matlab.mixin.Copyable
     function varargout = subsref(a, s)
       if strcmp(s(1).type, '()')
         varargout{1} = Layer(@slice_wrapper, a, s.subs{:}) ;
+%         varargout{1}.precious = false; TODO: make nonprec
       else
         [varargout{1:nargout}] = builtin('subsref', a, s) ;
       end
