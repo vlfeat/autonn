@@ -16,7 +16,9 @@ function compile(net, varargin)
   opts.shortCircuit = true ;
   opts.optimizeGraph = true ;
   opts.forwardOnly = false ;  % used mainly by evalOutputSize for faster build
+  opts.conserveMemory = false ;
   [opts, netOutputs] = vl_argparsepos(opts, varargin) ;
+  net.conserveMemory = opts.conserveMemory;
   
   if ~isscalar(netOutputs)
     % several output layers; create a dummy layer to hold them together
@@ -66,7 +68,7 @@ function compile(net, varargin)
       'source', 'args', 'inputVars', 'inputArgPos', 'outputVar', 'outputArgPos', ...
       'debugStop') ;
   net.backward = Net.initStruct(numel(idx), 'func', 'name', ...
-      'source', 'args', 'inputVars', 'inputArgPos', 'numInputDer', 'accumDer') ;
+      'source', 'args', 'inputVars', 'inputArgPos', 'numInputDer', 'accumDer', 'deleteVars') ;
 
   if opts.forwardOnly  % empty struct in this case, but with appropriate fields
     net.backward = net.backward([]);
@@ -154,6 +156,7 @@ function compile(net, varargin)
       layer.name = obj.name ;
       layer.source = obj.source ;
       layer.accumDer = obj.accumDer ;
+      layer.deleteVars = [];
       layer = Net.parseArgs(layer, obj.inputs) ;
 
       % figure out position of derivative argument: it's at the end of the
@@ -216,7 +219,25 @@ function compile(net, varargin)
       netOutputs{k}.diagnostics = true ;
     end
   end
-
+  
+  if net.conserveMemory
+    % compute derivsFanOut, which is used to delete derivatives
+    derivsFanOut = zeros(numel(net.vars),1);
+    for k = 1:numel(net.backward)
+      di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
+      % NOTE: derivsFanOut is only nonzero for short circuited layers
+      derivsFanOut(di) = derivsFanOut(di) + 1;
+    end
+    % emulate backward pass
+    % precompute deleteVars for fast variable deletion during eval
+    for k = 1:numel(net.backward)
+      % di is derivative indices
+      di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
+      derivsFanOut(di) = derivsFanOut(di) - 1;
+      dv = derivsFanOut(di) == 0; %delete vars that are no longer needed
+      net.backward(k).deleteVars = di(dv);
+    end
+  end
   
   % compute fan-out of parameters; this is useful to update batch-norm
   % moments with a moving average (cnn_train_autonn>accumulateGradientsAuto
