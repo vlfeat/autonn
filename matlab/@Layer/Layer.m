@@ -230,7 +230,7 @@ classdef Layer < matlab.mixin.Copyable
       y = Layer(@ipermute, obj, varargin{:}) ;
     end
     function y = shiftdim(obj, varargin)
-      y = Layer(@permute, obj, varargin{:}) ;
+      y = Layer(@shiftdim, obj, varargin{:}) ;
     end
     function y = squeeze(obj, varargin)
       y = Layer(@squeeze, obj, varargin{:}) ;
