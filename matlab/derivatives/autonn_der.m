@@ -33,6 +33,23 @@ function dx = reshape_der(x, varargin)  %#ok<*DEFNU>
   end
 end
 
+function dx = shiftdim_der(x, varargin) 
+  dy = varargin{end} ;
+  if isscalar(dy) && dy == 0  % special case, no derivative
+    dx = zeros(size(x), 'like', x) ;
+  elseif numel(varargin) == 1 % remove singelton behavior y = shiftdim(x);
+    dx = reshape(dy,size(x)); % re add singeltons
+  else
+    n = varargin{1};
+    if n<0
+      dx = reshape(dy,size(x)); % remove singletons
+    else
+      n = mod(n,ndims(x));
+      dx = ipermute(dy,[n+1:ndims(x),1:n]); %unshift
+    end
+  end
+end
+
 function dx = permute_der(x, dim, dy)
   if isscalar(dy) && dy == 0  % special case, no derivative
     dx = zeros(size(x), 'like', x) ;
@@ -95,10 +112,18 @@ function dx = circshift_der(x, k, dim, dy)
   end
 end
 
-
 function dx = abs_der(x, dy)
-  assert(isreal(dy), 'Complex values not supported by ABS derivative.') ;
-  dx = dy .* sign(x) ;
+  if isreal(x)
+    dx = dy .* sign(x) ;
+  else
+    x_re = real(x);
+    x_im = imag(x);
+    mag = x_re.^2 + x_im.^2; 
+    dy = (.5)*dy.*mag.^(-.5); % dx of sqrt
+    dx_re = 2*dy.*x_re; % dx of .^2
+    dx_im = 2*dy.*x_im;
+    dx = dx_re + dx_im*sqrt(-1); % make deriv complex
+  end
 end
 
 function dx = sqrt_der(x, dy)

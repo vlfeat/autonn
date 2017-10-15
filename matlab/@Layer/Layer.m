@@ -219,11 +219,18 @@ classdef Layer < matlab.mixin.Copyable
       y = Layer(@repmat, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
     end
+    function y = repelem(obj,varargin)
+      y = Layer(@repelem,obj,varargin{:});
+      y.numInputDer = 1 ;  % only the first derivative is defined
+    end
     function y = permute(obj, varargin)
       y = Layer(@permute, obj, varargin{:}) ;
     end
     function y = ipermute(obj, varargin)
       y = Layer(@ipermute, obj, varargin{:}) ;
+    end
+    function y = shiftdim(obj, varargin)
+      y = Layer(@permute, obj, varargin{:}) ;
     end
     function y = squeeze(obj, varargin)
       y = Layer(@squeeze, obj, varargin{:}) ;
