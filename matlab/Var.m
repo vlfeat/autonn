@@ -1,7 +1,7 @@
 classdef Var < Param
 %VAR Defines a network variable explicitly
-%   Var('value', VALUE) defines an explicit variable in the network, with a
-%   given value.
+%   Var(VALUE) or Var('value', VALUE) defines an explicit variable in the
+%   network, with a given value.
 %
 %   Most of the time this is not needed; variables are created implicitly
 %   to hold the values of any Inputs, Params, and output values computed by
@@ -11,7 +11,7 @@ classdef Var < Param
 %
 %   An explicit variable (Var) acts like a constant argument to a Layer,
 %   but may still be useful for the following reasons:
-%   1. Its value can be moved to and from the GPU using NET.MOVE.
+%   1. Its value can be moved to and from the GPU using NET.USEGPU.
 %   2. Its value can be set after network construction, with NET.SETVALUE.
 %   3. Its derivative can be retrieved with NET.GETDER.
 %
@@ -25,6 +25,11 @@ classdef Var < Param
 
   methods
     function obj = Var(varargin)
+      if isscalar(varargin)
+        % special syntax, just passed in the value
+        varargin = {'value', varargin{1}} ;
+      end
+      
       obj@Param('trainMethod','none', 'weightDecay',0, ...
         'learningRate',0, varargin{:})
     end

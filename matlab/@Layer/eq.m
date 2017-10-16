@@ -12,7 +12,12 @@ function y = eq(a, b, same)
   else
     assert(isequal(same, 'sameInstance'), ...
       'The only accepted extra flag for EQ is ''sameInstance''.') ;
-    y = eq@handle(a, b) ;
+    
+    if ~isa(a, 'Layer') || ~isa(b, 'Layer')
+      y = false ;
+    else
+      y = eq@handle(a, b) ;
+    end
   end
 end
 

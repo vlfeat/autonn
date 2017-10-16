@@ -219,11 +219,18 @@ classdef Layer < matlab.mixin.Copyable
       y = Layer(@repmat, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
     end
+    function y = repelem(obj,varargin)
+      y = Layer(@repelem,obj,varargin{:});
+      y.numInputDer = 1 ;  % only the first derivative is defined
+    end
     function y = permute(obj, varargin)
       y = Layer(@permute, obj, varargin{:}) ;
     end
     function y = ipermute(obj, varargin)
       y = Layer(@ipermute, obj, varargin{:}) ;
+    end
+    function y = shiftdim(obj, varargin)
+      y = Layer(@shiftdim, obj, varargin{:}) ;
     end
     function y = squeeze(obj, varargin)
       y = Layer(@squeeze, obj, varargin{:}) ;
@@ -298,6 +305,9 @@ classdef Layer < matlab.mixin.Copyable
     function y = cat(obj, varargin)
       y = Layer(@cat, obj, varargin{:}) ;
     end
+    function y = accumarray(obj, varargin)
+      y = Layer(@accumarray, obj, varargin{:}) ;
+    end
     function y = gpuArray(obj)
       % need to wrap gpuArray so that it is disabled in CPU mode
       y = Layer(@gpuArray_wrapper, obj, Input('gpuMode')) ;
@@ -305,6 +315,44 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = gather(obj)
       y = Layer(@gather, obj) ;
+    end
+    
+    % overloaded matrix creation operators (no derivative).
+    function y = rand(obj, varargin)
+      y = Layer(@rand, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = randi(obj, varargin)
+      y = Layer(@randi, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = randn(obj, varargin)
+      y = Layer(@randn, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = randperm(obj, varargin)
+      y = Layer(@randperm, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = zeros(obj, varargin)
+      y = Layer(@zeros, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = ones(obj, varargin)
+      y = Layer(@ones, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = inf(obj, varargin)
+      y = Layer(@inf, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = nan(obj, varargin)
+      y = Layer(@nan, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
+    end
+    function y = eye(obj, varargin)
+      y = Layer(@eye, obj, varargin{:}) ;
+      y.numInputDer = 0 ;  % non-differentiable
     end
     
     % overloaded relational and logical operators (no derivative).
@@ -576,46 +624,6 @@ classdef Layer < matlab.mixin.Copyable
       else
         obj.diagnostics = value ;
       end
-    end
-    
-    % overloaded native Matlab functions, static (first argument is not a
-    % Layer object, call with Layer.rand(...)).
-    
-    function y = rand(obj, varargin)
-      y = Layer(@rand, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = randi(obj, varargin)
-      y = Layer(@randi, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = randn(obj, varargin)
-      y = Layer(@randn, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = randperm(obj, varargin)
-      y = Layer(@randperm, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = zeros(obj, varargin)
-      y = Layer(@zeros, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = ones(obj, varargin)
-      y = Layer(@ones, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = inf(obj, varargin)
-      y = Layer(@inf, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = nan(obj, varargin)
-      y = Layer(@nan, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
-    end
-    function y = eye(obj, varargin)
-      y = Layer(@eye, obj, varargin{:}) ;
-      y.numInputDer = 0 ;  % non-differentiable
     end
   end
   
