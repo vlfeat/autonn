@@ -6,6 +6,7 @@ classdef Dataset < handle
     batchSize = 128  % batch size
     trainSet = []  % indexes of training samples
     valSet = []  % indexes of validation samples
+    partialBatches = false  % whether to return a partial batch (if the batch size does not divide the dataset size)
     prefetch = false
   end
   
@@ -49,6 +50,11 @@ classdef Dataset < handle
       for start = 1 : o.batchSize : size(idx,2)
         batches{b} = idx(:, start : min(start + o.batchSize - 1, end)) ;
         b = b + 1 ;
+      end
+      
+      % delete last partial batch if needed
+      if ~o.partialBatches && size(batches{end}, 2) < o.batchSize
+        batches(end) = [] ;
       end
       
       if o.prefetch
