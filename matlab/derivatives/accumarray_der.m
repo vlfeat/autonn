@@ -51,28 +51,36 @@ function [dsubs, dval] = accumarray_der(subs, val, sz, fun, dy)
     % find inputs (val) that correspond to the max/min value
     is_max = (Y(I) == val(:)) ;
     
-    dval = zeros(size(val));
+    dval = zeros(size(val), 'like', val);
     
-    % fast but does not break ties - when two elements equal the max/min
-    % value, both will have a non-zero gradient, instead of just one:
-    % dval(is_max) = dy(I(is_max)) ;
-    
-    % to break ties, change indexes I from RHS of the equation above to the
-    % LHS. the assignment will overwrite any repeated indexes and keep only
-    % the last to be assigned, e.g. X([1 1 2])=[10 20 30] gets X=[20 30].
-    max_idx = find(is_max) ;
-    
-    % ensure first element is the last to be written (overwriting repeats)
-    max_idx = max_idx(end:-1:1) ;
-    
-    % index of max input, for each output, or 0 if not present in I
-    S = zeros(sz) ;
-    S(I(max_idx)) = max_idx ;
-    
-    % use S to pick output derivatives and copy to input-sized tensor
-    valid = (S ~= 0) ;
-    dval(S(valid)) = dy(valid) ;
-    
+    if isa(subs, 'gpuArray')
+      % fast but does not break ties - when two elements equal the max/min
+      % value, both will have a non-zero gradient, instead of just one.
+      % this does not give the exact gradient, but is very unlikely in a
+      % stochastic scenario.
+      dval(is_max) = dy(I(is_max)) ;
+      
+    else
+      % to break ties, change indexes I from RHS of the equation above to
+      % the LHS. the assignment will overwrite any repeated indexes and
+      % keep only the last to be assigned, e.g. X([1 1 2])=[10 20 30] gets
+      % X=[20 30].
+      % note this trick does not work if subs is a gpuArray, since it does
+      % not support repeated indexes in an assignment.
+      
+      max_idx = find(is_max) ;
+
+      % ensure first element is the last to be written (overwriting repeats)
+      max_idx = max_idx(end:-1:1) ;
+
+      % index of max input, for each output, or 0 if not present in I
+      S = zeros(sz, 'like', subs) ;
+      S(I(max_idx)) = max_idx ;
+
+      % use S to pick output derivatives and copy to input-sized tensor
+      valid = (S ~= 0) ;
+      dval(S(valid)) = dy(valid) ;
+    end
     
   else
     error('ACCUMARRAY derivative does not support function %s.', func2str(fun)) ;
