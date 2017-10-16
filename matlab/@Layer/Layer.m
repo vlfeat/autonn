@@ -305,6 +305,9 @@ classdef Layer < matlab.mixin.Copyable
     function y = cat(obj, varargin)
       y = Layer(@cat, obj, varargin{:}) ;
     end
+    function y = accumarray(obj, varargin)
+      y = Layer(@accumarray, obj, varargin{:}) ;
+    end
     function y = gpuArray(obj)
       % need to wrap gpuArray so that it is disabled in CPU mode
       y = Layer(@gpuArray_wrapper, obj, Input('gpuMode')) ;
