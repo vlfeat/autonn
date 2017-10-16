@@ -10,6 +10,13 @@ classdef Dataset < handle
   end
   
   methods
+    function dataset = Dataset(varargin)
+      % parse generic Dataset arguments on non-subclassed construction.
+      % allows Dataset to be used as a stand-alone class.
+      varargin = dataset.parseGenericArgs(varargin) ;
+      assert(isempty(varargin), 'Unknown arguments.') ;
+    end
+    
     function args = parseGenericArgs(o, args)
       % called by subclasses to parse generic Dataset arguments
       args = vl_parseprop(o, args, {'batchSize', 'prefetch'}) ;
