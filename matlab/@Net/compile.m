@@ -241,6 +241,12 @@ function compile(net, varargin)
     % which is the no. of layers each var/der is input to
     varsFanOut = zeros(numel(net.vars),1);
     derivsFanOut = zeros(numel(net.vars),1);
+    isParam = false(numel(net.vars),1) ; % Var or Param
+    for p = 1:numel(net.params)
+      isParam(net.params(p).var) = true;
+    end
+    varsFanOut(isParam) = Inf; % prevent deletion of Var or Param
+    
     for k = 1:numel(net.forward)
       if conserveMemoryForward
         ii = net.forward(k).inputVars;
@@ -254,8 +260,11 @@ function compile(net, varargin)
       if conserveMemoryBackward
         % do the same for derivs, di is derivative indices
         di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
-        % NOTE: derivsFanOut is only nonzero for short circuited layers
+        % NOTE: derivsFanOut is only > 1 for short circuited layers
         derivsFanOut(di) = derivsFanOut(di) + 1;
+        if any(isParam(di))
+          derivsFanOut(di) = Inf ; % prevent deletion of Var or Param ders
+        end
       end
     end
     
