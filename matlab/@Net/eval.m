@@ -74,13 +74,24 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
     net.vars{net.inputs.testMode} = testMode ;
   end
 
+  newInputVars = false;
+  % check if inputVarsInfo has not been initialized or
+  % input sizes have changed
+  for i = 1 : 2 : numel(inputs) - 1
+    var = net.getVarIndex(inputs{i}) ;
+    if numel(net.inputVarsInfo) < var || ~isfield(net.inputVarsInfo{var},'size') ...
+        || ~isequal(net.inputVarsInfo{var}.size,size(net.vars{var}))
+      newInputVars = true;
+      break;
+    end
+  end
 
   % use local variables for efficiency
   forward = net.forward ;
   vars = net.vars ;
   conserveMemory = net.conserveMemory;
+  
   net.vars = {} ;  % allows Matlab to release memory when needed
-
   % forward pass
   if ~strcmp(mode, 'backward')
     for k = 1:numel(forward)
@@ -94,10 +105,15 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       end
       [out{:}] = layer.func(args{:}) ;
       vars(layer.outputVar) = out(layer.outputArgPos);
-      % delete intermediate non precious vars
-      if conserveMemory && numel(layer.deleteVars)
+      
+      % delete non precious variables not needed for backward pass
+      if newInputVars && conserveMemory && numel(layer.deleteVars)
+        % TODO: change to cellfun
         for i = 1:numel(layer.deleteVars)
-          vars(layer.deleteVars(i)) = {size(vars{layer.deleteVars(i)})};
+          % save size and type 
+          v = vars{layer.deleteVars(i)};
+         	vars{layer.deleteVars(i)} = struct('size',size(v),...
+            'type', cast(0,'like',v));
         end
       end
     end
