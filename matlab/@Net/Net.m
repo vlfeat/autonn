@@ -46,8 +46,7 @@ classdef Net < handle
     gpu = false  % whether the network is in GPU or CPU mode
     isGpuVar = []  % whether each variable or derivative can be on the GPU
     parameterServer = []  % ParameterServer object, accumulates parameter derivatives across GPUs
-    conserveMemory = false % Aggressively delete intermediate vars on forward and backward pass
-    inputVarsInfo = {}  % cell array of input size and type
+    conserveMemory = false %Aggressively delete intermediate vars on forward and backward pass
   end
   properties (SetAccess = public, GetAccess = public)
     meta = []  % optional meta properties

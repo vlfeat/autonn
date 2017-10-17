@@ -248,15 +248,15 @@ function compile(net, varargin)
     
     % emulate forward pass
     % precompute deleteVars for fast variable deletion during eval
-%     varsIsPrecious = true(numel(net.vars),1);
-%     varsIsPrecious(2:2:end) = false; %derivs are non prec by default
+    varsIsPrecious = true(numel(net.vars),1);
+    varsIsPrecious(2:2:end) = false; %derivs are non prec by default
     for k = 1:numel(net.forward)
       %deleteVars for forward pass
       ii = net.forward(k).inputVars;
       varsFanOut(ii) = varsFanOut(ii) - 1;
       dv = varsFanOut(ii) == 0; %delete vars that are no longer needed
       net.forward(k).deleteVars = ii(dv);
-%       varsIsPrecious(ii(dv)) = false; 
+      varsIsPrecious(ii(dv)) = false; 
       
       % deleteVars for backward pass, di is derivative indices
       di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
@@ -269,32 +269,32 @@ function compile(net, varargin)
     % deleteVars has been computed
     % also, replace some native function derivs with non precious versions
     for k = 1:numel(net.forward)
-%       ii = net.forward(k).inputVars;
+      ii = net.forward(k).inputVars;
       bk = numel(net.forward)-k+1;
       layer = net.backward(bk);
       if objs{idx(k)}.numInputDer == 0
         layer.func = @deal ;
         [layer.args, layer.inputArgPos, layer.inputVars] = deal({}, [], []) ;
-%       elseif all(~varsIsPrecious(ii))
-%         layer.func = nonprecious_der(layer.func);
+      elseif all(~varsIsPrecious(ii))
+        layer.func = nonprecious_der(layer.func);
       end
       
       % take size of constant arguments in cat and vl_nnwsum
       % then update arguments for backward function
-%       if any(strcmp({'cat_der_nonprec','vl_nnwsum_nonprec'},func2str(layer.func)))
-%         const_arg_pos = 1:numel(layer.args);
-%         const_arg_pos(layer.inputArgPos) = 0; %ignore layer arguments
-%         if strcmp('cat_der_nonprec',func2str(layer.func))
-%           const_arg_pos(1) = 0; %ignore dim argument
-%         else
-%           const_arg_pos(end-1:end) = 0; %ignore weights
-%         end
-%         % extract constant argument positions
-%         const_arg_pos = const_arg_pos(const_arg_pos~=0);
-%         %replace with size
-%         layer.args(const_arg_pos) = cellfun(@(c) size(c),layer.args(const_arg_pos),...
-%           'UniformOutput',false);
-%       end
+      if any(strcmp({'cat_der_nonprec','vl_nnwsum_nonprec'},func2str(layer.func)))
+        const_arg_pos = 1:numel(layer.args);
+        const_arg_pos(layer.inputArgPos) = 0; %ignore layer arguments
+        if strcmp('cat_der_nonprec',func2str(layer.func))
+          const_arg_pos(1) = 0; %ignore dim argument
+        else
+          const_arg_pos(end-1:end) = 0; %ignore weights
+        end
+        % extract constant argument positions
+        const_arg_pos = const_arg_pos(const_arg_pos~=0);
+        %replace with size
+        layer.args(const_arg_pos) = cellfun(@(c) size(c),layer.args(const_arg_pos),...
+          'UniformOutput',false);
+      end
       net.backward(bk) = layer;
     end
   end
