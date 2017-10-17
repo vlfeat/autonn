@@ -79,11 +79,9 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
   newInputVars = false;
   for i = 1 : 2 : numel(inputs) - 1
     var = net.getVarIndex(inputs{i}) ;
-    if numel(net.inputVarsInfo) < var || ~isfield(net.inputVarsInfo{var},'size') ...
-        || ~isequal(net.inputVarsInfo{var}.size,size(net.vars{var}))
+    if numel(net.inputVarsInfo) < var || ~isequal(net.inputVarsInfo{var}.size,size(net.vars{var}))
       newInputVars = true;
       net.inputVarsInfo{var}.size = size(net.vars{var});
-      break;
     end
   end
   
