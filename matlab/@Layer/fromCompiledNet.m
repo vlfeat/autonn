@@ -120,6 +120,9 @@ function netOutputs = fromCompiledNet(net)
     % retrieve the number of input derivatives from the backward struct
     obj.numInputDer = backward(end - var2forward(varIdx) + 1).numInputDer ;
     
+    %retrieve precious value (set during overloaded construction)
+    obj.precious = layer.precious;
+ 
     % store in the 'layers' cell array so other references to the same var
     % will fetch the same layer
     obj.name = layer.name ;
