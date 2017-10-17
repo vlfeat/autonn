@@ -40,7 +40,7 @@ function varargout = cat_der(dim, varargin)
     x_sz = [x_sz, ones(1,ndims(dzdy) - numel(x_sz))] ; % dims after ndims(x) are size 1
     
     % get size of this input along DIM; 0 if it is empty in any dimension.
-    sz = x_sz(dim) * ~all(x_sz~=0) ;
+    sz = x_sz(dim) * ~any(x_sz==0) ;
     
     % retrieve corresponding derivative, by slicing dzdy
     idx{dim} = start : start + sz - 1 ;
