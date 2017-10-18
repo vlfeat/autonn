@@ -503,6 +503,10 @@ classdef Layer < matlab.mixin.Copyable
       y = Layer(@colon, obj, varargin{:}) ;
       y.numInputDer = 0 ;  % non-differentiable
     end
+
+    function y = sort(obj, varargin)
+      y = Layer(@sort, obj, varargin{:}) ;
+    end
     
     % overloaded indexing
     function varargout = subsref(a, s)
