@@ -53,7 +53,7 @@ classdef nnlayers < nntest
       do(test, a * b) ;
       do(test, a') ;
       do(test, inv(a)) ;
-      do(test, a / b) ; % TROUBLE
+      do(test, a / b) ;
       
       % binary with expanded dimensions
       do(test, a .* d) ;
@@ -61,7 +61,7 @@ classdef nnlayers < nntest
       do(test, a .^ 2) ;
 
       %% sorting is a kind of math
-      do(test, sort(a)) ; % TROUBLE
+      do(test, sort(a)) ;
     end
     
     function testConv(test)
