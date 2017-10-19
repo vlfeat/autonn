@@ -28,18 +28,29 @@ classdef nnlayers < nntest
       
       %do(test, vl_nnloss(x, labels, 'loss', 'classerror')) ; % TROUBLE
       
-      if strcmp(test.currentDataType, 'single')
-        % bnorm parameters are created as single
-        do(test, vl_nnbnorm(x)) ;
+      if strcmp(test.currentDataType, 'single')  % bnorm params are single
+        % batch-norm needs special handling
+        bnorm = vl_nnbnorm(x) ;
+        
+        % replicate gain/bias for all output channels (ordinarily done by
+        % the solver on first update)
+        bnorm.inputs{2}.value = bnorm.inputs{2}.value([1; 1]) ;  % gain
+        bnorm.inputs{3}.value = bnorm.inputs{3}.value([1; 1]) ;  % bias
+        
+        % delete the 'moments' parameter, since it is not updated by
+        % gradient descent, but by a moving average
+        bnorm.inputs{4} = [] ;
+        
+        do(test, bnorm) ;
       end
     end
     
     function testMath(test)
       % use Params for all inputs so we can choose their values now
-      a = Param('value', randn(3, 3, test.currentDataType) + 0.1 * ones(3,3)) ;
-      b = Param('value', randn(3, 3, test.currentDataType) + 0.1 * ones(3,3)) ;
-      c = Param('value', randn(1, 1, test.currentDataType)) ;
-      d = Param('value', randn(3, 1, test.currentDataType)) ;
+      a = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
+      b = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
+      c = Param('value', ones(1, 1, test.currentDataType)) ;  % scalar
+      d = Param('value', randn(3, 1, test.currentDataType)) ;  % vector
       Layer.workspaceNames() ;
       
       % test several operations
