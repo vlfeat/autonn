@@ -24,11 +24,22 @@ classdef nnlayers < nntest
       
       do(test, vl_nnpool(x, [2, 2], 'stride', 2, 'pad', 1)) ;
       
-      %do(test, vl_nndropout(x, 'rate', 0.1)) ; % TROUBLE
+      do(test, vl_nnloss(x, labels, 'loss', 'classerror')) ;
       
-      %do(test, vl_nnloss(x, labels, 'loss', 'classerror')) ; % TROUBLE
+      % dropout is composed of 2 parts: the mask generator, and the dropout
+      % mask applier. run derivative check with fixed mask.
+      rate = 0.1 ;
+      dropout = vl_nndropout(x, 'rate', rate) ;
+      mask = dropout.inputs{2} ;
       
-      if strcmp(test.currentDataType, 'single')  % bnorm params are single
+      test.verifyInstanceOf(mask, 'Layer') ;
+      test.verifyEqual(mask.func, @vl_nnmask) ;
+      
+      dropout.inputs{2} = vl_nnmask(x.value, rate) ;  % make it constant
+      do(test, dropout) ;
+      
+      % bnorm params are single
+      if strcmp(test.currentDataType, 'single')
         % batch-norm needs special handling
         bnorm = vl_nnbnorm(x) ;
         
@@ -37,9 +48,9 @@ classdef nnlayers < nntest
         bnorm.inputs{2}.value = bnorm.inputs{2}.value([1; 1]) ;  % gain
         bnorm.inputs{3}.value = bnorm.inputs{3}.value([1; 1]) ;  % bias
         
-        % delete the 'moments' parameter, since it is not updated by
-        % gradient descent, but by a moving average
-        bnorm.inputs{4} = [] ;
+        % ignore the 4th parameter (moments), since it is not updated by
+        % gradient descent but by a moving average
+        bnorm.numInputDer = 3 ;
         
         do(test, bnorm) ;
       end
@@ -136,6 +147,7 @@ classdef nnlayers < nntest
 
       % check ders
       checkedIns = cellfun(@(x) isa(x, 'Param'), output.inputs) ;
+      checkedIns(output.numInputDer + 1 : end) = false ;  % ignore non-differentiable inputs
       inVars = cellfun(@(x) {x.name}, output.inputs(checkedIns)) ;
       ins = cellfun(@(x) {{x, net.getValue(x)}}, inVars) ; ins = [ins{:}] ;
       outName = output.name ;
