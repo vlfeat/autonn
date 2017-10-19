@@ -1,38 +1,38 @@
 classdef nnlayers < nntest
   methods (Test)
-    %function testLayers(test)
-      %% use Params for all inputs so we can choose their values now
-      %x = Param('value', randn(7, 7, 2, 5, test.currentDataType)) ;
-      %w = Param('value', randn(3, 3, 2, 3, test.currentDataType)) ;
-      %b = Param('value', randn(3, 1, test.currentDataType)) ;
-      %labels = Param('value', ones(5, 1)) ;
-      %Layer.workspaceNames() ;
+    function testLayers(test)
+      % use Params for all inputs so we can choose their values now
+      x = Param('value', randn(7, 7, 2, 5, test.currentDataType)) ;
+      w = Param('value', randn(3, 3, 2, 3, test.currentDataType)) ;
+      b = Param('value', randn(3, 1, test.currentDataType)) ;
+      labels = Param('value', ones(5, 1)) ;
+      Layer.workspaceNames() ;
       
-      %% test several layers and syntaxes
+      % test several layers and syntaxes
       
-      %do(test, vl_nnrelu(x)) ;
+      do(test, vl_nnrelu(x)) ;
       
-      %do(test, vl_nnconv(x, w, b)) ;
+      do(test, vl_nnconv(x, w, b)) ;
       
-      %do(test, vl_nnconv(x, w, b, 'stride', 3, 'pad', 2)) ;
+      do(test, vl_nnconv(x, w, b, 'stride', 3, 'pad', 2)) ;
       
-      %do(test, vl_nnconvt(x, permute(w, [1 2 4 3]), b)) ;
+      do(test, vl_nnconvt(x, permute(w, [1 2 4 3]), b)) ;
       
-      %do(test, vl_nnconvt(x, permute(w, [1 2 4 3]), b, 'upsample', 3, 'crop', 2)) ;
+      do(test, vl_nnconvt(x, permute(w, [1 2 4 3]), b, 'upsample', 3, 'crop', 2)) ;
       
-      %do(test, vl_nnpool(x, 2)) ;
+      do(test, vl_nnpool(x, 2)) ;
       
-      %do(test, vl_nnpool(x, [2, 2], 'stride', 2, 'pad', 1)) ;
+      do(test, vl_nnpool(x, [2, 2], 'stride', 2, 'pad', 1)) ;
       
-      %%do(test, vl_nndropout(x, 'rate', 0.1)) ; % TROUBLE
+      %do(test, vl_nndropout(x, 'rate', 0.1)) ; % TROUBLE
       
-      %%do(test, vl_nnloss(x, labels, 'loss', 'classerror')) ; % TROUBLE
+      %do(test, vl_nnloss(x, labels, 'loss', 'classerror')) ; % TROUBLE
       
-      %if strcmp(test.currentDataType, 'single')
-        %% bnorm parameters are created as single
-        %do(test, vl_nnbnorm(x)) ;
-      %end
-    %end
+      if strcmp(test.currentDataType, 'single')
+        % bnorm parameters are created as single
+        do(test, vl_nnbnorm(x)) ;
+      end
+    end
     
     function testMath(test)
       % use Params for all inputs so we can choose their values now
@@ -45,48 +45,48 @@ classdef nnlayers < nntest
       % test several operations
       
       % wsum
-      %do(test, a + b) ;
-      %do(test, 10 * a) ;
-      %do(test, a + 2 * b - c) ;  % collected arguments in a single wsum
+      do(test, a + b) ;
+      do(test, 10 * a) ;
+      do(test, a + 2 * b - c) ;  % collected arguments in a single wsum
       
       % matrix
-      %do(test, a * b) ;
-      %do(test, a') ;
-      %do(test, inv(a)) ;
-      %do(test, a / b) ; % TROUBLE
+      do(test, a * b) ;
+      do(test, a') ;
+      do(test, inv(a)) ;
+      do(test, a / b) ; % TROUBLE
       
       % binary with expanded dimensions
-      %do(test, a .* d) ;
-      %do(test, a ./ d) ;
-      %do(test, a .^ 2) ;
+      do(test, a .* d) ;
+      do(test, a ./ d) ;
+      do(test, a .^ 2) ;
 
       %% sorting is a kind of math
       do(test, sort(a)) ; % TROUBLE
     end
     
-    %function testConv(test)
-      %% extra conv tests
-      %if strcmp(test.currentDataType, 'double'), return, end
+    function testConv(test)
+      % extra conv tests
+      if strcmp(test.currentDataType, 'double'), return, end
       
-      %x = Param('value', randn(7, 7, 2, 5, test.currentDataType)) ;
+      x = Param('value', randn(7, 7, 2, 5, test.currentDataType)) ;
       
-      %% 'size' syntax
-      %do(test, vl_nnconv(x, 'size', [7, 7, 2, 5])) ;
+      % 'size' syntax
+      do(test, vl_nnconv(x, 'size', [7, 7, 2, 5])) ;
       
-      %% bias
-      %layer = vl_nnconv(x, 'size', [7, 7, 2, 5], 'hasBias', false) ;
-      %do(test, layer) ;
-      %test.verifyEmpty(layer.inputs{3}) ;
+      % bias
+      layer = vl_nnconv(x, 'size', [7, 7, 2, 5], 'hasBias', false) ;
+      do(test, layer) ;
+      test.verifyEmpty(layer.inputs{3}) ;
       
-      %% Param learning arguments
-      %layer = vl_nnconv(x, 'size', [7, 7, 2, 5], ...
-          %'learningRate', [1, 2], 'weightDecay', [3, 4]) ;
-      %do(test, layer) ;
-      %test.eq(layer.inputs{2}.learningRate, 1) ;
-      %test.eq(layer.inputs{3}.learningRate, 2) ;
-      %test.eq(layer.inputs{2}.weightDecay, 3) ;
-      %test.eq(layer.inputs{3}.weightDecay, 4) ;
-    %end
+      % Param learning arguments
+      layer = vl_nnconv(x, 'size', [7, 7, 2, 5], ...
+          'learningRate', [1, 2], 'weightDecay', [3, 4]) ;
+      do(test, layer) ;
+      test.eq(layer.inputs{2}.learningRate, 1) ;
+      test.eq(layer.inputs{3}.learningRate, 2) ;
+      test.eq(layer.inputs{2}.weightDecay, 3) ;
+      test.eq(layer.inputs{3}.weightDecay, 4) ;
+    end
   end
   
   methods
@@ -124,22 +124,11 @@ classdef nnlayers < nntest
       end
 
       % check ders
-      %base = net.vars ;
       checkedIns = cellfun(@(x) isa(x, 'Param'), output.inputs) ;
-      %fixedIns = ~checkedIns ; % layer inputs which will not be checked
       inVars = cellfun(@(x) {x.name}, output.inputs(checkedIns)) ;
       ins = cellfun(@(x) {{x, net.getValue(x)}}, inVars) ; ins = [ins{:}] ;
-      %ins = [ins output.inputs(fixedIns)] ;
       outName = output.name ;
-      %keyboard
-      %numIns = numel(output.inputs) ;
-      %inVars = net.getValue(1:2:numIns*2-1) ;
-      %if numIns == 1, inVars = {inVars} ; end  % for consistent access interface
       for ii = 1:numel(inVars)
-        %net.vars = base ; % reset vars
-        %net.vars = base ;
-        % update current input
-        %varName = output.inputs{ii}.name ;
         inValue = net.getValue(inVars{ii}) ;
         wrapper = @(x) forward_wrapper(net, outName, ins, ii, x) ;
         net.eval({}, 'normal', der) ; % refresh
