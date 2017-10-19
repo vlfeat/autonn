@@ -33,32 +33,9 @@ function varargout = sort_der(x, varargin)
   outDims = cell(1, numel(size(x_))) ;
   [outDims{:}] = ind2sub(size(x_), 1:numel(x_)) ;
   coords = vertcat(outDims{:})' ; % generate coordinates of inverse mapping
-  revIdx = zeros(size(x_)) ;
-  sz = size(x_) ;
-  %revIdx = arrayfun(@(ii) reverser(coords, dim, idx, ii, sz), 1:size(coords,1)) ;
-  %keyboard
-  coords2 = coords ;
-  coords2(:,dim) = idx(:) ; % reverse along target dimension
-  ins = mat2cell(coords2, size(coords2, 1), ones(1, size(coords2,2))) ;
-  revIdx2 = sub2ind(sz, ins{:}) ;
-  inverted(revIdx2) = 1:numel(x_) ; % compute sort inverse indices
-  %revIdx2 = sub2ind(sz, coords2) ;
-  %out = 1:size(coords,1) ;
-  %newPos =  idx(1:numel(x_)) ; % dummy
-  %keyboard
-  %for ii = 1:size(coords, 1)
-    %pos = num2cell(coords(ii,:)) ;
-    %pos{dim} = idx(pos{:}) ; % update relevant dimension of coord to undo sort
-    %revIdx(ii) = sub2ind(sz, pos{:}) ;
-  %end
-  %keyboard
-  %inverted(revIdx) = 1:numel(x_) ; % compute sort inverse indices
-  y = dzdy(inverted) ;
-  varargout{1} = reshape(y, size(x_)) ;
-end
-
-function rev = reverser(coords, dim, idx, ii, sz)
-    pos = num2cell(coords(ii,:)) ;
-    pos{dim} = idx(pos{:}) ; % update relevant dimension of coord to undo sort
-    rev = sub2ind(sz, pos{:}) ;
+  coords(:,dim) = idx(:) ; % reverse along target dimension
+  ins = mat2cell(coords, size(coords, 1), ones(1, size(coords,2))) ;
+  revIdx = sub2ind(size(x_), ins{:}) ;
+  inverted(revIdx) = 1:numel(x_) ; % compute sort inverse indices
+  y = dzdy(inverted) ; varargout{1} = reshape(y, size(x_)) ;
 end
