@@ -180,7 +180,6 @@ function [dy, dx] = atan2_der(y, x, da)
   dy = x ./ r .* da;
 end
 
-
 function dx = transpose_der(~, dy)
   dx = dy.' ;
 end
@@ -198,14 +197,14 @@ function [da, db] = mrdivide_der(a, b, dy)
   % note: @mldivide is just @mrdivide with swapped inputs
   bt = b.' ;
   da = dy / bt ;
-  db = -a' / bt * dy / bt ;
+  %NOTE: The following line is equivalent to  db = inv_der(b, a.' * dy) ;
+  db = - bt \ a' * dy / bt ;
 end
 
 function dx = inv_der(x, dy)
   inv_x_t = inv(x)';
   dx = -inv_x_t * dy * inv_x_t;
 end
-
 
 function dx = sum_der(x, dim, dy)
   [x_sz, ~] = struct_or_tensor_size(x); % handle proxy structs
@@ -235,7 +234,6 @@ function dx = mean_der(x, dim, dy)
   dx = repmat(dy, reps) / x_sz(dim) ;
 end
 
-
 function dx = gather_der(x, dy)
   [~, x_type] = struct_or_tensor_size(x); % handle proxy structs
   if isa(x_type, 'gpuArray')
@@ -244,6 +242,3 @@ function dx = gather_der(x, dy)
     dx = dy ;  % keep same type (non-gpuArray)
   end
 end
-
-
-
