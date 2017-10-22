@@ -8,15 +8,15 @@ function cnn_benchmark(varargin)
 % the terms of the BSD license (see the COPYING file).
 
   opts.models = {'imagenet-matconvnet-alex', ...
-    'imagenet-googlenet-dag', 'imagenet-resnet-50-dag'} ;
-  opts.modelPath = [vl_rootnn() '/data/models'] ;
-  opts.warmup = 3 ;
-  opts.trials = 5 ;
-  opts.gpu = [] ;
-  opts.inputSizes = [] ;
-  opts.batchSize = [] ;
-  opts.mode = 'normal' ;
-  opts.dagnn = false ;
+    'imagenet-googlenet-dag', 'imagenet-resnet-50-dag'} ;  % models to test (or absolute paths)
+  opts.modelPath = [vl_rootnn() '/data/models'] ;  % path to find models given by name only
+  opts.warmup = 3 ;  % number of warmup iterations (discarded)
+  opts.trials = 5 ;  % number of benchmark iterations
+  opts.gpu = [] ;  % GPU index, or empty for CPU mode
+  opts.inputSizes = [] ;  % cell array with input size for each model, if net.meta contains no such info
+  opts.batchSize = [] ;  % if non-empty, override batch size (4th dimension)
+  opts.mode = 'normal' ;  % network evaluation mode ('normal' for backprop, or 'test')
+  opts.dagnn = false ;  % if true, the networks are evaluated as DagNN objects instead of AutoNN
   
   opts = vl_argparse(opts, varargin) ;
   
