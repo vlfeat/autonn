@@ -25,9 +25,20 @@ function displayCustom(obj, varName, showLinks)
     input = obj.inputs{i} ;
 
     if ~isa(input, 'Layer')
-      % use Matlab's native display of single cells, which provides a
-      % nice short representation of any object (e.g. '[3x3 double]')
-      fprintf(strtrim(evalc('disp({input})'))) ;
+      if isnumeric(input) && isscalar(input)
+        % a scalar, display it
+        fprintf('%g', input) ;
+      elseif isnumeric(input) && isvector(input) && numel(input) <= 8 && ~isempty(input)
+        % a short numeric vector, display it inline
+        fprintf('[%g', input(1)) ;
+        fprintf(' %g', input(2:end)) ;
+        fprintf(']') ;
+        if size(input,1) > 1, fprintf('''') ; end  % column vector
+      else
+        % use Matlab's native display of single cells, which provides a
+        % nice short representation of any object (e.g. '[3x3 double]')
+        fprintf(strtrim(evalc('disp({input})'))) ;
+      end
     else
       % another layer, display it along with a navigation hyperlink
       if ~isempty(input.name)

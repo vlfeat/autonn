@@ -75,7 +75,11 @@ classdef Net < handle
         % convert SimpleNN or DagNN to Layer
         s = varargin{1} ;
         if isstruct(s) && isfield(s, 'layers')
-          s = dagnn.DagNN.fromSimpleNN(s, 'CanonicalNames', true) ;
+          if iscell(s.layers)  % SimpleNN
+            s = dagnn.DagNN.fromSimpleNN(s, 'CanonicalNames', true) ;
+          else  % DagNN
+            s = dagnn.DagNN.loadobj(s) ;
+          end
         end
         if isa(s, 'dagnn.DagNN')
           s = Layer.fromDagNN(s) ;
