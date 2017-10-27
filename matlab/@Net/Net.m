@@ -41,7 +41,7 @@ classdef Net < handle
     forward = []  % forward pass function calls
     backward = []  % backward pass function calls
     vars = {}  % cell array of variables and their derivatives
-    inputs = []  % struct of network's Inputs, indexed by name
+    inputs = struct()  % struct of network's Inputs, indexed by name
     params = []  % list of Params
     gpu = false  % whether the network is in GPU or CPU mode
     isGpuVar = []  % whether each variable or derivative can be on the GPU
@@ -64,6 +64,8 @@ classdef Net < handle
       %    The constructor accepts a list of Layers (output layers of a
       %    network for compilation), a SimpleNN/DagNN to be converted to
       %    Net, or a saved struct created with SAVEOBJ.
+      
+      if nargin == 0, return, end  % empty constructor
       
       % load from struct, distinguishing from SimpleNN
       if isscalar(varargin) && isstruct(varargin{1}) && ~isfield(varargin{1}, 'layers')

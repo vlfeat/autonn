@@ -14,7 +14,12 @@ function netOutputs = fromCompiledNet(net)
 % This file is part of the VLFeat library and is made available under
 % the terms of the BSD license (see the COPYING file).
   
+  % call a local function, to work around an occasional Matlab crash that
+  % happens only for static methods
+  netOutputs = fromCompiledNet_(net);
+end
 
+function netOutputs = fromCompiledNet_(net)
   % use local copies so that any changes won't reflect on the original Net
   forward = net.forward ;
   backward = net.backward ;
@@ -42,11 +47,13 @@ function netOutputs = fromCompiledNet(net)
   % create Param layers
   for k = 1:numel(net.params)
     p = net.params(k) ;
-    trainMethod = Param.trainMethods{p.trainMethod} ;  % training method index to string
     
-    layers{p.var} = Param('name', p.name, 'value', net.vars{p.var}, ...
+    layer = Param('name', p.name, 'value', net.vars{p.var}, ...
       'gpu', net.isGpuVar(p.var), 'learningRate', p.learningRate, ...
-      'weightDecay', p.weightDecay, 'trainMethod', trainMethod) ;
+      'weightDecay', p.weightDecay) ;
+    
+    layer.trainMethod = layer.trainMethods{p.trainMethod} ;  % index to string
+    layers{p.var} = layer ;
   end
   
   
