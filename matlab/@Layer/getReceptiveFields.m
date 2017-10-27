@@ -18,7 +18,7 @@ function [rfSize, rfOffset, rfStride] = getReceptiveFields(obj, input, customRF)
 %   stride that define a rectangular receptive field.
 %
 %   They can be interpreted as follows. Given a pixel of vertical
-%   coordinate u in an output variable OUT(y,...) , the first and last
+%   coordinate u in an output variable OUT(u,...) , the first and last
 %   pixels affecting that pixel in an input variable IN(v,...) are:
 %
 %     v_first = rfstride(L,1) * (y - 1) + rfoffset(L,1) - rfsize(L,1)/2 + 1
@@ -35,10 +35,14 @@ function [rfSize, rfOffset, rfStride] = getReceptiveFields(obj, input, customRF)
 %   Specifies a custom function to handle unknown layers (i.e., define the
 %   receptive fields of custom layers). The function signature is:
 %
-%     [kernelsize, offfset, stride] = customRF(obj)
+%     [kernelsize, offset, pad, stride] = customRF(obj)
 %
 %   where obj is the unknown layer, and the returned values are the kernel
-%   size, offset and stride respectively.
+%   size, offset, padding and stride respectively. Any empty values will
+%   assume their defaults (i.e., an element-wise layer). Note that the
+%   offset (translation of the receptive field) can be computed from the
+%   padding (zero padding, commonly used with convolution/pooling), so only
+%   one must be specified.
 %
 %   [...] = GETRECEPTIVEFIELDS({LAYER1, LAYER2, ...}, ...)
 %   Defines a different sequential stream of layers {LAYER1, LAYER2, ...}.
@@ -75,80 +79,107 @@ function [rfSize, rfOffset, rfStride] = getReceptiveFields(obj, input, customRF)
     layers = layers(end:-1:1) ;
   end
   
+  
   % allocate memory
-  n = numel(layers) ;
-  rfSize = zeros(2, n) ;
-  rfOffset = zeros(2, n) ;
+  rfSize = zeros(2, numel(layers) + 1);
+  rfOffset = rfSize;
+  rfStride = rfSize;
   
-  support = zeros(2, n) ;
-  stride = zeros(2, n) ;
-  pad = zeros(4, n) ;
+  % initial receptive field (input)
+  totalSz = [1, 1];
+  totalOffset = [1, 1];
+  totalStride = [1, 1];
+  rfSize(:,1) = totalSz ;
+  rfOffset(:,1) = totalOffset ;
+  rfStride(:,1) = totalStride ;
   
-  % generic options to parse
-  defaults.dilate = 1 ;
-  defaults.stride = 1 ;
-  defaults.pad = 0 ;
-  
-  % convolution-transpose options to parse
-  convtDefaults.upsample = 1 ;
-  convtDefaults.crop = 0 ;
-  
+  % compose receptive fields in forward-order
   for i = 1:numel(layers)
     l = layers{i} ;
     
-    [opts, ~] = vl_argparsepos(defaults, l.inputs, 'merge') ;
+    % find name-value pairs
+    a = find(strcmp(l.inputs, 'stride')) ;
+    if isempty(a)
+      stride(1:2) = 1 ;
+    else
+      stride(1:2) = l.inputs{a + 1} ;
+    end
+    a = find(strcmp(l.inputs, 'pad')) ;
+    if isempty(a)
+      pad(1:4) = 0 ;
+    else
+      pad(1:4) = l.inputs{a + 1} ;
+    end
+    a = find(strcmp(l.inputs, 'dilate')) ;
+    if isempty(a)
+      dilate(1:2) = 1 ;
+    else
+      dilate(1:2) = l.inputs{a + 1} ;
+    end
     
-    stride(:,i) = opts.stride(:) ;
-    pad(:,i) = opts.pad(:) ;
+    offset = [] ;
     
     switch func2str(l.func)
     case 'vl_nnconv'
       % convolution
-      support(:,i) = getKernelSize(l, opts.dilate) ;
+      sz = getKernelSize(l, dilate) ;
       
     case 'vl_nnpool'
       % pooling
       assert(isnumeric(l.inputs{2}), 'Pooling size is not numeric.') ;
-      support(:,i) = l.inputs{2} ;
+      sz(1:2) = l.inputs{2} ;
       
     case 'vl_nnconvt'
       % convolution-transpose
-      [opts, ~] = vl_argparsepos(convtDefaults, l.inputs, 'merge') ;
+      a = find(strcmp(l.inputs, 'upsample')) ;
+      if isempty(a)
+        upsample(1:2) = 1 ;
+      else
+        upsample(1:2) = l.inputs{a + 1} ;
+      end
+      a = find(strcmp(l.inputs, 'crop')) ;
+      if isempty(a)
+        crop(1:4) = 0 ;
+      else
+        crop(1:4) = l.inputs{a + 1} ;
+      end
       
       ks = getKernelSize(l, 1) ;
       
-      support(:,i) = (ks - 1) ./ opts.upsample + 1 ;
-      stride(:,i) = 1 ./ [opts.upsample] ;
-      pad(:,i) = (2 * opts.crop([1 3]) - ks + 1) ./ (2 * opts.upsample) + 1 ;
+      sz = (ks - 1) ./ upsample + 1 ;
+      stride = 1 ./ upsample ;
+      offset = (2 * crop([1 3]) - ks + 1) ./ (2 * upsample) + 1 ;
       
     otherwise
       % others, assume element-wise by default
-      support(:,i) = 1 ;
+      sz(1:2) = 1 ;
       
       if ~isempty(customRF)
         % use handler for custom layers
-        [ks, of, st] = customRF(l);  %#ok<RHSFN>
-        if ~isempty(ks)
-          support(:,i) = ks ;
-        end
-        if ~isempty(of)
-          pad(:,i) = of ;
-        end
-        if ~isempty(st)
-          stride(:,i) = st ;
-        end
+        [ks, of, pd, st] = customRF(l);  %#ok<RHSFN>
+        if ~isempty(ks), sz(1:2) = ks ; end
+        if ~isempty(of), offset(1:2) = of ; end
+        if ~isempty(pd), pad(1:4) = pd ; end
+        if ~isempty(st), stride(1:2) = st ; end
+        assert(isempty(of) || isempty(pd), 'Cannot specify padding and offset simultaneously.');
       end
     end
-
-    % operator applied to the input image
-    rfSize(:,i) = 1 + sum(cumprod([[1 ; 1], stride(:, 1:i-1)], 2) .* ...
-      (support(:, 1:i) - 1), 2) ;
     
-    rfOffset(:,i) = 1 + sum(cumprod([[1 ; 1], stride(:, 1:i-1)], 2) .* ...
-      ((support(:, 1:i) - 1) / 2 - pad([1 3], 1:i)), 2) ;
+    % general case, filter-like operator
+    if isempty(offset)
+      offset = 1 - pad([1, 3]) + (sz(1:2) - 1) / 2;
+    end
+    
+    % compose receptive fields
+    totalSz = totalStride .* (sz - 1) + totalSz ;
+    totalOffset = totalStride .* (offset - 1) + totalOffset ;
+    totalStride = totalStride .* stride ;
+    
+    % store results
+    rfSize(:,i+1) = totalSz ;
+    rfOffset(:,i+1) = totalOffset ;
+    rfStride(:,i+1) = totalStride ;
   end
-
-  rfStride = cumprod(stride, 2) ;
 end
 
 function ks = getKernelSize(l, dilate)
@@ -157,7 +188,7 @@ function ks = getKernelSize(l, dilate)
   assert(isa(l.inputs{2}, 'Param')) ;
   w = l.inputs{2}.value ;
 
-  ks = max([size(w,1); size(w,2)], 1) ;
+  ks = max([size(w,1), size(w,2)], 1) ;
   ks = (ks - 1) .* dilate + 1 ;
 end
 
