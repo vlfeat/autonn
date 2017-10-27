@@ -45,15 +45,16 @@ classdef Dataset < handle
       if isvector(idx)
         idx = idx(:)' ;  % ensure row-vector
       end
-      batches = cell(1, ceil(size(idx,2) / o.batchSize)) ;
+      batchSz = min(o.batchSize, size(idx,2));  % guard against big batch size
+      batches = cell(1, ceil(size(idx,2) / batchSz)) ;
       b = 1 ;
-      for start = 1 : o.batchSize : size(idx,2)
-        batches{b} = idx(:, start : min(start + o.batchSize - 1, end)) ;
+      for start = 1 : batchSz : size(idx,2)
+        batches{b} = idx(:, start : min(start + batchSz - 1, end)) ;
         b = b + 1 ;
       end
       
       % delete last partial batch if needed
-      if ~o.partialBatches && size(batches{end}, 2) < o.batchSize
+      if ~o.partialBatches && size(batches{end}, 2) < batchSz
         batches(end) = [] ;
       end
       
