@@ -46,11 +46,12 @@ classdef Net < handle
     gpu = false  % whether the network is in GPU or CPU mode
     isGpuVar = []  % whether each variable or derivative can be on the GPU
     parameterServer = []  % ParameterServer object, accumulates parameter derivatives across GPUs
+    conserveMemory = [false, false] % 1x2 logical determining variable deletion on the forward/backward pass
+    inputVarsInfo = {}  % cell array of input size and type
   end
   properties (SetAccess = public, GetAccess = public)
     meta = []  % optional meta properties
     diagnostics = []  % list of diagnosed vars (see Net.plotDiagnostics)
-    conserveMemory = 0
   end
 
   methods (Access = private)
@@ -288,6 +289,7 @@ classdef Net < handle
       s.backward = net.backward ;
       s.inputs = net.inputs ;
       s.params = net.params ;
+      s.conserveMemory = net.conserveMemory ;
       s.meta = net.meta ;
       s.diagnostics = net.diagnostics ;
       
@@ -310,6 +312,7 @@ classdef Net < handle
       net.vars = s.vars ;
       net.inputs = s.inputs ;
       net.params = s.params ;
+      net.conserveMemory = s.conserveMemory ;
       net.gpu = false ;
       net.isGpuVar = s.isGpuVar ;
       net.meta = s.meta ;

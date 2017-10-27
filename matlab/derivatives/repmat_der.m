@@ -26,7 +26,7 @@ function dx = repmat_der(~, varargin)
     reps = [varargin{1:end-1}] ;
   end
   
-  % iterate dimensions, summing derivative accross all repetitions in that
+  % iterate dimensions, summing derivative across all repetitions in that
   % dimension
   dx = dzdy ;
   for dim = 1:numel(reps)

@@ -24,22 +24,44 @@ classdef nnlayers < nntest
       
       do(test, vl_nnpool(x, [2, 2], 'stride', 2, 'pad', 1)) ;
       
-      do(test, vl_nndropout(x, 'rate', 0.1)) ;
-      
       do(test, vl_nnloss(x, labels, 'loss', 'classerror')) ;
       
+      % dropout is composed of 2 parts: the mask generator, and the dropout
+      % mask applier. run derivative check with fixed mask.
+      rate = 0.1 ;
+      dropout = vl_nndropout(x, 'rate', rate) ;
+      mask = dropout.inputs{2} ;
+      
+      test.verifyInstanceOf(mask, 'Layer') ;
+      test.verifyEqual(mask.func, @vl_nnmask) ;
+      
+      dropout.inputs{2} = vl_nnmask(x.value, rate) ;  % make it constant
+      do(test, dropout) ;
+      
+      % bnorm params are single
       if strcmp(test.currentDataType, 'single')
-        % bnorm parameters are created as single
-        do(test, vl_nnbnorm(x)) ;
+        % batch-norm needs special handling
+        bnorm = vl_nnbnorm(x) ;
+        
+        % replicate gain/bias for all output channels (ordinarily done by
+        % the solver on first update)
+        bnorm.inputs{2}.value = bnorm.inputs{2}.value([1; 1]) ;  % gain
+        bnorm.inputs{3}.value = bnorm.inputs{3}.value([1; 1]) ;  % bias
+        
+        % ignore the 4th parameter (moments), since it is not updated by
+        % gradient descent but by a moving average
+        bnorm.numInputDer = 3 ;
+        
+        do(test, bnorm) ;
       end
     end
     
     function testMath(test)
       % use Params for all inputs so we can choose their values now
-      a = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3)) ;
-      b = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3)) ;
-      c = Param('value', randn(1, 1, test.currentDataType)) ;
-      d = Param('value', randn(3, 1, test.currentDataType)) ;
+      a = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
+      b = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
+      c = Param('value', ones(1, 1, test.currentDataType)) ;  % scalar
+      d = Param('value', randn(3, 1, test.currentDataType)) ;  % vector
       Layer.workspaceNames() ;
       
       % test several operations
@@ -59,6 +81,9 @@ classdef nnlayers < nntest
       do(test, a .* d) ;
       do(test, a ./ d) ;
       do(test, a .^ 2) ;
+
+      %% sorting is a kind of math
+      do(test, sort(a)) ;
     end
     
     function testConv(test)
@@ -119,6 +144,26 @@ classdef nnlayers < nntest
       for i = 1:numel(ders)
         test.verifyNotEmpty(ders{i}) ;
       end
+
+      % check ders
+      checkedIns = cellfun(@(x) isa(x, 'Param'), output.inputs) ;
+      checkedIns(output.numInputDer + 1 : end) = false ;  % ignore non-differentiable inputs
+      inVars = cellfun(@(x) {x.name}, output.inputs(checkedIns)) ;
+      ins = cellfun(@(x) {{x, net.getValue(x)}}, inVars) ; ins = [ins{:}] ;
+      outName = output.name ;
+      for ii = 1:numel(inVars)
+        inValue = net.getValue(inVars{ii}) ;
+        wrapper = @(x) forward_wrapper(net, outName, ins, ii, x) ;
+        net.eval({}, 'normal', der) ; % refresh
+        dzdx = net.getDer(inVars{ii}) ;
+        test.der(@(x) wrapper(x), inValue, der, dzdx, 1e-6*test.range) ;
+      end
     end
   end
+end
+
+function res = forward_wrapper(net, varName, ins, pos, x)
+  ins{pos * 2} = x ; % update current variable
+  net.eval(ins, 'forward') ;
+  res = net.getValue(varName) ;
 end
