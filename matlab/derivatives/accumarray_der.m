@@ -25,6 +25,8 @@ function [dsubs, dval] = accumarray_der(subs, val, sz, fun, dy)
     fun = [] ;
   end
   
+  assert(numel(val) > 1, 'ACCUMARRAY derivative for empty or scalar values is not supported.') ;
+  
   % convert subscripts to linear indexes.
   % first split subs matrix into one vector per dimension, for sub2ind.
   subs_ = cell(size(subs,2), 1) ;
