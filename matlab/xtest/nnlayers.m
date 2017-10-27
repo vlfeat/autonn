@@ -82,7 +82,7 @@ classdef nnlayers < nntest
       do(test, a ./ d) ;
       do(test, a .^ 2) ;
 
-      %% sorting is a kind of math
+      % sorting is a kind of math
       do(test, sort(a)) ;
     end
     
