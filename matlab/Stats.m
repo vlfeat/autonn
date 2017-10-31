@@ -97,6 +97,15 @@ classdef Stats < handle
       o.reset() ;
     end
     
+    function len = length(o, set)
+      % return history length, for a given set
+      if isfield(o.history, set)
+        len = size(o.history.(set), 2);
+      else
+        len = 0;
+      end
+    end
+    
     function print(o)
       % print statistics to the terminal
       for i = 1:numel(o.names)
