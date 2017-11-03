@@ -39,13 +39,16 @@ classdef Dataset < handle
       batches = o.partition(o.valSet) ;
     end
     
-    function batches = partition(o, idx)
+    function batches = partition(o, idx, batchSz)
       % partition indexes into batches (stored in a cell array).
       % if IDX is a matrix, each column is a distinct sample.
+      if nargin < 3  % allow overriding batch size
+        batchSz = o.batchSize ;
+      end
       if isvector(idx)
         idx = idx(:)' ;  % ensure row-vector
       end
-      batchSz = min(o.batchSize, size(idx,2));  % guard against big batch size
+      batchSz = min(batchSz, size(idx,2));  % guard against big batch size
       batches = cell(1, ceil(size(idx,2) / batchSz)) ;
       b = 1 ;
       for start = 1 : batchSz : size(idx,2)
