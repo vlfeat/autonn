@@ -128,7 +128,7 @@ end
 
 function dx = sqrt_der(x, dy)
   assert(all(x(:) > eps), 'Derivative undefined for SQRT(0) (approaches infinity), and for negative numbers.') ;
-  dx = dy ./ sqrt(x) ;
+  dx = 0.5 * dy ./ sqrt(x) ;
 end
 
 function dx = exp_der(x, dy)
