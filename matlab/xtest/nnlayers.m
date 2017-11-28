@@ -1,6 +1,15 @@
 classdef nnlayers < nntest
+  properties (TestParameter)
+    conserveMemory = {false, true}
+  end
+  properties
+    currentConserveMemory
+  end
+
   methods (Test)
-    function testLayers(test)
+    function testLayers(test, conserveMemory)
+      test.currentConserveMemory = conserveMemory ;
+      
       % use Params for all inputs so we can choose their values now
       x = Param('value', randn(7, 7, 2, 5, test.currentDataType)) ;
       w = Param('value', randn(3, 3, 2, 3, test.currentDataType)) ;
@@ -56,7 +65,9 @@ classdef nnlayers < nntest
       end
     end
     
-    function testMath(test)
+    function testMath(test, conserveMemory)
+      test.currentConserveMemory = conserveMemory ;
+      
       % use Params for all inputs so we can choose their values now
       a = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
       b = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
@@ -99,7 +110,9 @@ classdef nnlayers < nntest
       do(test, sort(a)) ;
     end
     
-    function testConv(test)
+    function testConv(test, conserveMemory)
+      test.currentConserveMemory = conserveMemory ;
+      
       % extra conv tests
       if strcmp(test.currentDataType, 'double'), return, end
       
@@ -130,7 +143,7 @@ classdef nnlayers < nntest
       display(output) ;
       
       % compile net
-      net = Net(output) ;
+      net = Net(output, 'conserveMemory', test.currentConserveMemory) ;
       
       % run forward only
       net.eval({}, 'forward') ;
@@ -152,8 +165,11 @@ classdef nnlayers < nntest
       % run forward and backward
       net.eval({}, 'normal', der) ;
       
-      % check all derivatives are non-empty
-      ders = net.getValue(2:2:numel(net.vars)) ;
+      % check all Param derivatives are non-empty
+      ders = net.getDer([net.params.var]) ;
+      if ~iscell(ders)
+        ders = {ders} ;
+      end
       for i = 1:numel(ders)
         test.verifyNotEmpty(ders{i}) ;
       end

@@ -17,6 +17,7 @@ function cnn_benchmark(varargin)
   opts.batchSize = [] ;  % if non-empty, override batch size (4th dimension)
   opts.mode = 'normal' ;  % network evaluation mode ('normal' for backprop, or 'test')
   opts.dagnn = false ;  % if true, the networks are evaluated as DagNN objects instead of AutoNN
+  opts.modifier = @deal ;  % optional function to modify a network
   
   opts = vl_argparse(opts, varargin) ;
   
@@ -60,6 +61,9 @@ function cnn_benchmark(varargin)
     else
       assert(isa(net, 'Net'), 'Expected a SimpleNN, DagNN or AutoNN model.') ;
     end
+    
+    % apply optional modifier function
+    net = opts.modifier(net) ;
     
     % get input size, and name if present in meta information
     inputName = [] ;
