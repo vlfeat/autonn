@@ -36,8 +36,11 @@ function varargout = cat_der(dim, varargin)
   varargout = cell(1, numel(varargin)) ;
   
   for i = 1 : numel(varargin) - 1
+    [x_sz, ~] = struct_or_tensor_size(varargin{i}); % handle proxy structs
+    x_sz = [x_sz, ones(1,ndims(dzdy) - numel(x_sz))] ; % dims after ndims(x) are size 1
+    
     % get size of this input along DIM; 0 if it is empty in any dimension.
-    sz = size(varargin{i}, dim) * ~isempty(varargin{i}) ;
+    sz = x_sz(dim) * ~any(x_sz==0) ;
     
     % retrieve corresponding derivative, by slicing dzdy
     idx{dim} = start : start + sz - 1 ;

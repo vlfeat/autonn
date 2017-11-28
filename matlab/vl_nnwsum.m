@@ -37,7 +37,9 @@ function varargout = vl_nnwsum(varargin)
       for k = 1:n
         dx = dy ;
         for t = 1:ndims(dy)  % sum derivatives along expanded dimensions (by bsxfun)
-          if size(varargin{k},t) == 1  % original was a singleton dimension
+          [x_sz,~] = struct_or_tensor_size(varargin{k}) ; % handle proxy structs
+          x_sz = [x_sz, ones(1,ndims(dy) - numel(x_sz))] ; % dims after ndims(x) are size 1
+          if x_sz(t) == 1  % original was a singleton dimension
             dx = sum(dx, t) ;
           end
         end
