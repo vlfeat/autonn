@@ -71,7 +71,7 @@ conv1_wn = vl_nnconv(images, filters_wn, biases);
 
 During network evaluation, the derivatives will be backpropagated correctly through the math operators and into the learnable parameters.
 
-The full list of overloads can be seen with `methods('Layer')`, or [here](matlab/@Layer/methods.txt). Some examples are array slicing and concatenation, element-wise algebra, reduction operations such as max or sum, and matrix algebra, including solving linear systems.
+The full list of overloads can be seen with `methods('Layer')`, or [here](methods.txt). Some examples are array slicing and concatenation, element-wise algebra, reduction operations such as max or sum, and matrix algebra, including solving linear systems.
 
 
 ## Network evaluation ##

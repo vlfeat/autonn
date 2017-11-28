@@ -62,11 +62,13 @@ classdef nnlayers < nntest
       b = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
       c = Param('value', ones(1, 1, test.currentDataType)) ;  % scalar
       d = Param('value', randn(3, 1, test.currentDataType)) ;  % vector
+      e = Param('value', rand(3, 3, test.currentDataType) + 1e-3 * ones(3,3)) ;  % non-negative matrix
+      f = Param('value', rand(3, 3, test.currentDataType) * 2 - 1) ;  % matrix in -1..1
       Layer.workspaceNames() ;
       
       % test several operations
       
-      % wsum
+      % weighted sums
       do(test, a + b) ;
       do(test, 10 * a) ;
       do(test, a + 2 * b - c) ;  % collected arguments in a single wsum
@@ -81,8 +83,19 @@ classdef nnlayers < nntest
       do(test, a .* d) ;
       do(test, a ./ d) ;
       do(test, a .^ 2) ;
+      
+      do(test, atan2(a, b)) ;
+      
+      % unary
+      do(test, sqrt(e)) ;
+      do(test, sin(a)) ;
+      do(test, cos(a)) ;
+      do(test, tan(a)) ;
+      do(test, asin(f)) ;
+      do(test, acos(f)) ;
+      do(test, atan(a)) ;
 
-      %% sorting is a kind of math
+      % sorting is a kind of math
       do(test, sort(a)) ;
     end
     

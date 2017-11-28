@@ -51,11 +51,12 @@ case 'lstm'
   % initialize the shared parameters for an LSTM with d units
   [W, b] = vl_nnlstm_params(d, numChars) ;
   
-  % initial state
+  % initial state. note that we instantiate zeros() using a dynamic size,
+  % size(text,2) (the batch size).
   h = cell(T, 1);
   c = cell(T, 1);
-  h{1} = Layer.zeros(d, size(text,2), 'single');
-  c{1} = Layer.zeros(d, size(text,2), 'single');
+  h{1} = zeros(d, size(text,2), 'single');
+  c{1} = zeros(d, size(text,2), 'single');
 
   % compute LSTM hidden states for all time steps
   for t = 1 : T - 1
@@ -70,7 +71,7 @@ case 'rnn'
   
   % initial state
   h = cell(T, 1);
-  h{1} = Layer.zeros(d, size(text,2), 'single');
+  h{1} = zeros(d, size(text,2), 'single');
   
   % compute RNN hidden states for all time steps
   for t = 1 : T - 1

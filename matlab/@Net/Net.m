@@ -41,7 +41,7 @@ classdef Net < handle
     forward = []  % forward pass function calls
     backward = []  % backward pass function calls
     vars = {}  % cell array of variables and their derivatives
-    inputs = []  % struct of network's Inputs, indexed by name
+    inputs = struct()  % struct of network's Inputs, indexed by name
     params = []  % list of Params
     gpu = false  % whether the network is in GPU or CPU mode
     isGpuVar = []  % whether each variable or derivative can be on the GPU
@@ -66,6 +66,8 @@ classdef Net < handle
       %    network for compilation), a SimpleNN/DagNN to be converted to
       %    Net, or a saved struct created with SAVEOBJ.
       
+      if nargin == 0, return, end  % empty constructor
+      
       % load from struct, distinguishing from SimpleNN
       if isscalar(varargin) && isstruct(varargin{1}) && ~isfield(varargin{1}, 'layers')
         net = Net.loadobj(varargin{1}) ;
@@ -76,7 +78,11 @@ classdef Net < handle
         % convert SimpleNN or DagNN to Layer
         s = varargin{1} ;
         if isstruct(s) && isfield(s, 'layers')
-          s = dagnn.DagNN.fromSimpleNN(s, 'CanonicalNames', true) ;
+          if iscell(s.layers)  % SimpleNN
+            s = dagnn.DagNN.fromSimpleNN(s, 'CanonicalNames', true) ;
+          else  % DagNN
+            s = dagnn.DagNN.loadobj(s) ;
+          end
         end
         if isa(s, 'dagnn.DagNN')
           s = Layer.fromDagNN(s) ;
