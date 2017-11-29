@@ -69,8 +69,9 @@ function compile(net, varargin)
     net.meta = objs{idx}.meta ;
   end
 
-  % indexes of callable Layer objects (not Inputs, Params or Selectors)
-  idx = find(cellfun(@(o) ~isa(o, 'Input') && ~isa(o, 'Param') && ~isa(o, 'Selector'), objs)) ;
+  % indexes of callable Layer objects (not Inputs/Params/Selectors/States)
+  idx = find(cellfun(@(o) ~isa(o, 'Input') && ~isa(o, 'Param') && ...
+    ~isa(o, 'Selector') && ~isa(o, 'State'), objs)) ;
 
   % allocate memory
   net.forward = Net.initStruct(numel(idx), 'func', 'name', ...
@@ -96,7 +97,25 @@ function compile(net, varargin)
   net.inputs = struct() ;
 
   
-  % first, handle Inputs, Params and Selectors
+  % handle State layers before any other layers.
+  % a State is simply a variable that is used for both reading and writing.
+  % to read, another layer just takes the State's output var. to write, it
+  % assigns its output to the State's inputs. note that this introduces
+  % cycles: because of this, cycleCheckRecursive ignores States.
+  for i = 1:numel(objs)
+    obj = objs{i} ;
+    if isa(obj, 'State')
+      % make writers (State inputs) write to its var
+      for j = 1:numel(obj.inputs)
+        obj.inputs{j}.outputVar = obj.outputVar ;
+      end
+      
+      % assign initial value
+      net.vars{obj.outputVar} = obj.initialValue ;
+    end
+  end
+  
+  % handle Inputs, Params and Selectors
   p = 1 ;
   for i = 1:numel(objs)
     obj = objs{i} ;
@@ -138,7 +157,6 @@ function compile(net, varargin)
       obj.outputVar(end+1 : obj.numOutputs) = 0 ;
     end
   end
-  
   
   % store functions for forward pass
   layer = [] ;
@@ -202,7 +220,11 @@ function compile(net, varargin)
 
       else
         % store args for backward mode, with empty slots for der args
-        numOutputDer = numel(obj.outputVar) ;
+        if isempty(obj.numOutputDer)
+          numOutputDer = numel(obj.outputVar) ;
+        else  % manual override
+          numOutputDer = obj.numOutputDer ;
+        end
         layer.args = [args(1:lastInput), cell(1, numOutputDer), args(lastInput + 1 : end)] ;
 
         % modify argument positions according to the new empty slots
@@ -211,7 +233,7 @@ function compile(net, varargin)
 
         % some outputs in forward mode may be unused. in this case, their
         % output derivatives will be 0. we need to treat them as constants.
-        outputArgPos = (obj.outputVar ~= 0) ;
+        outputArgPos = (obj.outputVar(1:numOutputDer) ~= 0) ;
         layer.args(lastInput + find(~outputArgPos)) = {0} ;  % set them to 0
         
         % positions of der args

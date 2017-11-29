@@ -79,6 +79,7 @@ classdef Layer < matlab.mixin.Copyable
     name = ''  % optional name (for debugging mostly; a layer is a unique handle object that can be passed around)
     numOutputs = []  % to manually specify the number of outputs returned in fwd mode
     numInputDer = []  % to manually specify the number of input derivatives returned in bwd mode
+    numOutputDer = []  % to manually specify the number of output derivatives accepted in bwd mode (normally not needed)
     accumDer = true  % to manually specify that the input derivatives are *not* accumulated. used to implement ReLU short-circuiting.
     meta = []  % optional meta properties
     source = []  % call stack (source files and line numbers) where this Layer was created
@@ -112,8 +113,9 @@ classdef Layer < matlab.mixin.Copyable
       
       obj.id = Layer.uniqueId() ;  % set unique ID, needed for some operations
       
-      if nargin == 0 && (isa(obj, 'Input') || isa(obj, 'Param') || isa(obj, 'Selector'))
-        return  % called during Input, Param or Selector construction, nothing to do
+      if nargin == 0 && (isa(obj, 'Input') || isa(obj, 'Param') || ...
+          isa(obj, 'Selector') || isa(obj, 'State'))
+        return  % called during construction of a special subclass, nothing to do
       end
       
       % convert from SimpleNN to DagNN
@@ -597,10 +599,12 @@ classdef Layer < matlab.mixin.Copyable
         error('MatConvNet:CycleCheckFailed', 'Input assignment creates a cycle in the network.') ;
       end
       
-      % recurse on inputs
+      % recurse on inputs, except for States (since they introduce cycles)
       idx = obj.getNextRecursion(visited) ;
       for i = idx
-        obj.inputs{i}.cycleCheckRecursive(root, visited) ;
+        if ~isa(obj.inputs{i}, 'State')
+          obj.inputs{i}.cycleCheckRecursive(root, visited) ;
+        end
       end
       visited(obj.id) = true ;
     end
@@ -612,11 +616,11 @@ classdef Layer < matlab.mixin.Copyable
       % yet during this operation. The list of layers seen so far is
       % managed efficiently with the dictionary VISITED (created with
       % Layer.initializeRecursion).
-
+      
       valid = false(1, numel(obj.inputs)) ;
       for i = 1:numel(obj.inputs)
-        if isa(obj.inputs{i}, 'Layer')
-          valid(i) = ~visited.isKey(obj.inputs{i}.id) ;
+        if isa(obj.inputs{i}, 'Layer') && ~visited.isKey(obj.inputs{i}.id)
+          valid(i) = true ;
         end
       end
       idx = find(valid) ;

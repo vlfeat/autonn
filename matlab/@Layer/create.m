@@ -11,6 +11,7 @@ function varargout = create(func, args, varargin)
   assert(isa(func, 'function_handle'), 'Argument must be a valid function handle.') ;
 
   opts.numInputDer = [] ;
+  opts.numOutputDer = [] ;
   opts.numOutputs = [] ;
   opts.name = '' ;
 
@@ -21,6 +22,7 @@ function varargout = create(func, args, varargin)
   varargout{1} = Layer(func, args{:}) ;
   varargout{1}.numOutputs = nargout ;  % infer number of layer outputs from this function call
   varargout{1}.numInputDer = opts.numInputDer ;
+  varargout{1}.numOutputDer = opts.numOutputDer ;
   varargout{1}.name = opts.name ;
 
   % selectors for any additional outputs

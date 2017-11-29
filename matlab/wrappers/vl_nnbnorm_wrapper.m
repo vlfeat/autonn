@@ -1,7 +1,7 @@
-function [y, dzdg, dzdb, moments] = vl_nnbnorm_wrapper(x, g, b, moments, test, varargin)
+function [y_or_dzdx, moments_or_dzdg, dzdb, moments_legacy] = ...
+  vl_nnbnorm_wrapper(x, g, b, moments, test, varargin)
 %VL_NNBNORM_WRAPPER AutoNN wrapper for MatConvNet's vl_nnbnorm
-%   VL_NNBNORM has a non-standard interface (returns a derivative for the
-%   moments, even though they are not an input), so we must wrap it.
+%   VL_NNBNORM has a non-standard interface, so we must wrap it.
 %   Layer.vl_nnbnorm replaces a standard VL_NNBNORM call with this one.
 %
 %   This also lets us supports nice features like setting the parameter
@@ -13,6 +13,72 @@ function [y, dzdg, dzdb, moments] = vl_nnbnorm_wrapper(x, g, b, moments, test, v
 % This file is part of the VLFeat library and is made available under
 % the terms of the BSD license (see the COPYING file).
 
+  % compatibility with old, stateless format (moments returned in bwd pass)
+  if nargout == 1
+    y_or_dzdx = vl_nnbnorm_wrapper_legacy(x, g, b, moments, test, varargin{:});
+    return
+  elseif nargout == 4
+    [y_or_dzdx, moments_or_dzdg, dzdb, moments_legacy] = vl_nnbnorm_wrapper_legacy(x, g, b, moments, test, varargin{:});
+    return
+  end
+  update = varargin{1} ;
+  varargin(1) = [] ;
+
+  % use number of channels in X to extend scalar (i.e. default) params to
+  % the correct size. this way the layer can be constructed without
+  % knowledge of the number of channels. scalars also permit gradient
+  % accumulation with any tensor shape (in CNN_TRAIN_AUTONN).
+  if isscalar(g)
+    g(1:size(x,3),1) = g ;
+  end
+  if isscalar(b)
+    b(1:size(x,3),1) = b ;
+  end
+  if isempty(moments)
+    moments = zeros(size(x,3), 2, 'like', x) ;
+  elseif isscalar(moments)
+    moments(1:size(x,3),1:2) = moments ;
+  end
+
+  if isempty(x)
+    % vl_nnbnorm throws an error on empty inputs. however, these can happen
+    % in some dynamic architectures, so handle this case.
+    y_or_dzdx = zeros(size(x), 'like', x) ;
+    moments_or_dzdg = zeros(size(g), 'like', g) ;
+    dzdb = zeros(size(b), 'like', b) ;
+    return
+  end
+
+  if isempty(varargin) || ~isnumeric(varargin{1})
+    % forward mode
+    if ~test
+      % training forward mode
+      [y_or_dzdx, m] = vl_nnbnorm(x, g, b, varargin{:}) ;
+      
+      % update moments
+      moments_or_dzdg = vl_taccum(1 - update, moments, update, m) ;
+    else
+      % test forward mode
+      y_or_dzdx = vl_nnbnorm(x, g, b, 'moments', moments, varargin{:}) ;
+      
+      % don't update moments
+      moments_or_dzdg = moments ;
+    end
+  else
+    % backward mode
+    if ~test
+      % training backward mode
+      [y_or_dzdx, moments_or_dzdg, dzdb] = vl_nnbnorm(x, g, b, varargin{:}) ;
+    else
+      % test backward mode (to implement e.g. bnorm frozen during training)
+      [y_or_dzdx, moments_or_dzdg, dzdb] = vl_nnbnorm(x, g, b, varargin{1}, 'moments', moments, varargin{2:end}) ;
+    end
+  end
+
+end
+
+
+function [y, dzdg, dzdb, moments] = vl_nnbnorm_wrapper_legacy(x, g, b, moments, test, varargin)
   % use number of channels in X to extend scalar (i.e. default) params to
   % the correct size. this way the layer can be constructed without
   % knowledge of the number of channels. scalars also permit gradient

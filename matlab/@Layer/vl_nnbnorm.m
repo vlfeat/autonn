@@ -12,11 +12,10 @@ function layer = vl_nnbnorm(varargin)
 %   Y = Layer.vl_nnbnorm(X, G, B) specifies the gains G and biases B. These
 %   may be other Layers, including Params, or constants.
 %
-%   Y = Layer.vl_nnbnorm(..., 'moments', M) or Y = Layer.vl_nnbnorm(..., M)
-%   specifies the moments M. Note that the "derivative" for M returned by
-%   vl_nnbnorm is not a proper derivative, but an update for a moving
-%   average. As such, only constants or Params with trainMethod = 'average'
-%   are supported.
+%   Y = Layer.vl_nnbnorm(..., 'moments', M) specifies the moments M. Note
+%   that the "derivative" for M returned by vl_nnbnorm is not a proper
+%   derivative, but an update for a moving average. As such, only constants
+%   or Params with trainMethod = 'average' are supported.
 %
 %   In addition to those defined by MatConvNet's vl_nnbnorm, the overloaded
 %   VL_NNBNORM(..., 'option', value, ...) accepts the following options:
@@ -27,7 +26,7 @@ function layer = vl_nnbnorm(varargin)
 %
 %   `weightDecay`:: 0
 %     Factor used to adjust the created Params' weight decay. Can specify
-%     separate weight decays for G, B and M as a 3-elements vector.
+%     separate weight decays for G and B as a 2-elements vector.
 %
 %   `testMode`:: []
 %     By default, the layer uses batch statistics when evaluating the
@@ -44,7 +43,7 @@ function layer = vl_nnbnorm(varargin)
 
   % parse options. note the defaults for bnorm's Params are set here.
   opts = struct('learningRate', [2 1 0.1], 'weightDecay', 0, ...
-    'moments', [], 'testMode', []) ;
+    'moments', single(0), 'testMode', []) ;
   [opts, posArgs, bnormOpts] = vl_argparsepos(opts, varargin, ...
     'flags', {'CuDNN', 'NoCuDNN'}) ;
   
@@ -52,12 +51,12 @@ function layer = vl_nnbnorm(varargin)
     opts.learningRate = opts.learningRate([1 1 1]) ;
   end
   if isscalar(opts.weightDecay)
-    opts.weightDecay = opts.weightDecay([1 1 1]) ;
+    opts.weightDecay = opts.weightDecay([1 1]) ;
   end
   
-  % create any unspecified parameters (scale, bias and moments).
-  assert(numel(posArgs) >= 1 && numel(posArgs) <= 4, ...
-    'Must specify between 1 and 4 inputs to VL_NNBNORM, plus any name-value pairs.') ;
+  % create any unspecified parameters (scale and bias).
+  assert(numel(posArgs) >= 1 && numel(posArgs) <= 3, ...
+    'Must specify between 1 and 3 inputs to VL_NNBNORM, plus any name-value pairs.') ;
   
   if numel(posArgs) < 2
     % create scale param. will be initialized with proper number of
@@ -74,27 +73,7 @@ function layer = vl_nnbnorm(varargin)
                       'weightDecay', opts.weightDecay(2)) ;
   end
   
-  if ~isempty(opts.moments)
-    moments = opts.moments ;
-  else
-    % 'moments' name-value pair not specified.
-    % check if the moments were passed in as the 4th argument (alternative
-    % syntax)
-    if numel(posArgs) > 3
-      moments = posArgs{4} ;
-      posArgs(4) = [] ;  % remove from list
-    else
-      % create moments param. note the training method is 'average'.
-      moments = Param('value', single(0), ...
-                      'learningRate', opts.learningRate(3), ...
-                      'weightDecay', opts.weightDecay(3), ...
-                      'trainMethod', 'average') ;
-    end
-  end
-  
-  assert(isnumeric(moments) || (isa(moments, 'Param') && ...
-    strcmp(moments.trainMethod, 'average')), ...
-    'Moments must be constant or a Param with trainMethod = ''average''.') ;
+  assert(isnumeric(opts.moments), 'Initial moments must be constant.') ;
   
   % create Input('testMode') to know when in test mode
   testMode = opts.testMode ;  % might override with boolean constant
@@ -102,11 +81,18 @@ function layer = vl_nnbnorm(varargin)
     testMode = Input('testMode') ;
   end
   
-  % create layer.
-  % in normal mode, pass in moments so its derivatives are expected.
-  layer = Layer(@vl_nnbnorm_wrapper, posArgs{:}, moments, testMode, bnormOpts{:}) ;
   
-  layer.numInputDer = 4 ;
+  % create moments state
+  moments = State() ;
+  
+  % create layer
+  update = opts.learningRate(3) ;
+  [layer, updatedMoments] = Layer.create(@vl_nnbnorm_wrapper, ...
+    [posArgs, {moments, testMode, update}, bnormOpts], ...
+    'numInputDer', 3, 'numOutputDer', 1) ;
+  
+  % the updated moments are written back to the state
+  moments.write(updatedMoments) ;
   
 end
 
