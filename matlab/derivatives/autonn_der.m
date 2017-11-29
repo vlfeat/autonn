@@ -26,91 +26,100 @@ end
 
 function dx = reshape_der(x, varargin)  %#ok<*DEFNU>
   dy = varargin{end} ;
+  [x_sz, x_type] = struct_or_tensor_size(x); % handle proxy structs
   if isscalar(dy) && dy == 0  % special case, no derivative
-    dx = zeros(size(x), 'like', x) ;
+    dx = zeros(x_sz, 'like', x_type) ;
   else
-    dx = reshape(dy, size(x)) ;
+    dx = reshape(dy, x_sz) ;
   end
 end
 
 function dx = shiftdim_der(x, varargin) 
   dy = varargin{end} ;
+  [x_sz, x_type] = struct_or_tensor_size(x) ; % handle proxy structs
   if isscalar(dy) && dy == 0  % special case, no derivative
-    dx = zeros(size(x), 'like', x) ;
+    dx = zeros(x_sz, 'like', x_type) ;
   elseif numel(varargin) == 1 % remove singelton behavior y = shiftdim(x);
-    dx = reshape(dy,size(x)); % re add singeltons
+    dx = reshape(dy, x_sz) ; % re add singeltons
   else
     n = varargin{1};
     if n<0
-      dx = reshape(dy,size(x)); % remove singletons
+      dx = reshape(dy, x_sz) ; % remove singletons
     else
-      n = mod(n,ndims(x));
-      dx = ipermute(dy,[n+1:ndims(x),1:n]); %unshift
+      n = mod(n, numel(x_sz)) ;
+      dx = ipermute(dy,[n+1:numel(x_sz),1:n]) ; % unshift
     end
   end
 end
 
 function dx = permute_der(x, dim, dy)
+  [x_sz, x_type] = struct_or_tensor_size(x); % handle proxy structs
   if isscalar(dy) && dy == 0  % special case, no derivative
-    dx = zeros(size(x), 'like', x) ;
+    dx = zeros(x_sz, 'like', x_type) ;
   else
     dx = ipermute(dy, dim) ;
   end
 end
 
 function dx = ipermute_der(x, dim, dy)
+  [x_sz, x_type] = struct_or_tensor_size(x); % handle proxy structs
   if isscalar(dy) && dy == 0  % special case, no derivative
-    dx = zeros(size(x), 'like', x) ;
+    dx = zeros(x_sz, 'like', x_type) ;
   else
     dx = permute(dy, dim) ;
   end
 end
 
 function dx = squeeze_der(x, dy)
+  [x_sz, x_type] = struct_or_tensor_size(x); % handle proxy structs
   if isscalar(dy) && dy == 0  % special case, no derivative
-    dx = zeros(size(x), 'like', x) ;
+    dx = zeros(x_sz, 'like', x_type) ;
   else
-    dx = reshape(dy, size(x)) ;
+    dx = reshape(dy, x_sz) ;
   end
 end
 
 function dx = flip_der(x, varargin)
   dy = varargin{end} ;
+  [x_sz, x_type] = struct_or_tensor_size(x); % handle proxy structs
   if isscalar(dy) && dy == 0  % special case, no derivative
-    dx = zeros(size(x), 'like', x) ;
+    dx = zeros(x_sz, 'like', x_type) ;
   else
     dx = flip(dy, varargin{1:end-1}) ;  % undo flip
   end
 end
 
 function dx = rot90_der(x, k, dy)
+  [x_sz, x_type] = struct_or_tensor_size(x); % handle proxy structs
   if nargin < 3
     dy = k ;  % derivative is second argument, not third
     k = 1 ;
   end
   if isscalar(dy) && dy == 0  % special case, no derivative
-    dx = zeros(size(x), 'like', x) ;
+    dx = zeros(x_sz, 'like', x_type) ;
   else
     dx = rot90(dy, -k) ;  % undo rotation
   end
 end
 
 function dx = circshift_der(x, k, dim, dy)
+  [x_sz, x_type] = struct_or_tensor_size(x); % handle proxy structs
   if nargin < 4
     dy = dim ;  % DIM missing. derivative is third argument, not fourth
     if isscalar(dy) && dy == 0  % special case, no derivative
-      dx = zeros(size(x), 'like', x) ;
+      dx = zeros(x_sz, 'like', x_type) ;
     else
       dx = circshift(dy, -k) ;  % undo circular shift
     end
   else
     if isscalar(dy) && dy == 0  % special case, no derivative
-      dx = zeros(size(x), 'like', x) ;
+      dx = zeros(x_sz, 'like', x_type) ;
     else
       dx = circshift(dy, -k, dim) ;  % undo circular shift
     end
   end
 end
+
 
 function dx = abs_der(x, dy)
   if isreal(x)
@@ -128,7 +137,7 @@ end
 
 function dx = sqrt_der(x, dy)
   assert(all(x(:) > eps), 'Derivative undefined for SQRT(0) (approaches infinity), and for negative numbers.') ;
-  dx = dy ./ sqrt(x) ;
+  dx = 0.5 * dy ./ sqrt(x) ;
 end
 
 function dx = exp_der(x, dy)
@@ -198,33 +207,36 @@ function dx = inv_der(x, dy)
 end
 
 function dx = sum_der(x, dim, dy)
+  [x_sz, ~] = struct_or_tensor_size(x); % handle proxy structs
   if nargin < 3
     % one-argument syntax of sum, plus derivative
     dy = dim;
-    dim = find([size(x), 2] ~= 1, 1) ;  % find first non-singleton dim
+    dim = find([x_sz, 2] ~= 1, 1) ;  % find first non-singleton dim
   end
 
   % repeat dy along the summed dimension
-  reps = ones(1, ndims(x)) ;
-  reps(dim) = size(x,dim) ;
+  reps = ones(1, numel(x_sz)) ;
+  reps(dim) = x_sz(dim) ;
   dx = repmat(dy, reps) ;
 end
 
 function dx = mean_der(x, dim, dy)
+  [x_sz, ~] = struct_or_tensor_size(x); % handle proxy structs
   if nargin < 3
     % one-argument syntax of mean, plus derivative
     dy = dim;
-    dim = find([size(x), 2] ~= 1, 1) ;  % find first non-singleton dim
+    dim = find([x_sz, 2] ~= 1, 1) ;  % find first non-singleton dim
   end
 
   % repeat dy along the summed dimension
-  reps = ones(1, ndims(x)) ;
-  reps(dim) = size(x,dim) ;
-  dx = repmat(dy, reps) / size(x, dim) ;
+  reps = ones(1, numel(x_sz)) ;
+  reps(dim) = x_sz(dim) ;
+  dx = repmat(dy, reps) / x_sz(dim) ;
 end
 
 function dx = gather_der(x, dy)
-  if isa(x, 'gpuArray')
+  [~, x_type] = struct_or_tensor_size(x); % handle proxy structs
+  if isa(x_type, 'gpuArray')
     dx = gpuArray(dy) ;  % convert derivative to same type as input
   else
     dx = dy ;  % keep same type (non-gpuArray)

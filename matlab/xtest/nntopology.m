@@ -1,10 +1,11 @@
 classdef nntopology < nntest
   properties (TestParameter)
     topology = {'sequential', 'diamond'}
+    conserveMemory = {false, true}
   end
 
   methods (Test)
-    function testEval(test, topology)
+    function testEval(test, topology, conserveMemory)
       if strcmp(test.currentDataType, 'double'), return ; end
       
       x = Input() ;
@@ -63,7 +64,7 @@ classdef nntopology < nntest
       
       % name layers, create net and set input
       Layer.workspaceNames() ;
-      net = Net(y) ;
+      net = Net(y, 'conserveMemory', conserveMemory) ;
       
       % handle GPU
       if strcmp(test.currentDevice, 'gpu')

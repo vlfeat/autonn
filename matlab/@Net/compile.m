@@ -18,7 +18,16 @@ function compile(net, varargin)
   opts.forwardOnly = false ;  % used mainly by evalOutputSize for faster build
   opts.conserveMemory = false ;
   [opts, netOutputs] = vl_argparsepos(opts, varargin) ;
-  net.conserveMemory = opts.conserveMemory;
+  assert( isequal(size(opts.conserveMemory),[1 1]) || isequal(size(opts.conserveMemory),[1,2]) , ...
+    ' ''conserveMemory'' property must be a 1x1 or 1x2 logical') ;
+  net.conserveMemory = opts.conserveMemory ;
+  % duplicate conserveMemory if forward and backward values are not specified
+  if numel(net.conserveMemory) == 1
+    net.conserveMemory = [net.conserveMemory, net.conserveMemory] ;
+  end
+  conserveMemoryForward = net.conserveMemory(1) ;
+  % conserveMemoryBackward only defined when opts.forwardOnly = false
+  conserveMemoryBackward = net.conserveMemory(2) & ~opts.forwardOnly ; 
   
   if ~isscalar(netOutputs)
     % several output layers; create a dummy layer to hold them together
@@ -66,7 +75,7 @@ function compile(net, varargin)
   % allocate memory
   net.forward = Net.initStruct(numel(idx), 'func', 'name', ...
       'source', 'args', 'inputVars', 'inputArgPos', 'outputVar', 'outputArgPos', ...
-      'debugStop') ;
+      'debugStop', 'precious', 'deleteVars') ;
   net.backward = Net.initStruct(numel(idx), 'func', 'name', ...
       'source', 'args', 'inputVars', 'inputArgPos', 'numInputDer', 'accumDer', 'deleteVars') ;
 
@@ -141,6 +150,11 @@ function compile(net, varargin)
     layer.outputArgPos = find(obj.outputVar ~= 0) ;  % skip unused outputs
     layer.outputVar = obj.outputVar(layer.outputArgPos) ;
     layer.debugStop = obj.debugStop ;
+    layer.precious = obj.precious; 
+    layer.deleteVars = [];
+    if numel(obj.numInputDer) && ~obj.numInputDer
+    	layer.precious = false; % non-differentiable functions are not precious
+    end
     net.forward(k) = Net.parseArgs(layer, obj.inputs) ;
   end
 
@@ -180,8 +194,9 @@ function compile(net, varargin)
         layer.numInputDer = obj.numInputDer ;
       end
 
-      if layer.numInputDer == 0
+      if layer.numInputDer == 0 && ~conserveMemoryBackward
         % there are no output derivatives, so this layer can be skipped
+        % if conserveMemoryBackward is enabled, do this after deleteVars is computed
         layer.func = @deal ;
         [layer.args, layer.inputArgPos, layer.inputVars] = deal({}, [], []) ;
 
@@ -220,22 +235,70 @@ function compile(net, varargin)
     end
   end
   
-  if net.conserveMemory
-    % compute derivsFanOut, which is used to delete derivatives
+  
+  if conserveMemoryForward || conserveMemoryBackward
+    % compute varsFanOut and derivsFanOut
+    % which is the no. of layers each var/der is input to
+    varsFanOut = zeros(numel(net.vars),1);
     derivsFanOut = zeros(numel(net.vars),1);
-    for k = 1:numel(net.backward)
-      di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
-      % NOTE: derivsFanOut is only nonzero for short circuited layers
-      derivsFanOut(di) = derivsFanOut(di) + 1;
+    isParam = false(numel(net.vars),1) ; % Var or Param
+    for p = 1:numel(net.params)
+      isParam(net.params(p).var) = true;
     end
-    % emulate backward pass
+    varsFanOut(isParam) = Inf; % prevent deletion of Var or Param
+    
+    for k = 1:numel(net.forward)
+      if conserveMemoryForward
+        ii = net.forward(k).inputVars;
+        if net.forward(k).precious
+          varsFanOut(ii) = Inf; % prevent deletion of vars in precious layers
+        else
+          varsFanOut(ii) =  varsFanOut(ii) + 1;
+        end
+      end
+      
+      if conserveMemoryBackward
+        % do the same for derivs, di is derivative indices
+        di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
+        % NOTE: derivsFanOut is only > 1 for short circuited layers
+        derivsFanOut(di) = derivsFanOut(di) + 1;
+        if any(isParam(di))
+          derivsFanOut(di) = Inf ; % prevent deletion of Var or Param ders
+        end
+      end
+    end
+    
     % precompute deleteVars for fast variable deletion during eval
-    for k = 1:numel(net.backward)
-      % di is derivative indices
-      di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
-      derivsFanOut(di) = derivsFanOut(di) - 1;
-      dv = derivsFanOut(di) == 0; %delete vars that are no longer needed
-      net.backward(k).deleteVars = di(dv);
+    for k = 1:numel(net.forward)
+      if conserveMemoryForward
+        % deleteVars for forward pass
+        ii = net.forward(k).inputVars;
+        varsFanOut(ii) = varsFanOut(ii) - 1;
+        dv = varsFanOut(ii) == 0; % delete vars that are no longer needed
+        net.forward(k).deleteVars = ii(dv);
+      end
+      
+      if conserveMemoryBackward
+        % deleteVars for backward pass, di is derivative indices
+        di = net.backward(k).inputVars(~mod(net.backward(k).inputVars,2));
+        derivsFanOut(di) = derivsFanOut(di) - 1;
+        dv = derivsFanOut(di) == 0; % delete vars that are no longer needed
+        net.backward(k).deleteVars = di(dv);
+      end
+    end
+    
+    if conserveMemoryBackward
+      % replace non differentiable functions with proxies now that 
+      % deleteVars has been computed
+      for k = 1:numel(net.forward)
+        bk = numel(net.forward)-k+1;
+        layer = net.backward(bk);
+        if objs{idx(k)}.numInputDer == 0
+          layer.func = @deal ;
+          [layer.args, layer.inputArgPos, layer.inputVars] = deal({}, [], []) ;
+        end
+        net.backward(bk) = layer;
+      end
     end
   end
   

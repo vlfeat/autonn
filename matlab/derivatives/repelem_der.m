@@ -12,13 +12,14 @@ function dx = repelem_der(x,varargin)
 % the terms of the BSD license (see the COPYING file).
 
   dy = varargin{end};
-
+  [x_sz, x_type] = struct_or_tensor_size(x); % handle proxy structs
+  
   % NOTE: repelem and repmat have a difference in behavior
   % for vector / scalar input 
-  if isvector(x) % u = repelem(v,n) behavior
+  if numel(x_sz) == 2 && any(x_sz==1) % u = repelem(v,n) behavior
     n = varargin{1};
     % repeated dim is nonsingleton dimension
-    rep_dim = find(size(x)~=1);
+    rep_dim = find(x_sz~=1);
     if rep_dim == 1
       repelem_sz = [n,1];
     else
