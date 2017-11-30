@@ -109,9 +109,6 @@ function compile(net, varargin)
       for j = 1:numel(obj.inputs)
         obj.inputs{j}.outputVar = obj.outputVar ;
       end
-      
-      % assign initial value
-      net.vars{obj.outputVar} = obj.initialValue ;
     end
   end
   
