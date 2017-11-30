@@ -79,19 +79,15 @@ function selected = findRecursive(obj, what, n, depth, visited, selected)
 % VISITED: Dictionary of objs seen during recursion so far (handle class).
 % SELECTED: Cell array of selected objects.
 
-% Copyright (C) 2016 Joao F. Henriques.
-% All rights reserved.
-%
-% This file is part of the VLFeat library and is made available under
-% the terms of the BSD license (see the COPYING file).
-
   % mark as visited
   visited(obj.id) = true ;
   
   if depth > 0
     % recurse on inputs that have not been visited yet (forward order)
-    for i = obj.getNextRecursion(visited)
-      selected = findRecursive(obj.inputs{i}, what, n, depth - 1, visited, selected) ;
+    for in = obj.inputs
+      if Layer.canRecurse(in{1}, visited)
+        selected = findRecursive(in{1}, what, n, depth - 1, visited, selected) ;
+      end
     end
   end
   

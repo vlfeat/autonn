@@ -600,30 +600,12 @@ classdef Layer < matlab.mixin.Copyable
       end
       
       % recurse on inputs, except for States (since they introduce cycles)
-      idx = obj.getNextRecursion(visited) ;
-      for i = idx
-        if ~isa(obj.inputs{i}, 'State')
-          obj.inputs{i}.cycleCheckRecursive(root, visited) ;
-        end
-      end
       visited(obj.id) = true ;
-    end
-    
-    function idx = getNextRecursion(obj, visited)
-      % used by findRecursive, cycleCheckRecursive, deepCopyRecursive, etc,
-      % to avoid redundant recursions in very large networks.
-      % returns indexes of inputs to recurse on, that have not been visited
-      % yet during this operation. The list of layers seen so far is
-      % managed efficiently with the dictionary VISITED (created with
-      % Layer.initializeRecursion).
-      
-      valid = false(1, numel(obj.inputs)) ;
-      for i = 1:numel(obj.inputs)
-        if isa(obj.inputs{i}, 'Layer') && ~visited.isKey(obj.inputs{i}.id)
-          valid(i) = true ;
+      for in = obj.inputs
+        if Layer.canRecurse(visited, in{1}) && ~isa(in{1}, 'State')
+          in{1}.cycleCheckRecursive(root, visited) ;
         end
       end
-      idx = find(valid) ;
     end
     
     function saveStack(obj)
@@ -668,8 +650,18 @@ classdef Layer < matlab.mixin.Copyable
     end
     
     function visited = initializeRecursion()
-      % See getNextRecursion
+      % See canRecurse
       visited = containers.Map('KeyType','uint32', 'ValueType','any') ;
+    end
+    
+    function can = canRecurse(obj, visited)
+      % used by findRecursive, cycleCheckRecursive, deepCopyRecursive, etc,
+      % to avoid redundant recursions in very large networks.
+      % returns indexes of inputs to recurse on, that have not been visited
+      % yet during this operation. The list of layers seen so far is
+      % managed efficiently with the dictionary VISITED (created with
+      % Layer.initializeRecursion).
+      can = (isa(obj, 'Layer') && ~visited.isKey(obj.id)) ;
     end
   end
 end

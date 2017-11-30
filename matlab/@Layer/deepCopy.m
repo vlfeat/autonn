@@ -69,8 +69,10 @@ function shareRecursive(shared, visited)
   % propagate shared status: any layer that this layer depends on must also
   % be shared. otherwise, a shared layer would be depending on both the
   % original layer and its copy; a contradiction that leads to subtle bugs.
-  for i = shared.getNextRecursion(visited)
-    shareRecursive(shared.inputs{i}, visited) ;
+  for in = shared.inputs
+    if Layer.canRecurse(in{1}, visited)
+      shareRecursive(in{1}, visited) ;
+    end
   end
 end
 
@@ -92,7 +94,7 @@ function other = deepCopyRecursive(original, copyFn, renameFn, visited)
   % as seen during the recursion.
   visited(original.id) = other ;
 
-  % recurse on inputs (a variation of getNextRecursion)
+  % recurse on inputs (a variation of Layer.canRecurse)
   for i = 1:numel(other.inputs)
     in = other.inputs{i} ;
     if isa(in, 'Layer')
