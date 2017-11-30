@@ -1,7 +1,7 @@
 classdef nnfind < nntest
   properties (TestParameter)
-    topology = {'sequential', 'diamond'}
-    index = {1, 2, 3, 4, 'all', -1}
+    topology = {'sequential', 'diamond', 'fan'}
+    index = {1, 2, 3, 4, 5, 'all', -1}
     criteria = {'index', 'name', 'function'}
   end
   properties
@@ -11,6 +11,7 @@ classdef nnfind < nntest
   methods (TestClassSetup)
     function initNet(test)
       % sequential topology
+      % a --> b --> c --> d
       a = Input() ;
       b = sqrt(a) ;
       c = abs(b) ;
@@ -20,6 +21,8 @@ classdef nnfind < nntest
       test.layers.sequential = {a, b, c, d} ;
 
       % diamond topology
+      % a --> b --> d
+      % `---> c ----^
       a = Input() ;
       b = sqrt(a) ;
       c = abs(a) ;
@@ -27,6 +30,19 @@ classdef nnfind < nntest
 
       Layer.workspaceNames() ;
       test.layers.diamond = {a, b, c, d} ;
+      
+      % fan topology
+      % a --> b --> d -> e
+      %  `--> c ----^    ^
+      %    `-------------^
+      a = Input() ;
+      b = sqrt(a) ;
+      c = abs(a) ;
+      d = b + c ;
+      e = d .* a ;
+
+      Layer.workspaceNames() ;
+      test.layers.fan = {a, b, c, d, e} ;
     end
   end
   
@@ -36,7 +52,9 @@ classdef nnfind < nntest
       
       % get network and correct sequence of layers
       sequence = test.layers.(topology) ;
-      net = sequence{end} ;
+      output = sequence{end} ;
+      
+      if index > numel(sequence), return ; end
       
       if isnumeric(index)
         % get one layer, and check it's the right one.
@@ -49,24 +67,26 @@ classdef nnfind < nntest
         % call find
         switch criteria
         case 'index'
-          found = net.find(index) ;
+          found = {output.find(index)} ;
           
         case 'name'
           name = correct.name ;
-          found = net.find(name, 1) ;
+          found = output.find(name) ;
           
         case 'function'
           f = correct.func ;
           if isempty(f), f = 'Input'; end
-          found = net.find(f, 1) ;
+          found = output.find(f) ;
         end
         
-        disp(['Found: ' found.name]) ;
-        assert(strcmp(found.name, correct.name)) ;
+        assert(isscalar(found), 'Did not find a unique layer satisfying criteria.') ;
+        
+        disp(['Found: ' found{1}.name]) ;
+        assert(strcmp(found{1}.name, correct.name)) ;
         
       elseif isequal(index, 'all')
         % find all layers, and check if they're in the correct order
-        found = net.find() ;
+        found = output.find() ;
         
         assert(numel(found) == numel(sequence)) ;
         for i = 1:numel(found)
