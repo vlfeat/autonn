@@ -56,12 +56,19 @@ function netOutputs = fromCompiledNet_(net)
     layers{p.var} = layer ;
   end
   
-  
   % create the layers in forward-order. this order is important, because
   % when processing a layer all its inputs must have been processed too.
   for k = 1:numel(forward)
     layer = forward(k) ;
     args = layer.args ;
+    
+    % if a layer input has not been set, this means it must correspond to a
+    % State (which introduces a cycle in the graph).
+    for i = 1:numel(layer.inputVars)
+      if isempty(layers{layer.inputVars(i)})
+        layers{layer.inputVars(i)} = State() ;
+      end
+    end
     
     % replace vars in the args list with the corresponding Layer objects
     for i = 1:numel(layer.inputVars)
@@ -76,18 +83,36 @@ function netOutputs = fromCompiledNet_(net)
     % retrieve the number of input derivatives from the backward struct
     obj.numInputDer = backward(end - k + 1).numInputDer ;
     
+    % retrieve the number of output derivatives, by comparing the number of
+    % inputs in the forward and backward passes
+    obj.numOutputDer = numel(backward(end - k + 1).args) - numel(args) ;
+    
     %retrieve precious value (set during overloaded construction)
     obj.precious = layer.precious;
+    
+    obj.name = layer.name ;
 
     % store in the 'layers' cell array so further references to the same
     % var will fetch the same layer
-    obj.name = layer.name ;
-    layers{layer.outputVar(1)} = obj ;
+    if isempty(layers{layer.outputVar(1)})
+      layers{layer.outputVar(1)} = obj ;
+    else
+      % special case, the output is written to a State
+      assert(isa(layers{layer.outputVar(1)}, 'State')) ;
+      layers{layer.outputVar(1)}.write(obj) ;
+    end
     
     % if the layer has multiple outputs, create a Selector for each of the
     % outputs after the first one
     for i = 2:numel(layer.outputVar)
-      layers{layer.outputVar(i)} = Selector(obj, i) ;
+      sel = Selector(obj, i) ;
+      if isempty(layers{layer.outputVar(i)})
+        layers{layer.outputVar(i)} = sel ;
+      else
+        % special case, the output is written to a State
+        assert(isa(layers{layer.outputVar(i)}, 'State')) ;
+        layers{layer.outputVar(i)}.write(sel) ;
+      end
     end
   end
   

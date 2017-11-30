@@ -1,4 +1,8 @@
 classdef nndecompile < nntest
+  properties (TestParameter)
+    bnorm = {false, true}
+  end
+  
   methods (Test)
     function testDiamond(test)
       % diamond topology
@@ -11,21 +15,27 @@ classdef nndecompile < nntest
       test.do(e) ;
     end
     
-    function testLeNet(test)
+    function testLeNet(test, bnorm)
       % LeNet + batchnorm + loss
       images = Input('name', 'images', 'gpu', true) ;
       labels = Input('name', 'labels') ;
       
-      x = vl_nnconv(images, 'size', [5, 5, 1, 20], 'weightScale', 0.01) ;
-      x = vl_nnbnorm(x) ;
+      x = vl_nnconv(images, 'size', [5, 5, 1, 20]) ;
+      if bnorm
+        x = vl_nnbnorm(x) ;
+      end
       x = vl_nnpool(x, 2, 'stride', 2) ;
-      x = vl_nnconv(x, 'size', [5, 5, 20, 50], 'weightScale', 0.01) ;
-      x = vl_nnbnorm(x) ;
+      x = vl_nnconv(x, 'size', [5, 5, 20, 50]) ;
+      if bnorm
+        x = vl_nnbnorm(x) ;
+      end
       x = vl_nnpool(x, 2, 'stride', 2) ;
-      x = vl_nnconv(x, 'size', [4, 4, 50, 500], 'weightScale', 0.01) ;
-      x = vl_nnbnorm(x) ;
+      x = vl_nnconv(x, 'size', [4, 4, 50, 500]) ;
+      if bnorm
+        x = vl_nnbnorm(x) ;
+      end
       x = vl_nnrelu(x) ;
-      x = vl_nnconv(x, 'size', [1, 1, 500, 10], 'weightScale', 0.01) ;
+      x = vl_nnconv(x, 'size', [1, 1, 500, 10]) ;
       
       loss = vl_nnloss(x, labels) ;
       
