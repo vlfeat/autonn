@@ -184,6 +184,7 @@ classdef Net < handle
             end
           end
         end
+        idx = idx(1) ;  % if multiple matches (e.g. multiple outputs), return first one
       elseif isa(var, 'Layer')
         idx = var.outputVar(1) ;
       elseif iscell(var)
