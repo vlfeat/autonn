@@ -47,7 +47,6 @@ classdef Net < handle
     isGpuVar = []  % whether each variable or derivative can be on the GPU
     parameterServer = []  % ParameterServer object, accumulates parameter derivatives across GPUs
     conserveMemory = [false, false] % 1x2 logical determining variable deletion on the forward/backward pass
-    inputVarsInfo = {}  % cell array of input size and type
   end
   properties (SetAccess = public, GetAccess = public)
     meta = []  % optional meta properties
