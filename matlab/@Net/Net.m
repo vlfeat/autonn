@@ -40,7 +40,6 @@ classdef Net < handle
   properties (SetAccess = protected, GetAccess = public)
     forward = []  % forward pass function calls
     backward = []  % backward pass function calls
-    vars = {}  % cell array of variables and their derivatives
     inputs = struct()  % struct of network's Inputs, indexed by name
     params = []  % list of Params
     gpu = false  % whether the network is in GPU or CPU mode
@@ -49,6 +48,7 @@ classdef Net < handle
     conserveMemory = [false, false] % 1x2 logical determining variable deletion on the forward/backward pass
   end
   properties (SetAccess = public, GetAccess = public)
+    vars = {}  % cell array of variables and their derivatives (access with getValue/setValue/getDer/setDer)
     meta = []  % optional meta properties
     diagnostics = []  % list of diagnosed vars (see Net.plotDiagnostics)
   end

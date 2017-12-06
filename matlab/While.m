@@ -70,13 +70,27 @@ function varargout = While(iteration, varargin)
   end
 
   % compile iteration network
-  iteration_net = Net(outputs{:}) ;
+  net = Net(outputs{:}) ;
+  
+  
+  % cache indexes of variables in iteration network's meta information
+  net.meta.rec_var = zeros(1, num_rec_vars) ;  % recursive vars
+  for i = 1:num_rec_vars
+    net.meta.rec_var(i) = net.getVarIndex(sprintf('while_input_r%i', i)) ;
+  end
+  net.meta.non_rec_var = zeros(1, num_non_rec_vars) ;  % non-recursive vars
+  for i = 1:num_non_rec_vars
+    net.meta.non_rec_var(i) = net.getVarIndex(sprintf('while_input_n%i', i)) ;
+  end
+  net.meta.counter_var = net.getVarIndex('while_input_counter', false) ;  % 0 if no counter
+  net.meta.output_var = net.getVarIndex(outputs) ;
+  
   
   % create main layer
   varargout = cell(1, num_rec_vars) ;
   
   [varargout{:}] = Layer.create(@while_loop, [initial_values, non_rec_vars, ...
-    {iteration_net, opts.count, opts.concatenate, opts.stopCondition}], ...
+    {net, opts.count, opts.concatenate, opts.stopCondition}], ...
     'numInputDer', numel(initial_values) + numel(non_rec_vars)) ;
 
 end
@@ -104,11 +118,7 @@ function varargout = while_loop(varargin)
   [net, count, dims, stop] = deal(varargin{pos : pos + 3}) ;
   
   % get output variables' indexes
-  if ~isequal(net.forward(end).func, @root)
-    output_var_idx = net.forward(end).outputVar ;
-  else
-    output_var_idx = net.forward(end).inputVars ;
-  end
+  output_var_idx = net.meta.output_var ;
   num_outputs = numel(output_var_idx) ;
   
   assert(~stop, 'Not implemented yet.');
@@ -116,20 +126,12 @@ function varargout = while_loop(varargin)
   % extract remaining arguments
   assert(num_outputs < pos, 'Invalid inputs.') ;
   output_der_ = varargin(pos + 4 : end) ;  % derivatives, if any
-  initial_values = varargin(1 : num_outputs) ;  % initial values of recursive vars
+  rec_values = varargin(1 : num_outputs) ;  % initial values of recursive vars
   non_rec_vars = varargin(num_outputs + 1 : pos - 1) ;  % non-recursive vars
   
-  % get indexes of recursive vars
-  rec_var_idx = zeros(1, num_outputs) ;
-  for i = 1:num_outputs
-    rec_var_idx(i) = net.getVarIndex(sprintf('while_input_r%i', i)) ;
-  end
-  
-  % get indexes of non-recursive vars
-  non_rec_var_idx = zeros(size(non_rec_vars)) ;
-  for i = 1:numel(non_rec_vars)
-    non_rec_var_idx(i) = net.getVarIndex(sprintf('while_input_n%i', i)) ;
-  end
+  % get indexes of recursive and non-recursive variables
+  rec_var_idx = net.meta.rec_var ;
+  non_rec_var_idx = net.meta.non_rec_var ;
   
   % dimensions for output concatenation
   if isscalar(dims)
@@ -144,50 +146,45 @@ function varargout = while_loop(varargin)
     %
     
     % get index of counter var, or 0 if it doesn't exist
-    counter_var_idx = net.getVarIndex('while_input_counter', false) ;
+    counter_var_idx = net.meta.counter_var ;
 
     % set values of non-recursive vars now, used by all iterations
-    if isscalar(non_rec_var_idx), non_rec_vars = non_rec_vars{1} ; end  % handle single-element lists
-    net.setValue(non_rec_var_idx, non_rec_vars) ;
+    net.vars(non_rec_var_idx) = non_rec_vars ;
 
     % allocate activations and outputs for each iteration
     act = cell(1, min(count, 1e4)) ;  % allow inf
     out = cell(numel(act), num_outputs) ;
     
     % clear previous derivatives, so they're not saved with the activations
-    net.setDer(1:2:numel(net.vars)-1, cell(1, numel(net.vars) / 2)) ;
-    
-    % initial values of recursive vars
-    rec_values = initial_values ;
-    if isscalar(rec_values), rec_values = rec_values{1} ; end
+    net.vars(2:2:end) = {[]} ;
     
     for c = 1:count
       % set values of recursive vars
-      net.setValue(rec_var_idx, rec_values) ;
+      net.vars(rec_var_idx) = rec_values ;
       
       % set counter variable
       if counter_var_idx
-        net.setValue(counter_var_idx, c) ;
+        net.vars{counter_var_idx} = c ;
       end
       
       % evaluate network
       net.eval({}, 'forward') ;
+      
+      % save activations
+      act{c} = net.vars ;
 
       % get outputs, which will be fed back in the next iteration
-      rec_values = net.getValue(output_var_idx) ;
+      rec_values = act{c}(output_var_idx) ;
       
-      % save activations and outputs
-      act{c} = net.vars ;
-      if isscalar(rec_var_idx)
-        out{c,:} = rec_values ;
-      else
+      % save outputs
+      if ~isempty(dims)
         out(c,:) = rec_values ;
       end
     end
     
     if isempty(dims)
       % only return the outputs of the final iteration
-      varargout = out(count,:) ;
+      varargout = rec_values ;
       
     else
       % concatenate outputs for all iterations, over specified dimensions
@@ -211,18 +208,30 @@ function varargout = while_loop(varargin)
     act = net.meta.activations ;
     assert(num_outputs == numel(output_der_)) ;
     
-    % extract output derivatives. note they may be concatenated tensors
-    % of the outputs over all iterations. use mat2cell to break them up.
+    % extract output derivatives. note that they may be concatenated
+    % tensors of the outputs over all iterations, so break them up.
     if ~isempty(dims)
       output_der = cell(numel(act), num_outputs) ;
+      
+      max_dims = 1 ;  % create subscripts ':' for all dimensions
       for k = 1:numel(output_der_)
-        % inputs for mat2cell: {SZ1, SZ2, ..., [1 1 ...], ..., SZN}, where
-        % all SZ# are scalars, and the position in DIMS(K) has a vector of
-        % ones, to slice that dimension.
-        slice_sizes = num2cell(size(output_der_{k})) ;
-        slice_sizes{dims(k)} = ones(1, size(output_der_{k}, dims(k))) ;
-
-        output_der(:,k) = mat2cell(output_der_{k}, slice_sizes{:}) ;
+        max_dims = max(max_dims, ndims(output_der_{k})) ;
+      end
+      subs = cell(1, max_dims) ;
+      subs(:) = {':'} ;
+      
+      for k = 1:numel(output_der_)
+        subs_ = subs ;
+        o = output_der_{k} ;
+        
+        if ~isscalar(o)
+          for j = 1:size(output_der,1)
+            subs_{dims(k)} = j ;  % slice along the specified dim., keeping others ':'
+            output_der{j,k} = o(subs_{:}) ;
+          end
+        else  % edge case, a scalar derivative (e.g. 0)
+          output_der(:,k) = {o} ;
+        end
       end
     end
     
@@ -249,15 +258,14 @@ function varargout = while_loop(varargin)
       
       % reuse stored activations, which includes the iteration's inputs.
       % note this also clears derivatives.
-      net.setValue(1:numel(net.vars), act{c}) ;
+      net.vars = act{c} ;
       
       % backpropagate through iteration network
       if isscalar(iter_der), iter_der = iter_der{1} ; end  % handle single-element lists
       net.eval({}, 'backward', iter_der) ;
       
       % accumulate derivatives for all non-recursive vars
-      der = net.getDer(non_rec_var_idx) ;
-      if ~iscell(der), der = {der} ; end
+      der = net.vars(non_rec_var_idx + 1) ;
       
       if c == numel(act)  % first time
         non_rec_der = der ;
@@ -269,8 +277,7 @@ function varargout = while_loop(varargin)
       
       % get derivatives for recursive vars (to feed back to the previous
       % iteration, or to return them at the end)
-      rec_der = net.getDer(rec_var_idx) ;
-      if ~iscell(rec_der), rec_der = {rec_der} ; end
+      rec_der = net.vars(rec_var_idx + 1) ;
     end
     
     % return input derivatives for recursive vars' initial values (i.e.,
