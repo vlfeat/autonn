@@ -101,11 +101,11 @@ classdef Net < handle
       %GETVALUE Returns the value of a given variable
       %   OBJ.GETVALUE(VAR) returns the value of a given variable.
       %   VAR may be a Layer object, its name, or an internal var index.
-      var = net.getVarIndex(var) ;
-      if isscalar(var)
-        value = net.vars{var} ;
+      [idx, isList] = net.getVarIndex(var) ;
+      if ~isList
+        value = net.vars{idx} ;
       else
-        value = net.vars(var) ;
+        value = net.vars(idx) ;
       end
     end
     
@@ -114,11 +114,11 @@ classdef Net < handle
       %GETDER Returns the derivative of a given variable
       %   OBJ.GETDER(VAR) returns the derivative of a given variable.
       %   VAR may be a Layer object, its name, or an internal var index.
-      var = net.getVarIndex(var) ;
-      if isscalar(var)
-        der = net.vars{var + 1} ;
+      [idx, isList] = net.getVarIndex(var) ;
+      if ~isList
+        der = net.vars{idx + 1} ;
       else
-        der = net.vars(var + 1) ;
+        der = net.vars(idx + 1) ;
       end
     end
     
@@ -126,11 +126,11 @@ classdef Net < handle
       %SETVALUE Sets the value of a given variable
       %   OBJ.SETVALUE(VAR, VALUE) sets the value of a given variable.
       %   VAR may be a Layer object, its name, or an internal var index.
-      var = net.getVarIndex(var) ;
-      if isscalar(var)
-        net.vars{var} = value ;
+      [idx, isList] = net.getVarIndex(var) ;
+      if ~isList
+        net.vars{idx} = value ;
       else
-        net.vars(var) = value ;
+        net.vars(idx) = value ;
       end
     end
     
@@ -142,15 +142,15 @@ classdef Net < handle
       %   Note that the network output derivatives are set in the call to
       %   Net.eval, and the others are computed with backpropagation, so
       %   there is rarely a need to call this function.
-      var = net.getVarIndex(var) ;
-      if isscalar(var)
-        net.vars{var + 1} = der ;
+      [idx, isList] = net.getVarIndex(var) ;
+      if ~isList
+        net.vars{idx + 1} = der ;
       else
-        net.vars(var + 1) = der ;
+        net.vars(idx + 1) = der ;
       end
     end
     
-    function idx = getVarIndex(net, var, errorIfNotFound)
+    function [idx, isList] = getVarIndex(net, var, errorIfNotFound)
       %GETVARINDEX Returns the internal index of a variable
       %   OBJ.GETVARINDEX(VAR) returns the index IDX of OBJ.VARS{IDX},
       %   where the variable is stored. VAR may be a Layer object or its
@@ -163,6 +163,7 @@ classdef Net < handle
       if nargin < 3
         errorIfNotFound = true ;
       end
+      isList = false ;  % to deal with edge-case of setValue({var}, {value}) (single-elem. lists)
       if ischar(var)
         % search for var/layer by name
         if isfield(net.inputs, var)  % search inputs
@@ -190,9 +191,11 @@ classdef Net < handle
         for i = 1:numel(idx)
           idx(i) = net.getVarIndex(var{i}, errorIfNotFound) ;
         end
+        isList = true ;
       else
         assert(isnumeric(var), 'VAR must either be a layer name, a Layer object, or var indexes.') ;
         idx = var ;
+        isList = ~isscalar(idx) ;
       end
     end
     
