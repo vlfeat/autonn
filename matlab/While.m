@@ -119,13 +119,6 @@ function varargout = while_loop(varargin)
   initial_values = varargin(1 : num_outputs) ;  % initial values of recursive vars
   non_rec_vars = varargin(num_outputs + 1 : pos - 1) ;  % non-recursive vars
   
-  % move to GPU (improve: check parent Net's GPU state)
-  if ~isempty(initial_values) && isa(initial_values{1}, 'gpuArray')
-    net.useGpu(0) ;
-  else
-    net.useGpu([]) ;
-  end
-  
   % get indexes of recursive vars
   rec_var_idx = zeros(1, num_outputs) ;
   for i = 1:num_outputs
