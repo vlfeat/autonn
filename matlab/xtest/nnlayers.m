@@ -1,4 +1,4 @@
-classdef nnlayers < nntest
+classdef nnlayers < nncheckder
   properties (TestParameter)
     conserveMemory = {false, true}
   end
@@ -14,7 +14,7 @@ classdef nnlayers < nntest
       x = Param('value', randn(7, 7, 2, 5, test.currentDataType)) ;
       w = Param('value', randn(3, 3, 2, 3, test.currentDataType)) ;
       b = Param('value', randn(3, 1, test.currentDataType)) ;
-      labels = Param('value', ones(5, 1)) ;
+      labels = Param('value', ones(5, 1, test.currentDataType)) ;
       Layer.workspaceNames() ;
       
       % test several layers and syntaxes
@@ -33,7 +33,7 @@ classdef nnlayers < nntest
       
       do(test, vl_nnpool(x, [2, 2], 'stride', 2, 'pad', 1)) ;
       
-      do(test, vl_nnloss(x, labels, 'loss', 'classerror')) ;
+      do(test, vl_nnloss(x, labels, 'loss', 'classerror'), labels) ;
       
       % dropout is composed of 2 parts: the mask generator, and the dropout
       % mask applier. run derivative check with fixed mask.
@@ -59,9 +59,9 @@ classdef nnlayers < nntest
         
         % ignore the 4th parameter (moments), since it is not updated by
         % gradient descent but by a moving average
-        bnorm.numInputDer = 3 ;
+        ignore = bnorm.inputs{4} ;
         
-        do(test, bnorm) ;
+        do(test, bnorm, ignore) ;
       end
     end
     
@@ -138,61 +138,12 @@ classdef nnlayers < nntest
   end
   
   methods
-    function do(test, output)
+    function do(test, output, varargin)
       % show layer for debugging
       display(output) ;
       
-      % compile net
-      net = Net(output, 'conserveMemory', test.currentConserveMemory) ;
-      
-      % run forward only
-      net.eval({}, 'forward') ;
-      
-      % check output is non-empty
-      y = net.getValue(output) ;
-      test.verifyNotEmpty(y) ;
-      
-      % create derivative with same size as output
-      der = randn(size(net.getValue(output)), test.currentDataType) ;
-      
-      % handle GPU
-      if strcmp(test.currentDevice, 'gpu')
-        gpuDevice(1) ;
-        net.move('gpu') ;
-        der = gpuArray(der) ;
-      end
-      
-      % run forward and backward
-      net.eval({}, 'normal', der) ;
-      
-      % check all Param derivatives are non-empty
-      ders = net.getDer([net.params.var]) ;
-      if ~iscell(ders)
-        ders = {ders} ;
-      end
-      for i = 1:numel(ders)
-        test.verifyNotEmpty(ders{i}) ;
-      end
-
-      % check ders
-      checkedIns = cellfun(@(x) isa(x, 'Param'), output.inputs) ;
-      checkedIns(output.numInputDer + 1 : end) = false ;  % ignore non-differentiable inputs
-      inVars = cellfun(@(x) {x.name}, output.inputs(checkedIns)) ;
-      ins = cellfun(@(x) {{x, net.getValue(x)}}, inVars) ; ins = [ins{:}] ;
-      outName = output.name ;
-      for ii = 1:numel(inVars)
-        inValue = net.getValue(inVars{ii}) ;
-        wrapper = @(x) forward_wrapper(net, outName, ins, ii, x) ;
-        net.eval({}, 'normal', der) ; % refresh
-        dzdx = net.getDer(inVars{ii}) ;
-        test.der(@(x) wrapper(x), inValue, der, dzdx, 1e-6*test.range) ;
-      end
+      % use parent class's derivative check (defined in nncheckder)
+      test.checkDer(output, test.currentConserveMemory, varargin{:}) ;
     end
   end
-end
-
-function res = forward_wrapper(net, varName, ins, pos, x)
-  ins{pos * 2} = x ; % update current variable
-  net.eval(ins, 'forward') ;
-  res = net.getValue(varName) ;
 end
