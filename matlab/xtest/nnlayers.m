@@ -1,11 +1,20 @@
-classdef nnlayers < nntest
+classdef nnlayers < nncheckder
+  properties (TestParameter)
+    conserveMemory = {false, true}
+  end
+  properties
+    currentConserveMemory
+  end
+
   methods (Test)
-    function testLayers(test)
+    function testLayers(test, conserveMemory)
+      test.currentConserveMemory = conserveMemory ;
+      
       % use Params for all inputs so we can choose their values now
       x = Param('value', randn(7, 7, 2, 5, test.currentDataType)) ;
       w = Param('value', randn(3, 3, 2, 3, test.currentDataType)) ;
       b = Param('value', randn(3, 1, test.currentDataType)) ;
-      labels = Param('value', ones(5, 1)) ;
+      labels = Param('value', ones(5, 1, test.currentDataType)) ;
       Layer.workspaceNames() ;
       
       % test several layers and syntaxes
@@ -24,7 +33,7 @@ classdef nnlayers < nntest
       
       do(test, vl_nnpool(x, [2, 2], 'stride', 2, 'pad', 1)) ;
       
-      do(test, vl_nnloss(x, labels, 'loss', 'classerror')) ;
+      do(test, vl_nnloss(x, labels, 'loss', 'classerror'), labels) ;
       
       % dropout is composed of 2 parts: the mask generator, and the dropout
       % mask applier. run derivative check with fixed mask.
@@ -50,23 +59,27 @@ classdef nnlayers < nntest
         
         % ignore the 4th parameter (moments), since it is not updated by
         % gradient descent but by a moving average
-        bnorm.numInputDer = 3 ;
+        ignore = bnorm.inputs{4} ;
         
-        do(test, bnorm) ;
+        do(test, bnorm, ignore) ;
       end
     end
     
-    function testMath(test)
+    function testMath(test, conserveMemory)
+      test.currentConserveMemory = conserveMemory ;
+      
       % use Params for all inputs so we can choose their values now
       a = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
       b = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
       c = Param('value', ones(1, 1, test.currentDataType)) ;  % scalar
       d = Param('value', randn(3, 1, test.currentDataType)) ;  % vector
+      e = Param('value', rand(3, 3, test.currentDataType) + 1e-3 * ones(3,3)) ;  % non-negative matrix
+      f = Param('value', rand(3, 3, test.currentDataType) * 2 - 1) ;  % matrix in -1..1
       Layer.workspaceNames() ;
       
       % test several operations
       
-      % wsum
+      % weighted sums
       do(test, a + b) ;
       do(test, 10 * a) ;
       do(test, a + 2 * b - c) ;  % collected arguments in a single wsum
@@ -81,12 +94,25 @@ classdef nnlayers < nntest
       do(test, a .* d) ;
       do(test, a ./ d) ;
       do(test, a .^ 2) ;
+      
+      do(test, atan2(a, b)) ;
+      
+      % unary
+      do(test, sqrt(e)) ;
+      do(test, sin(a)) ;
+      do(test, cos(a)) ;
+      do(test, tan(a)) ;
+      do(test, asin(f)) ;
+      do(test, acos(f)) ;
+      do(test, atan(a)) ;
 
-      %% sorting is a kind of math
+      % sorting is a kind of math
       do(test, sort(a)) ;
     end
     
-    function testConv(test)
+    function testConv(test, conserveMemory)
+      test.currentConserveMemory = conserveMemory ;
+      
       % extra conv tests
       if strcmp(test.currentDataType, 'double'), return, end
       
@@ -112,58 +138,12 @@ classdef nnlayers < nntest
   end
   
   methods
-    function do(test, output)
+    function do(test, output, varargin)
       % show layer for debugging
       display(output) ;
       
-      % compile net
-      net = Net(output) ;
-      
-      % run forward only
-      net.eval({}, 'forward') ;
-      
-      % check output is non-empty
-      y = net.getValue(output) ;
-      test.verifyNotEmpty(y) ;
-      
-      % create derivative with same size as output
-      der = randn(size(net.getValue(output)), test.currentDataType) ;
-      
-      % handle GPU
-      if strcmp(test.currentDevice, 'gpu')
-        gpuDevice(1) ;
-        net.move('gpu') ;
-        der = gpuArray(der) ;
-      end
-      
-      % run forward and backward
-      net.eval({}, 'normal', der) ;
-      
-      % check all derivatives are non-empty
-      ders = net.getValue(2:2:numel(net.vars)) ;
-      for i = 1:numel(ders)
-        test.verifyNotEmpty(ders{i}) ;
-      end
-
-      % check ders
-      checkedIns = cellfun(@(x) isa(x, 'Param'), output.inputs) ;
-      checkedIns(output.numInputDer + 1 : end) = false ;  % ignore non-differentiable inputs
-      inVars = cellfun(@(x) {x.name}, output.inputs(checkedIns)) ;
-      ins = cellfun(@(x) {{x, net.getValue(x)}}, inVars) ; ins = [ins{:}] ;
-      outName = output.name ;
-      for ii = 1:numel(inVars)
-        inValue = net.getValue(inVars{ii}) ;
-        wrapper = @(x) forward_wrapper(net, outName, ins, ii, x) ;
-        net.eval({}, 'normal', der) ; % refresh
-        dzdx = net.getDer(inVars{ii}) ;
-        test.der(@(x) wrapper(x), inValue, der, dzdx, 1e-6*test.range) ;
-      end
+      % use parent class's derivative check (defined in nncheckder)
+      test.checkDer(output, test.currentConserveMemory, varargin{:}) ;
     end
   end
-end
-
-function res = forward_wrapper(net, varName, ins, pos, x)
-  ins{pos * 2} = x ; % update current variable
-  net.eval(ins, 'forward') ;
-  res = net.getValue(varName) ;
 end

@@ -59,8 +59,14 @@ classdef Param < Layer
       
       opts = vl_argparse(opts, varargin, 'nonrecursive') ;
       
+      % validate initial value. use class(obj) in case Param is subclassed.
       assert(~isequal(opts.value, 'unspecified'), ...
-        'Must specify the VALUE property when creating a Param.')
+        ['Must specify the VALUE property when creating a ' class(obj) '.']) ;
+      assert(~isa(opts.value, 'Layer'), ...
+        ['The initial value of a ' class(obj) ' cannot be a Layer.']) ;
+      
+      assert(any(strcmp(opts.trainMethod, obj.trainMethods)), ...
+        [class(obj) '.trainMethod must be one of {' strjoin(obj.trainMethods, ', ') '}.']) ;
       
       obj.name = opts.name ;
       obj.value = opts.value ;

@@ -188,10 +188,9 @@ function compile(net, varargin)
       % all inputs until the last Layer input (e.g. if the 3rd input
       % has class Layer, and others are constants, assume there will be
       % at least 3 output derivatives).
-      if isempty(obj.numInputDer)
-        layer.numInputDer = max([0, layer.inputArgPos]) ;
-      else  % manual override
-        layer.numInputDer = obj.numInputDer ;
+      layer.numInputDer = max([0, layer.inputArgPos]) ;
+      if ~isempty(obj.numInputDer)  % limit the number of returned derivatives
+        layer.numInputDer = min(layer.numInputDer, obj.numInputDer) ;
       end
 
       if layer.numInputDer == 0 && ~conserveMemoryBackward

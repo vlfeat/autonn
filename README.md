@@ -68,7 +68,7 @@ pooled = mean(mean(x, 1), 2) ;
 prediction = vl_nnconv(pooled, 'size', [1 1 64 1000]) ;
 ```
 
-All of MatConvNet's layer functions are overloaded, as well as a growing list of Matlab math operators and functions. The derivatives for these functions are defined whenever possible, so that they can be composed to create differentiable models. A full list can be found [here](matlab/@Layer/methods.txt).
+All of MatConvNet's layer functions are overloaded, as well as a growing list of Matlab math operators and functions. The derivatives for these functions are defined whenever possible, so that they can be composed to create differentiable models. A full list can be found [here](doc/methods.txt).
 
 
 # Documentation #

@@ -64,13 +64,6 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
     end
     
     net.vars{var} = value ;
-    
-    % inputVarsInfo has not been initialized or input sizes have changed
-    if numel(net.inputVarsInfo) < var || ~isequal(net.inputVarsInfo{var}.size,size(net.vars{var}))
-      % recompute variable sizes when conserveMemoryForward = true
-      newInputVars = true;
-      net.inputVarsInfo{var}.size = size(net.vars{var});
-    end
   end
 
   switch mode
