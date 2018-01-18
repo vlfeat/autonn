@@ -2,42 +2,42 @@
 function cifar_example(varargin)
   % options (override by calling script with name-value pairs)
   opts.dataDir = [vl_rootnn() '/data/cifar'] ;  % CIFAR10 data location
-  opts.resultsDir = [vl_rootnn() '/data/cifar-example'] ;
-  opts.numEpochs = 100 ;
-  opts.batchSize = 128 ;
-  opts.learningRate = 0.001 ;
+  opts.resultsDir = [vl_rootnn() '/data/cifar-example'] ;  % results location
+  opts.model = @models.BasicCifarNet ;  % choose model (type 'help models' for a list)
+  opts.numEpochs = [] ;  % if empty, default for above model will be used
+  opts.batchSize = [] ;  % same as above
+  opts.learningRate = [] ;  % same as above
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
-  opts.savePlot = false ;
+  opts.savePlot = false ;  % whether to save the plot as a PDF file
   opts.continue = true ;  % continue from last checkpoint if available
-  opts = vl_argparse(opts, varargin) ;
+  
+  opts = vl_argparse(opts, varargin) ;  % let user override options
   
   try run('../../setup_autonn.m') ; catch; end  % add AutoNN to the path
   mkdir(opts.resultsDir) ;
   
 
-  % define network
+  % create network inputs
   images = Input('gpu', true) ;
   labels = Input() ;
 
-  x = vl_nnconv(images, 'size', [5, 5, 3, 32], 'pad', 2, 'weightScale', 0.01) ;
-  x = vl_nnpool(x, 3, 'stride', 2, 'method', 'max', 'pad', 1) ;
-  x = vl_nnrelu(x) ;
+  % create network specified in opts.model (from 'autonn/matlab/+models/')
+  [output, defaults] = opts.model('input', images) ;
   
-  x = vl_nnconv(x, 'size', [5, 5, 32, 32], 'pad', 2, 'weightScale', 0.05) ;
-  x = vl_nnrelu(x) ;
-  x = vl_nnpool(x, 3, 'stride', 2, 'method', 'avg', 'pad', 1) ;
-  
-  x = vl_nnconv(x, 'size', [5, 5, 32, 64], 'pad', 2, 'weightScale', 0.05) ;
-  x = vl_nnrelu(x) ;
-  x = vl_nnpool(x, 3, 'stride', 2, 'method', 'avg', 'pad', 1) ;
-  
-  x = vl_nnconv(x, 'size', [4, 4, 64, 64], 'weightScale', 0.05) ;
-  x = vl_nnrelu(x) ;
-  
-  x = vl_nnconv(x, 'size', [1, 1, 64, 10], 'weightScale', 0.05) ;
+  % replace empty options with the model-specific default values
+  if isempty(opts.numEpochs)
+    opts.numEpochs = defaults.numEpochs ;
+  end
+  if isempty(opts.batchSize)
+    opts.batchSize = defaults.batchSize ;
+  end
+  if isempty(opts.learningRate)
+    opts.learningRate = defaults.learningRate ;
+  end
 
-  objective = vl_nnloss(x, labels, 'loss', 'softmaxlog') / opts.batchSize ;
-  error = vl_nnloss(x, labels, 'loss', 'classerror') / opts.batchSize ;
+  % create losses
+  objective = vl_nnloss(output, labels, 'loss', 'softmaxlog') / opts.batchSize ;
+  error = vl_nnloss(output, labels, 'loss', 'classerror') / opts.batchSize ;
 
   % assign layer names automatically, and compile network
   Layer.workspaceNames() ;

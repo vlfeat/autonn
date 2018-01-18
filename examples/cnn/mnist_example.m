@@ -2,32 +2,29 @@
 function mnist_example(varargin)
   % options (override by calling script with name-value pairs)
   opts.dataDir = [vl_rootnn() '/data/mnist'] ;  % MNIST data location
-  opts.resultsDir = [vl_rootnn() '/data/mnist-example'] ;
-  opts.numEpochs = 20 ;
-  opts.batchSize = 128 ;
-  opts.learningRate = 0.001 ;
+  opts.resultsDir = [vl_rootnn() '/data/mnist-example'] ;  % results location
+  opts.numEpochs = 20 ;  % number of epochs
+  opts.batchSize = 128 ;  % batch size
+  opts.learningRate = 0.001 ;  % learning rate
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
-  opts.savePlot = false ;
-  opts = vl_argparse(opts, varargin) ;
+  opts.savePlot = false ;  % whether to save the plot as a PDF file
+  
+  opts = vl_argparse(opts, varargin) ;  % let user override options
   
   try run('../../setup_autonn.m') ; catch; end  % add AutoNN to the path
   mkdir(opts.resultsDir) ;
   
 
-  % define network
+  % create network inputs
   images = Input('gpu', true) ;
   labels = Input() ;
+  
+  % create a LeNet (defined in 'autonn/matlab/+models/')
+  output = models.LeNet('input', images);
 
-  x = vl_nnconv(images, 'size', [5, 5, 1, 20], 'weightScale', 0.01) ;
-  x = vl_nnpool(x, 2, 'stride', 2) ;
-  x = vl_nnconv(x, 'size', [5, 5, 20, 50], 'weightScale', 0.01) ;
-  x = vl_nnpool(x, 2, 'stride', 2) ;
-  x = vl_nnconv(x, 'size', [4, 4, 50, 500], 'weightScale', 0.01) ;
-  x = vl_nnrelu(x) ;
-  x = vl_nnconv(x, 'size', [1, 1, 500, 10], 'weightScale', 0.01) ;
-
-  objective = vl_nnloss(x, labels, 'loss', 'softmaxlog') / opts.batchSize ;
-  error = vl_nnloss(x, labels, 'loss', 'classerror') / opts.batchSize ;
+  % create losses
+  objective = vl_nnloss(output, labels, 'loss', 'softmaxlog') / opts.batchSize ;
+  error = vl_nnloss(output, labels, 'loss', 'classerror') / opts.batchSize ;
 
   % assign layer names automatically, and compile network
   Layer.workspaceNames() ;
