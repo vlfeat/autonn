@@ -4,6 +4,7 @@ function cifar_example(varargin)
   opts.dataDir = [vl_rootnn() '/data/cifar'] ;  % CIFAR10 data location
   opts.resultsDir = [vl_rootnn() '/data/cifar-example'] ;  % results location
   opts.model = @models.BasicCifarNet ;  % choose model (type 'help models' for a list)
+  opts.conserveMemory = true ;  % whether to conserve memory (helpful with e.g. @models.MaxoutNIN)
   opts.numEpochs = [] ;  % if empty, default for above model will be used
   opts.batchSize = [] ;  % same as above
   opts.learningRate = [] ;  % same as above
@@ -41,11 +42,11 @@ function cifar_example(varargin)
 
   % assign layer names automatically, and compile network
   Layer.workspaceNames() ;
-  net = Net(objective, error) ;
+  net = Net(objective, error, 'conserveMemory', opts.conserveMemory) ;
 
 
   % initialize solver
-  solver = solvers.SGD('learningRate', opts.learningRate) ;
+  solver = solvers.SGD('learningRate', opts.learningRate(1)) ;
   
   % initialize dataset
   dataset = datasets.CIFAR10(opts.dataDir, 'batchSize', opts.batchSize) ;
@@ -66,11 +67,19 @@ function cifar_example(varargin)
   net.useGpu(opts.gpu) ;
 
   for epoch = startEpoch : opts.numEpochs
+    % get the learning rate for this epoch, if there is a schedule
+    if epoch <= numel(opts.learningRate)
+      solver.learningRate = opts.learningRate(epoch) ;
+    end
+    
     % training phase
     for batch = dataset.train()
       % draw samples
       [images, labels] = dataset.get(batch) ;
-
+      
+      % simple data augmentation: flip images horizontally
+      if rand() > 0.5, images = fliplr(images) ; end
+      
       % evaluate network to compute gradients
       tic;
       net.eval({'images', images, 'labels', labels}) ;
