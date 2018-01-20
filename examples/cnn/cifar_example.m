@@ -4,15 +4,19 @@ function cifar_example(varargin)
   opts.dataDir = [vl_rootnn() '/data/cifar'] ;  % CIFAR10 data location
   opts.resultsDir = [vl_rootnn() '/data/cifar-example'] ;  % results location
   opts.model = @models.BasicCifarNet ;  % choose model (type 'help models' for a list)
+  opts.modelArgs = {} ;  % optional additional arguments for a specific model
   opts.conserveMemory = true ;  % whether to conserve memory (helpful with e.g. @models.MaxoutNIN)
   opts.numEpochs = [] ;  % if empty, default for above model will be used
   opts.batchSize = [] ;  % same as above
   opts.learningRate = [] ;  % same as above
+  opts.solver = solvers.SGD() ;  % solver instance to use (type 'help solvers' for a list)
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
   opts.savePlot = false ;  % whether to save the plot as a PDF file
   opts.continue = true ;  % continue from last checkpoint if available
   
   opts = vl_argparse(opts, varargin) ;  % let user override options
+  
+  assert(isa(opts.model, 'function_handle'), 'Model must be a function handle (e.g. @models.NIN).')
   
   try run('../../setup_autonn.m') ; catch; end  % add AutoNN to the path
   mkdir(opts.resultsDir) ;
@@ -23,7 +27,7 @@ function cifar_example(varargin)
   labels = Input() ;
 
   % create network specified in opts.model (from 'autonn/matlab/+models/')
-  [output, defaults] = opts.model('input', images) ;
+  [output, defaults] = opts.model('input', images, opts.modelArgs{:}) ;
   
   % replace empty options with the model-specific default values
   if isempty(opts.numEpochs)
@@ -45,8 +49,9 @@ function cifar_example(varargin)
   net = Net(objective, error, 'conserveMemory', opts.conserveMemory) ;
 
 
-  % initialize solver
-  solver = solvers.SGD('learningRate', opts.learningRate(1)) ;
+  % set solver learning rate
+  solver = opts.solver ;
+  solver.learningRate = opts.learningRate(1)  ;
   
   % initialize dataset
   dataset = datasets.CIFAR10(opts.dataDir, 'batchSize', opts.batchSize) ;

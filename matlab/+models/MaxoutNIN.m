@@ -23,7 +23,7 @@ function [output, defaults] = MaxoutNIN(varargin)
   ker = [5 5] ;  % conv kernel
   poolKer = [3 3] ;  % pooling kernel
   pad = 2 ;  % input padding
-  m1 = nin_maxout_block(images, 3, units, pieces, ker, pad, poolKer) ;
+  m1 = ninMaxoutBlock(images, 3, units, pieces, ker, pad, poolKer) ;
   outChannels = units(3) ;  % output channels of the NIN block
   
   % second NIN block
@@ -32,7 +32,7 @@ function [output, defaults] = MaxoutNIN(varargin)
   ker = [5 5] ;
   poolKer = [3 3] ;
   pad = 2 ;
-  m2 = nin_maxout_block(m1, outChannels, units, pieces, ker, pad, poolKer) ;
+  m2 = ninMaxoutBlock(m1, outChannels, units, pieces, ker, pad, poolKer) ;
   outChannels = units(3) ;
   
   % third NIN block
@@ -41,7 +41,7 @@ function [output, defaults] = MaxoutNIN(varargin)
   ker = [3 3] ;
   poolKer = [8 8] ;
   pad = 1 ;
-  output = nin_maxout_block(m2, outChannels, units, pieces, ker, pad, poolKer) ;
+  output = ninMaxoutBlock(m2, outChannels, units, pieces, ker, pad, poolKer) ;
   
   
   % default training options for this network
@@ -53,7 +53,7 @@ function [output, defaults] = MaxoutNIN(varargin)
   
 end
 
-function block = nin_maxout_block(in, inChannels, units, pieces, ker, pad, poolKer)
+function block = ninMaxoutBlock(in, inChannels, units, pieces, ker, pad, poolKer)
   % first conv block
   sz = [ker(1:2), inChannels, units(1) * pieces(1)] ;
   c1 = vl_nnconv(in, 'size', sz, 'stride', 1, 'pad', pad) ;

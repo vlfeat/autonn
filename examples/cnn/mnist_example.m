@@ -11,6 +11,8 @@ function mnist_example(varargin)
   
   opts = vl_argparse(opts, varargin) ;  % let user override options
   
+  assert(isa(opts.model, 'function_handle'), 'Model must be a function handle (e.g. @models.LeNet).')
+  
   try run('../../setup_autonn.m') ; catch; end  % add AutoNN to the path
   mkdir(opts.resultsDir) ;
   
