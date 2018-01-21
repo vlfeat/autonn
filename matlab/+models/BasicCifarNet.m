@@ -1,4 +1,4 @@
-function [output, defaults] = BasicCifarNet(varargin)
+function output = BasicCifarNet(varargin)
 %BASICCIFARNET Returns a simple network for CIFAR10
 
   % parse options
@@ -30,5 +30,6 @@ function [output, defaults] = BasicCifarNet(varargin)
   defaults.numEpochs = 100 ;
   defaults.batchSize = 128 ;
   defaults.learningRate = 0.001 ;
+  output.meta = defaults ;
   
 end

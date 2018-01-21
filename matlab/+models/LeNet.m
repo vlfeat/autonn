@@ -1,4 +1,4 @@
-function [output, defaults] = LeNet(varargin)
+function output = LeNet(varargin)
 %LENET Returns a simple LeNet-5 for digit classification
 
   % parse options
@@ -23,4 +23,5 @@ function [output, defaults] = LeNet(varargin)
   defaults.numEpochs = 100 ;
   defaults.batchSize = 128 ;
   defaults.learningRate = 0.001 ;
+  output.meta = defaults ;
 end

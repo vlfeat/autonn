@@ -3,7 +3,7 @@ function cifar_example(varargin)
   % options (override by calling script with name-value pairs)
   opts.dataDir = [vl_rootnn() '/data/cifar'] ;  % CIFAR10 data location
   opts.resultsDir = [vl_rootnn() '/data/cifar-example'] ;  % results location
-  opts.model = @models.BasicCifarNet ;  % choose model (type 'help models' for a list)
+  opts.model = models.BasicCifarNet() ;  % choose model (type 'help models' for a list)
   opts.modelArgs = {} ;  % optional additional arguments for a specific model
   opts.conserveMemory = true ;  % whether to conserve memory (helpful with e.g. @models.MaxoutNIN)
   opts.numEpochs = [] ;  % if empty, default for above model will be used
@@ -16,33 +16,38 @@ function cifar_example(varargin)
   
   opts = vl_argparse(opts, varargin) ;  % let user override options
   
-  assert(isa(opts.model, 'function_handle'), 'Model must be a function handle (e.g. @models.NIN).')
-  
   try run('../../setup_autonn.m') ; catch; end  % add AutoNN to the path
   mkdir(opts.resultsDir) ;
   
 
-  % create network inputs
-  images = Input('gpu', true) ;
-  labels = Input() ;
-
-  % create network specified in opts.model (from 'autonn/matlab/+models/')
-  [output, defaults] = opts.model('input', images, opts.modelArgs{:}) ;
+  % use chosen model's output as the predictions
+  assert(isa(opts.model, 'Layer'), 'Model must be a CNN (e.g. models.NIN()).')
+  predictions = opts.model ;
+  
+  % change the model's input name
+  images = predictions.find('Input', 1) ;
+  images.name = 'images' ;
+  images.gpu = true ;
+  
+  % validate the prediction size (must predict 10 classes)
+  sz = predictions.evalOutputSize('images', [32 32 3 5]) ;
+  assert(isequal(sz, [1 1 10 5]), 'Model output does not have the correct shape.') ;
   
   % replace empty options with the model-specific default values
   if isempty(opts.numEpochs)
-    opts.numEpochs = defaults.numEpochs ;
+    opts.numEpochs = predictions.meta.numEpochs ;
   end
   if isempty(opts.batchSize)
-    opts.batchSize = defaults.batchSize ;
+    opts.batchSize = predictions.meta.batchSize ;
   end
   if isempty(opts.learningRate)
-    opts.learningRate = defaults.learningRate ;
+    opts.learningRate = predictions.meta.learningRate ;
   end
 
   % create losses
-  objective = vl_nnloss(output, labels, 'loss', 'softmaxlog') / opts.batchSize ;
-  error = vl_nnloss(output, labels, 'loss', 'classerror') / opts.batchSize ;
+  labels = Input() ;
+  objective = vl_nnloss(predictions, labels, 'loss', 'softmaxlog') / opts.batchSize ;
+  error = vl_nnloss(predictions, labels, 'loss', 'classerror') / opts.batchSize ;
 
   % assign layer names automatically, and compile network
   Layer.workspaceNames() ;

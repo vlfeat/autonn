@@ -1,4 +1,4 @@
-function [output, defaults] = NIN(varargin)
+function output = NIN(varargin)
 %NIN Returns a Network-in-Network model for CIFAR10
 %   Lin, Chen and Yan, "Network in network", arXiv 2013. arXiv:1312.4400
 
@@ -49,6 +49,7 @@ function [output, defaults] = NIN(varargin)
   % the default learning rate schedule
   defaults.learningRate = [0.002, 0.01, 0.02, 0.04 * ones(1,80), 0.004 * ones(1,10), 0.0004 * ones(1,10)] ;
   defaults.numEpochs = numel(defaults.learningRate) ;
+  output.meta = defaults ;
   
 end
 

@@ -1,4 +1,4 @@
-function [output, defaults] = MaxoutNIN(varargin)
+function output = MaxoutNIN(varargin)
 %MAXOUTNIN Returns a Maxout Network-in-Network for CIFAR10
 %   Chang and Chen, "Batch-normalized maxout network in network", arXiv
 %   2015. arXiv:1511.02583
@@ -50,6 +50,7 @@ function [output, defaults] = MaxoutNIN(varargin)
   % the default learning rate schedule, changing every 50 epochs
   ep50 = ones(1, 50) ;
   defaults.learningRate = [0.5 * ep50, 0.05 * ep50, 0.005 * ep50, 0.0005 * ep50] ;
+  output.meta = defaults ;
   
 end
 
