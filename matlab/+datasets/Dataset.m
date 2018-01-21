@@ -7,7 +7,6 @@ classdef Dataset < handle
     trainSet = []  % indexes of training samples
     valSet = []  % indexes of validation samples
     partialBatches = false  % whether to return a partial batch (if the batch size does not divide the dataset size)
-    prefetch = false
   end
   
   methods
@@ -20,7 +19,7 @@ classdef Dataset < handle
     
     function args = parseGenericArgs(o, args)
       % called by subclasses to parse generic Dataset arguments
-      args = vl_parseprop(o, args, {'batchSize', 'prefetch'}) ;
+      args = vl_parseprop(o, args, {'batchSize'}) ;
     end
     
     function batches = train(o)
@@ -59,10 +58,6 @@ classdef Dataset < handle
       % delete last partial batch if needed
       if ~o.partialBatches && size(batches{end}, 2) < batchSz
         batches(end) = [] ;
-      end
-      
-      if o.prefetch
-        batches = [batches; batches(1,2:end), {[]}] ;
       end
     end
   end

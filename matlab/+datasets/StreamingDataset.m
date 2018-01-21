@@ -6,7 +6,7 @@ classdef StreamingDataset < datasets.Dataset
     dataDir
     filenames
     
-    numThreads = 12  % only valid if prefetch = true
+    numThreads = 1  % higher to enable multithreading/prefetching
     useGpu = false
     removeMean = true
     whiten = true
@@ -82,6 +82,18 @@ classdef StreamingDataset < datasets.Dataset
         'keepAspect', 'augmentation'}) ;
     end
     
+    function batches = partition(o, idx, batchSz)
+      % partition indexes into batches (stored in a cell array).
+      % if IDX is a matrix, each column is a distinct sample.
+      batches = o.partition@datasets.Dataset(idx, batchSz) ;  % call parent class
+      
+      % for prefetching, append an extra row with the next batch for each
+      % batch. this way, get() can know which batch comes next to prefetch.
+      if o.numThreads > 1
+        batches = [batches; batches(1,2:end), {[]}] ;
+      end
+    end
+    
     function [images, idx] = get(o, batch)
       % return a single batch of images, with optional prefetching.
       % also returns the image indexes.
@@ -96,7 +108,7 @@ classdef StreamingDataset < datasets.Dataset
       images = o.getImageBatch(o.filenames(idx)) ;
       
       % start prefetching next batch of images
-      if o.prefetch && numel(batch) == 2 && ~isempty(batch{2})
+      if o.numThreads > 1 && numel(batch) == 2 && ~isempty(batch{2})
         o.getImageBatch(o.filenames(batch{2})) ;
       end
     end
@@ -143,7 +155,7 @@ classdef StreamingDataset < datasets.Dataset
 
       args = horzcat(args{:}) ;
 
-      if o.prefetch && nargout == 0
+      if o.numThreads > 1 && nargout == 0
         vl_imreadjpeg(args{:}, 'prefetch') ;
       else
         data = vl_imreadjpeg(args{:}) ;
