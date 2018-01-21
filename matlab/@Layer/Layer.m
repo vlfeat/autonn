@@ -209,6 +209,9 @@ classdef Layer < matlab.mixin.Copyable
     function [hn, cn] = vl_nnlstm(varargin)
       [hn, cn] = Layer.create(@vl_nnlstm, varargin) ;
     end
+    function y = vl_nnmaxout(obj, varargin)
+      y = Layer(@vl_nnmaxout, obj, varargin{:}) ;
+    end
     
     
     % overloaded native Matlab functions
