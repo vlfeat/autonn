@@ -24,7 +24,8 @@ function output = BasicCifarNet(varargin)
   x = vl_nnconv(x, 'size', [4, 4, 64, 64], 'weightScale', 0.05) ;
   x = vl_nnrelu(x) ;
   
-  output = vl_nnconv(x, 'size', [1, 1, 64, opts.numClasses], 'weightScale', 0.05) ;
+  output = vl_nnconv(x, 'size', [1, 1, 64, opts.numClasses], 'weightScale', 0.05, ...
+    'batchNorm', false, 'activation', 'none') ;
   
   % default training options for this network
   defaults.numEpochs = 100 ;

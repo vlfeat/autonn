@@ -17,7 +17,8 @@ function output = LeNet(varargin)
   x = vl_nnconv(x, 'size', [4, 4, 50, 500], 'weightScale', 0.01) ;
   x = vl_nnrelu(x) ;
   
-  output = vl_nnconv(x, 'size', [1, 1, 500, 10], 'weightScale', 0.01) ;
+  output = vl_nnconv(x, 'size', [1, 1, 500, 10], 'weightScale', 0.01, ...
+    'batchNorm', false, 'activation', 'none') ;
 
   % default training options for this network
   defaults.numEpochs = 100 ;

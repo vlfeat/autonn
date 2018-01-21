@@ -23,7 +23,7 @@ function output = MaxoutNIN(varargin)
   ker = [5 5] ;  % conv kernel
   poolKer = [3 3] ;  % pooling kernel
   pad = 2 ;  % input padding
-  m1 = ninMaxoutBlock(images, 3, units, pieces, ker, pad, poolKer) ;
+  m1 = ninMaxoutBlock(images, 3, units, pieces, ker, pad, poolKer, false) ;
   outChannels = units(3) ;  % output channels of the NIN block
   
   % second NIN block
@@ -32,7 +32,7 @@ function output = MaxoutNIN(varargin)
   ker = [5 5] ;
   poolKer = [3 3] ;
   pad = 2 ;
-  m2 = ninMaxoutBlock(m1, outChannels, units, pieces, ker, pad, poolKer) ;
+  m2 = ninMaxoutBlock(m1, outChannels, units, pieces, ker, pad, poolKer, false) ;
   outChannels = units(3) ;
   
   % third NIN block
@@ -41,7 +41,7 @@ function output = MaxoutNIN(varargin)
   ker = [3 3] ;
   poolKer = [8 8] ;
   pad = 1 ;
-  output = ninMaxoutBlock(m2, outChannels, units, pieces, ker, pad, poolKer) ;
+  output = ninMaxoutBlock(m2, outChannels, units, pieces, ker, pad, poolKer, true) ;
   
   
   % default training options for this network
@@ -54,7 +54,9 @@ function output = MaxoutNIN(varargin)
   
 end
 
-function block = ninMaxoutBlock(in, inChannels, units, pieces, ker, pad, poolKer)
+function block = ninMaxoutBlock(in, inChannels, ...
+  units, pieces, ker, pad, poolKer, final)
+
   % first conv block
   sz = [ker(1:2), inChannels, units(1) * pieces(1)] ;
   c1 = vl_nnconv(in, 'size', sz, 'stride', 1, 'pad', pad) ;
@@ -72,16 +74,20 @@ function block = ninMaxoutBlock(in, inChannels, units, pieces, ker, pad, poolKer
   % third conv block
   sz = [1, 1, units(2), units(3) * pieces(3)] ;
   c3 = vl_nnconv(m1, 'size', sz, 'stride', 1, 'pad', 0) ;
-  c3bn = vl_nnbnorm(c3) ;
   
-  % second maxout block
-%   m2 = maxout(c3bn, units(3), pieces(3)) ;
-  m2 = vl_nnmaxout(c3bn, pieces(3)) ;
-  
-  % pooling and dropout
-  p1 = vl_nnpool(m2, poolKer, 'method', 'avg', 'stride', 2, 'pad', [0 1 0 1]) ;
-  
-  block = vl_nndropout(p1, 'rate', 0.5) ;
+  % skip if it's the final layer (prediction)
+  if ~final
+    c3bn = vl_nnbnorm(c3) ;
+
+    % second maxout block
+  %   m2 = maxout(c3bn, units(3), pieces(3)) ;
+    m2 = vl_nnmaxout(c3bn, pieces(3)) ;
+
+    % pooling and dropout
+    p1 = vl_nnpool(m2, poolKer, 'method', 'avg', 'stride', 2, 'pad', [0 1 0 1]) ;
+
+    block = vl_nndropout(p1, 'rate', 0.5) ;
+  end
 end
 
 % function output = maxout(input, units, pieces)

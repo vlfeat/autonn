@@ -23,7 +23,8 @@ function output = NIN(varargin)
   poolKer = [3 3] ;  % pooling kernel
   poolMethod = 'max' ;  % pooling method
   pad = 2 ;  % input padding
-  m1 = ninBlock(images, 3, channels, ker, pad, poolKer, poolMethod, convBlockArgs) ;
+  m1 = ninBlock(images, 3, channels, ker, pad, ...
+    poolKer, poolMethod, convBlockArgs, false) ;
   outChannels = channels(3) ;  % output channels of the NIN block
   
   % second NIN block
@@ -32,7 +33,8 @@ function output = NIN(varargin)
   poolKer = [3 3] ;
   poolMethod = 'avg' ;
   pad = 2 ;
-  m2 = ninBlock(m1, outChannels, channels, ker, pad, poolKer, poolMethod, convBlockArgs) ;
+  m2 = ninBlock(m1, outChannels, channels, ker, pad, ...
+    poolKer, poolMethod, convBlockArgs, false) ;
   outChannels = channels(3) ;
   
   % third NIN block
@@ -41,7 +43,8 @@ function output = NIN(varargin)
   poolKer = [7 7] ;
   poolMethod = 'avg' ;
   pad = 1 ;
-  output = ninBlock(m2, outChannels, channels, ker, pad, poolKer, poolMethod, convBlockArgs) ;
+  output = ninBlock(m2, outChannels, channels, ker, pad, ...
+    poolKer, poolMethod, convBlockArgs, true) ;
   
   
   % default training options for this network
@@ -54,19 +57,27 @@ function output = NIN(varargin)
 end
 
 function block = ninBlock(in, inChannels, outChannels, ...
-  ker, pad, poolKer, poolMethod, convBlockArgs)
+  ker, pad, poolKer, poolMethod, convBlockArgs, final)
 
   % get conv block generator with the given options.
   % default activation is ReLU, with post-activation batch normalization.
   conv = models.ConvBlock('batchNorm', true, convBlockArgs{:}) ;
-
-  % 3 conv blocks
+  
+  % 2 conv blocks
   c1 = conv(in, 'size', [ker(1:2), inChannels, outChannels(1)], 'pad', pad) ;
   c2 = conv(c1, 'size', [1, 1, outChannels(1), outChannels(2)]) ;
-  c3 = conv(c2, 'size', [1, 1, outChannels(2), outChannels(3)]) ;
   
-  % pooling and dropout
-  p1 = vl_nnpool(c3, poolKer, 'method', poolMethod, 'stride', 2) ;
-  block = vl_nndropout(p1, 'rate', 0.5) ;
+  if ~final
+    % third conv block
+    c3 = conv(c2, 'size', [1, 1, outChannels(2), outChannels(3)]) ;
+    
+    % pooling and dropout
+    p1 = vl_nnpool(c3, poolKer, 'method', poolMethod, 'stride', 2) ;
+    block = vl_nndropout(p1, 'rate', 0.5) ;
+  else
+    % it's the final layer (prediction), no batch-norm/activation/pool
+    block = conv(c2, 'size', [1, 1, outChannels(2), outChannels(3)], ...
+      'batchNorm', false, 'activation', 'none') ;
+  end
 end
 
