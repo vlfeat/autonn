@@ -85,6 +85,9 @@ classdef StreamingDataset < datasets.Dataset
     function batches = partition(o, idx, batchSz)
       % partition indexes into batches (stored in a cell array).
       % if IDX is a matrix, each column is a distinct sample.
+      if nargin < 3  % allow overriding batch size
+        batchSz = o.batchSize ;
+      end
       batches = o.partition@datasets.Dataset(idx, batchSz) ;  % call parent class
       
       % for prefetching, append an extra row with the next batch for each
