@@ -4,7 +4,6 @@ function cifar_example(varargin)
   opts.dataDir = [vl_rootnn() '/data/cifar'] ;  % CIFAR10 data location
   opts.resultsDir = [vl_rootnn() '/data/cifar-example'] ;  % results location
   opts.model = models.BasicCifarNet() ;  % choose model (type 'help models' for a list)
-  opts.modelArgs = {} ;  % optional additional arguments for a specific model
   opts.conserveMemory = true ;  % whether to conserve memory (helpful with e.g. @models.MaxoutNIN)
   opts.numEpochs = [] ;  % if empty, default for above model will be used
   opts.batchSize = [] ;  % same as above
@@ -34,14 +33,15 @@ function cifar_example(varargin)
   assert(isequal(sz, [1 1 10 5]), 'Model output does not have the correct shape.') ;
   
   % replace empty options with the model-specific default values
+  defaults = predictions.meta ;  % get model's meta information (default learning rate, etc)
   if isempty(opts.numEpochs)
-    opts.numEpochs = predictions.meta.numEpochs ;
+    opts.numEpochs = defaults.numEpochs ;
   end
   if isempty(opts.batchSize)
-    opts.batchSize = predictions.meta.batchSize ;
+    opts.batchSize = defaults.batchSize ;
   end
   if isempty(opts.learningRate)
-    opts.learningRate = predictions.meta.learningRate ;
+    opts.learningRate = defaults.learningRate ;
   end
 
   % create losses

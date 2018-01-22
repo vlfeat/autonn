@@ -1,16 +1,18 @@
 
 function imagenet_example(varargin)
-  % options (override by calling script with name-value pairs)
+  % options (override by calling script with name-value pairs).
+  % (*) if left empty, the default value for the chosen model will be used.
   opts.dataDir = [vl_rootnn() '/data/ilsvrc12'] ;  % ImageNet data location
   opts.resultsDir = [vl_rootnn() '/data/imagenet-example'] ;  % results location
   opts.model = models.AlexNet() ;  % choose model (type 'help models' for a list)
-  opts.modelArgs = {} ;  % optional additional arguments for a specific model
-  opts.conserveMemory = true ;  % whether to conserve memory (helpful with e.g. @models.MaxoutNIN)
-  opts.numEpochs = [] ;  % if empty, default for above model will be used
-  opts.batchSize = [] ;  % same as above
-  opts.learningRate = [] ;  % same as above
+  opts.conserveMemory = true ;  % whether to conserve memory
+  opts.numEpochs = [] ;  % epochs (*)
+  opts.batchSize = [] ;  % batch size (*)
+  opts.learningRate = [] ;  % learning rate (*)
   opts.solver = solvers.SGD() ;  % solver instance to use (type 'help solvers' for a list)
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
+  opts.numThreads = 12 ;  % number of threads for image reading
+  opts.augmentation = [] ;  % data augmentation (see datasets.StreamingDataset) (*)
   opts.savePlot = false ;  % whether to save the plot as a PDF file
   opts.continue = true ;  % continue from last checkpoint if available
   
@@ -30,19 +32,16 @@ function imagenet_example(varargin)
   images.gpu = true ;
   
   % validate the prediction size (must predict 1000 classes)
-  imageSize = predictions.meta.imageSize ;
-  outputSize = predictions.evalOutputSize('images', [imageSize 5]) ;
+  defaults = predictions.meta ;  % get model's meta information (default learning rate, etc)
+  outputSize = predictions.evalOutputSize('images', [defaults.imageSize 5]) ;
   assert(isequal(outputSize, [1 1 1000 5]), 'Model output does not have the correct shape.') ;
   
-  % replace empty options with the model-specific default values
-  if isempty(opts.numEpochs)
-    opts.numEpochs = predictions.meta.numEpochs ;
-  end
-  if isempty(opts.batchSize)
-    opts.batchSize = predictions.meta.batchSize ;
-  end
-  if isempty(opts.learningRate)
-    opts.learningRate = predictions.meta.learningRate ;
+  % replace empty options with model-specific default values
+  for name_ = {'numEpochs', 'batchSize', 'learningRate', 'augmentation'}
+    name = name_{1} ;  % dereference cell array
+    if isempty(opts.(name))
+      opts.(name) = defaults.(name) ;
+    end
   end
 
   % create losses
@@ -60,8 +59,11 @@ function imagenet_example(varargin)
   solver.learningRate = opts.learningRate(1)  ;
   
   % initialize dataset
-  dataset = datasets.ImageNet('dataDir', opts.dataDir, ...
-    'batchSize', opts.batchSize, 'imageSize', imageSize) ;
+  dataset = datasets.ImageNet('dataDir', opts.dataDir, 'imageSize', defaults.imageSize) ;
+  dataset.batchSize = opts.batchSize ;
+  dataset.augmentation = opts.augmentation ;
+  dataset.numThreads = opts.numThreads ;
+  dataset.useGpu = ~isempty(opts.gpu) ;
   
   % compute average objective and error
   stats = Stats({'objective', 'error'}) ;

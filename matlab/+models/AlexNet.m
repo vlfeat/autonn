@@ -63,16 +63,23 @@ function output = AlexNet(varargin)
 
   
   % default training options for this network
-  defaults.batchSize = 256 ;
-  defaults.imageSize = [227, 227, 3] ;
+  meta.batchSize = 256 ;
+  meta.imageSize = [227, 227, 3] ;
+  meta.augmentation.crop = 227 / 256;
+  meta.augmentation.location = true ;
+  meta.augmentation.flip = true ;
+  meta.augmentation.brightness = 0.1 ;
+  meta.augmentation.aspect = [2/3, 3/2] ;
+  meta.weightDecay = 0.0005 ;
   
   % the default learning rate schedule
   if ~opts.batchNorm
-    defaults.learningRate = logspace(-2, -4, 60) ;
+    meta.learningRate = logspace(-2, -4, 60) ;
   else
-    defaults.learningRate = logspace(-1, -4, 20) ;
+    meta.learningRate = logspace(-1, -4, 20) ;
   end
-  defaults.numEpochs = numel(defaults.learningRate) ;
-  output.meta = defaults ;
+  meta.numEpochs = numel(meta.learningRate) ;
+  
+  output.meta = meta ;
   
 end

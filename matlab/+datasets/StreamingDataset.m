@@ -9,14 +9,13 @@ classdef StreamingDataset < datasets.Dataset
     numThreads = 1  % higher to enable multithreading/prefetching
     useGpu = false
     removeMean = true
-    whiten = true
+    whiten = false
     
     imageSize
-    cropFraction = 1
     keepAspect = true
 
     augmentation = struct('flip', false, 'location', false, 'aspect', 1, ...
-      'scale', 1, 'brightness', 0, 'contrast', 0, 'saturation', 0)
+      'scale', 1, 'brightness', 0, 'contrast', 0, 'saturation', 0, 'crop', 1)
     
     rgbMean
     rgbCovariance
@@ -78,8 +77,8 @@ classdef StreamingDataset < datasets.Dataset
       
       % now parse StreamingDataset arguments
       args = vl_parseprop(o, args, {'dataDir', 'filenames', 'removeMean', ...
-        'whiten', 'numThreads', 'useGpu', 'imageSize', 'cropFraction', ...
-        'keepAspect', 'augmentation'}) ;
+        'whiten', 'numThreads', 'useGpu', 'imageSize', 'keepAspect', ...
+        'augmentation'}) ;
     end
     
     function batches = partition(o, idx, batchSz)
@@ -122,13 +121,27 @@ classdef StreamingDataset < datasets.Dataset
 
       imagePaths = strcat([o.dataDir filesep], images) ;
       
-      augment = o.augmentation ;
+      % fill in defaults, in case they're missing
+      augment = struct('flip', false, 'location', false, 'aspect', 1, ...
+        'scale', 1, 'brightness', 0, 'contrast', 0, 'saturation', 0, 'crop', 1) ;
+      augment = vl_argparse(augment, o.augmentation) ;
+      
+      % make brightness jitter proportional to dataset's color deviation,
+      % unless the data is whitened
+      if ~isequal(augment.brightness, 0) && ~o.whiten
+        if ~isempty(o.rgbDeviationFull)
+          augment.brightness = double(augment.brightness * o.rgbDeviationFull)  ;
+        else  % no color deviation to use
+          augment.brightness = 0 ;
+        end
+      end
+      
       args{1} = {imagePaths, ...
                  'NumThreads', o.numThreads, ...
                  'Pack', ...
                  'Interpolation', 'bicubic', ...
                  'Resize', o.imageSize(1:2), ...
-                 'CropSize', o.cropFraction * augment.scale, ...
+                 'CropSize', augment.crop * augment.scale, ...
                  'CropAnisotropy', augment.aspect, ...
                  'Brightness', augment.brightness, ...
                  'Contrast', augment.contrast, ...
