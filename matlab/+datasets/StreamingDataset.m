@@ -17,6 +17,9 @@ classdef StreamingDataset < datasets.Dataset
     augmentation = struct('flip', false, 'location', false, 'aspect', 1, ...
       'scale', 1, 'brightness', 0, 'contrast', 0, 'saturation', 0, 'crop', 1)
     
+    augmentImage  % vector, for each image, false disables augmentation (e.g. val images)
+    
+    % pixel statistics over dataset (computed automatically)
     rgbMean
     rgbCovariance
     rgbDeviation  % independent standard deviation of each channel (3x1)
@@ -44,6 +47,7 @@ classdef StreamingDataset < datasets.Dataset
       assert(~isempty(o.dataDir), 'Must specify dataset.dataDir.') ;
       assert(~isempty(o.filenames), 'Must specify dataset.filenames.') ;
       assert(~isempty(o.imageSize), 'Must specify dataset.imageSize.') ;
+      assert(~isempty(o.augmentImage), 'Must specify dataset.augmentImage.') ;
       o.initialized = true ;
       
       % load or recompute RGB statistics over all images
@@ -57,7 +61,7 @@ classdef StreamingDataset < datasets.Dataset
           o.computeImageStats() ;
           rgbMean = o.rgbMean ;  %#ok<*PROP,NASGU>
           rgbCovariance = o.rgbCovariance ;  %#ok<NASGU>
-          save(cache, 'rgbMean', 'rgbCovariance', 'rgbDeviation') ;
+          save(cache, 'rgbMean', 'rgbCovariance') ;
         end
         
         % standard deviation
@@ -107,24 +111,31 @@ classdef StreamingDataset < datasets.Dataset
       
       % get current batch
       idx = batch{1} ;
-      images = o.getImageBatch(o.filenames(idx)) ;
+      images = o.getImageBatch(o.filenames(idx), o.augmentImage(idx(1))) ;
       
       % start prefetching next batch of images
       if o.numThreads > 1 && numel(batch) == 2 && ~isempty(batch{2})
-        o.getImageBatch(o.filenames(batch{2})) ;
+        o.getImageBatch(o.filenames(batch{2}), o.augmentImage(batch{2}(1))) ;
       end
     end
     
-    function data = getImageBatch(o, images)
+    function data = getImageBatch(o, images, augmentImages)
       % load image batch, with data augmentation and whitening
       assert(o.initialized, 'Subclass did not call StreamingDataset.initialize.') ;
 
       imagePaths = strcat([o.dataDir filesep], images) ;
       
-      % fill in defaults, in case they're missing
-      augment = struct('flip', false, 'location', false, 'aspect', 1, ...
+      % for validation, disable all augmentation except any fixed cropping
+      if augmentImages
+        augment = o.augmentation ;  % full augmentation
+      else
+        augment = struct('crop', o.augmentation.crop) ;  % crop only
+      end
+      
+      % fill in missing augmentation options with defaults
+      defaults = struct('flip', false, 'location', false, 'aspect', 1, ...
         'scale', 1, 'brightness', 0, 'contrast', 0, 'saturation', 0, 'crop', 1) ;
-      augment = vl_argparse(augment, o.augmentation) ;
+      augment = vl_argparse(defaults, augment) ;
       
       % make brightness jitter proportional to dataset's color deviation,
       % unless the data is whitened
@@ -189,18 +200,14 @@ classdef StreamingDataset < datasets.Dataset
       images = o.filenames ;
       [avg, rgbm1, rgbm2] = deal({}) ;
 
-      if o.useGpu
-        fprintf('computeImageStats: resetting GPU device\n') ;
-        clear mex ;
-        gpuDevice() ;
-      end
-
-      for t = 1 : bs : numel(images)
+      maxImages = 100000 ;  % max number of images, should be enough for pixel-wise mean
+      skip = floor(max(1, numel(images) / maxImages)) ;  % number of batches to skip
+      for t = 1 : skip * bs : numel(images)
         time = tic ;
         batch = t : min(t+bs-1, numel(images)) ;
         fprintf('collecting image stats: batch starting with image %d ...', batch(1)) ;
 
-        data = o.getImageBatch(images(batch)) ;
+        data = o.getImageBatch(images(batch), false) ;
 
         z = reshape(shiftdim(data,2),3,[]) ;
         rgbm1{end+1} = mean(z,2) ;
@@ -216,11 +223,6 @@ classdef StreamingDataset < datasets.Dataset
       o.rgbMean = rgbm1 ;
       o.rgbCovariance = rgbm2 - rgbm1*rgbm1' ;
 
-      if o.useGpu
-        fprintf('computeImageStats: finished with GPU device, resetting again\n') ;
-        clear mex ;
-        gpuDevice() ;
-      end
       fprintf('computeImageStats: all done\n') ;
     end
   end

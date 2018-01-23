@@ -44,6 +44,7 @@ classdef ImageNet < datasets.StreamingDataset
       
       o.trainSet = find(o.sets == 1) ;
       o.valSet = find(o.sets == 2) ;
+      o.augmentImage = (o.sets == 1) ;  % augment training images only
 
       o.initialize() ;
     end

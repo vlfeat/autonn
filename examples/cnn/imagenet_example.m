@@ -59,11 +59,11 @@ function imagenet_example(varargin)
   solver.learningRate = opts.learningRate(1)  ;
   
   % initialize dataset
-  dataset = datasets.ImageNet('dataDir', opts.dataDir, 'imageSize', defaults.imageSize) ;
+  dataset = datasets.ImageNet('dataDir', opts.dataDir, ...
+    'imageSize', defaults.imageSize, 'useGpu', ~isempty(opts.gpu)) ;
   dataset.batchSize = opts.batchSize ;
   dataset.augmentation = opts.augmentation ;
   dataset.numThreads = opts.numThreads ;
-  dataset.useGpu = ~isempty(opts.gpu) ;
   
   % compute average objective and error
   stats = Stats({'objective', 'error'}) ;
@@ -91,9 +91,6 @@ function imagenet_example(varargin)
       % draw samples
       [images, labels] = dataset.get(batch) ;
       
-      % simple data augmentation: flip images horizontally
-      if rand() > 0.5, images = fliplr(images) ; end
-      
       % evaluate network to compute gradients
       tic;
       net.eval({'images', images, 'labels', labels}) ;
@@ -103,7 +100,9 @@ function imagenet_example(varargin)
 
       % get current objective and error, and update their average.
       % also report iteration number and timing.
-      fprintf('train %d - %.1fms ', stats.counts(1) + 1, toc() * 1000);
+      t = toc() ;
+      fprintf('train %d/%d - %.1fms (%.1fHz) ', stats.counts(1) + 1, ...
+        floor(numel(dataset.trainSet) / opts.batchSize), t * 1e3, opts.batchSize / t);
       stats.update(net) ;
       stats.print() ;
     end
@@ -116,8 +115,10 @@ function imagenet_example(varargin)
 
       tic;
       net.eval({'images', images, 'labels', labels}, 'test') ;
+      t = toc() ;
 
-      fprintf('val %d - %.1fms ', stats.counts(1) + 1, toc() * 1000);
+      fprintf('val %d/%d - %.1fms (%.1fHz) ', stats.counts(1) + 1, ...
+        floor(numel(dataset.trainSet) / opts.batchSize), t * 1e3, opts.batchSize / t);
       stats.update(net) ;
       stats.print() ;
     end
