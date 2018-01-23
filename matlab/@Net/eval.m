@@ -93,7 +93,6 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
         fprintf('debug stop at layer %s ...\n',layer.name);
         keyboard
       end
-
       [out{:}] = layer.func(args{:}) ;
       vars(layer.outputVar) = out(layer.outputArgPos);
       
