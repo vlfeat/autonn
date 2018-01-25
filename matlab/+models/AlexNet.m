@@ -11,8 +11,8 @@ function output = AlexNet(varargin)
   % batchNorm).
   opts.input = Input('name', 'images', 'gpu', true) ;  % default input layer
   opts.numClasses = 1000 ;  % number of predicted classes
-  opts.batchNorm = true ;
-  opts.preActivationBatchNorm = true ;
+  opts.batchNorm = true ;  % whether to use batch normalization
+  opts.preActivationBatchNorm = true ;  % whether batch-norm comes before or after activations
   opts.normalization = [5 1 0.0001/5 0.75] ;  % for LRN layer (vl_nnnormalize)
   [opts, convBlockArgs] = vl_argparse(opts, varargin, 'nonrecursive') ;
   
@@ -30,20 +30,20 @@ function output = AlexNet(varargin)
   if ~opts.batchNorm
     x = vl_nnnormalize(x, opts.normalization) ;
   end
-  x = vl_nnpool(x, [3 3], 'stride', 2) ;
+  x = vl_nnpool(x, 3, 'stride', 2) ;
 
   % second conv block
   x = conv(x, 'size', [5, 5, 48, 256], 'pad', 2) ;
   if ~opts.batchNorm
     x = vl_nnnormalize(x, opts.normalization) ;
   end
-  x = vl_nnpool(x, [3 3], 'stride', 2) ;
+  x = vl_nnpool(x, 3, 'stride', 2) ;
 
   % conv blocks 3-5
   x = conv(x, 'size', [3, 3, 256, 384], 'pad', 1) ;
   x = conv(x, 'size', [3, 3, 192, 384], 'pad', 1) ;
   x = conv(x, 'size', [3, 3, 192, 256], 'pad', 1) ;
-  x = vl_nnpool(x, [3 3], 'stride', 2) ;
+  x = vl_nnpool(x, 3, 'stride', 2) ;
 
   % first fully-connected block
   x = conv(x, 'size', [6, 6, 256, 4096]) ;
