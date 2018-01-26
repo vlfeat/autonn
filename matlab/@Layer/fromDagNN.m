@@ -129,9 +129,19 @@ function netOutputs = fromDagNN(dag, customFn)
     case 'dagnn.Conv'
       if isscalar(params), params{2} = [] ; end  % no bias
       
-      obj = vl_nnconv(inputs{1}, params{1}, params{2}, ...
-        'stride', block.stride, 'pad', block.pad, ...
-        'dilate', block.dilate, block.opts{:}) ;
+      % ommit arguments with default values, for conciseness
+      args = {} ;
+      if ~all(block.stride == 1)
+        args(end+1:end+2) = {'stride', block.stride} ;
+      end
+      if ~all(block.pad == 0)
+        args(end+1:end+2) = {'pad', block.pad} ;
+      end
+      if ~all(block.dilate == 1)
+        args(end+1:end+2) = {'dilate', block.dilate} ;
+      end
+      
+      obj = vl_nnconv(inputs{1}, params{1}, params{2}, args{:}, block.opts{:}) ;
     
     case 'dagnn.ConvTranspose'
       if isscalar(params), params{2} = [] ; end  % no bias
@@ -153,11 +163,26 @@ function netOutputs = fromDagNN(dag, customFn)
         'moments', params{3}, 'epsilon', block.epsilon) ;
     
     case 'dagnn.Pooling'
-      obj = vl_nnpool(inputs{1}, block.poolSize, 'method', block.method, ...
-        'pad', block.pad, 'stride', block.stride, block.opts{:}) ;
+      % ommit arguments with default values, for conciseness
+      args = {} ;
+      if ~all(block.stride == 1)
+        args(end+1:end+2) = {'stride', block.stride} ;
+      end
+      if ~all(block.pad == 0)
+        args(end+1:end+2) = {'pad', block.pad} ;
+      end
+      
+      obj = vl_nnpool(inputs{1}, block.poolSize, ...
+       'method', block.method, args{:}, block.opts{:}) ;
     
     case 'dagnn.ReLU'
-      obj = vl_nnrelu(inputs{1}, 'leak', block.leak, block.opts{:}) ;
+      % ommit arguments with default values, for conciseness
+      args = {} ;
+      if block.leak ~= 0
+        args(end+1:end+2) = {'leak', block.leak} ;
+      end
+      
+      obj = vl_nnrelu(inputs{1}, args{:}, block.opts{:}) ;
       
     case 'dagnn.DropOut'
       obj = vl_nndropout(inputs{1}) ;
