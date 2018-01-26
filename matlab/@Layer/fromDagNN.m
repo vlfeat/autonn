@@ -1,8 +1,8 @@
 function netOutputs = fromDagNN(dag, customFn)
-%FROMDAGNN Converts a DagNN object to the AutoNN framework
+%FROMDAGNN Converts a DagNN/SimpleNN object to the AutoNN framework
 %   OUTPUTS = Layer.fromDagNN(DAG) converts a MatConvNet DagNN object, DAG,
 %   into the AutoNN framework (i.e., a set of recursively nested Layer
-%   objects).
+%   objects). SimpleNN is also supported.
 %
 %   Returns a cell array of Layer objects, each corresponding to an output
 %   of the network. These can be composed with other layers, or compiled
@@ -43,6 +43,19 @@ function netOutputs = fromDagNN(dag, customFn)
     customFn = [] ;
   end
 
+  % handle struct inputs (SimpleNN or serialized DagNN)
+  if isstruct(dag)
+    assert(isfield(dag, 'layers'), 'Invalid struct (must be DagNN or SimpleNN).') ;
+    if iscell(dag.layers)  % SimpleNN
+      dag = dagnn.DagNN.fromSimpleNN(dag, 'CanonicalNames', true) ;
+    else  % serialized DagNN
+      dag = dagnn.DagNN.loadobj(dag) ;
+    end
+  end
+  
+  assert(isa(dag, 'dagnn.DagNN'), 'Input must be a DagNN or SimpleNN.') ;
+
+  % update DagNN variable indexes
   dag.rebuild() ;
   
   % like initParams, but does not overwrite them if already defined

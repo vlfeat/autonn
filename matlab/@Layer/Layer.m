@@ -116,29 +116,22 @@ classdef Layer < matlab.mixin.Copyable
         return  % called during Input, Param or Selector construction, nothing to do
       end
       
-      % convert from SimpleNN to DagNN
-      if isstruct(func) && isfield(func, 'layers')
-        func = dagnn.DagNN.fromSimpleNN(func, 'CanonicalNames', true) ;
-      end
-      
-      % convert from DagNN to Layer
-      if isa(func, 'dagnn.DagNN')
-         obj = Layer.fromDagNN(func) ;
-         if isscalar(obj)
-           obj = obj{1} ;
-         else  % wrap multiple outputs in a weighted sum
-           for i = 1:numel(obj)  % keep original objects, don't let them be optimized into a single weighted sum
-             obj{i}.optimize = false ;
-           end
+      % if not a function handle, assume DagNN or SimpleNN, and convert
+      if ~isa(func, 'function_handle')
+        assert(isstruct(func) || isa(func, 'dagnn.DagNN'), ...
+          'Input must be a function handle, a SimpleNN or a DagNN.') ;
+        
+        obj = Layer.fromDagNN(func) ;
+        if isscalar(obj)
+          obj = obj{1} ;
+        else  % wrap multiple outputs in a weighted sum (this is a constructor, only 1 object out)
+          for i = 1:numel(obj)  % keep original objects, don't let them be optimized into a single weighted sum
+            obj{i}.optimize = false ;
+          end
            obj = Layer(@vl_nnwsum, obj{:}, 'weights', ones(1, numel(obj))) ;
-         end
-         return
-      else
-        assert(isa(func, 'function_handle'), ...
-          'Input must be a function handle, a SimpleNN struct or a DagNN.') ;
+        end
+        return
       end
-      
-      assert(isa(func, 'function_handle'), 'Must specify a function handle as the first argument.') ;
       
       obj.enableCycleChecks = false ;
       obj.func = func ;
