@@ -13,7 +13,7 @@ function outputs = pretrained(modelName, varargin)
   opts.modelsUrl = 'http://www.vlfeat.org/matconvnet/models' ;
   opts = vl_argparse(opts, varargin, 'nonrecursive') ;
   
-  assert(exist(opts.modelsDir, 'dir'), 'Models directory does not exist.') ;
+  assert(exist(opts.modelsDir, 'dir') ~= 0, 'Models directory does not exist.') ;
   
   % download if it doesn't exist
   modelPath = [opts.modelsDir '/' modelName '.mat'] ;

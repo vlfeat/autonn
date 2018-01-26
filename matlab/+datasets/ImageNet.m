@@ -39,7 +39,7 @@ classdef ImageNet < datasets.StreamingDataset
         
         % save to cache file
         [filenames, labels, sets, classes] = deal(o.filenames, o.labels, o.sets, o.classes) ;  %#ok<ASGLU>
-        save(cache, 'filenames', 'labels', 'sets', 'classes') ;
+        save(cache, 'filenames', 'labels', 'sets', 'classes', '-v6') ;  % no compression, < 2 GB
       end
       
       o.trainSet = find(o.sets == 1) ;
