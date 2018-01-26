@@ -64,18 +64,33 @@ classdef Net < handle
       %    The constructor accepts a list of Layers (output layers of a
       %    network for compilation), a SimpleNN/DagNN to be converted to
       %    Net, or a saved struct created with SAVEOBJ.
+      %
+      %    Name-value pairs for compilation are also accepted (see
+      %    Net.compile).
       
       if nargin == 0, return, end  % empty constructor
       
+      % separate name-value pairs (compilation args) from object inputs
+      firstString = find(cellfun(@ischar, varargin), 1) ;
+      if isempty(firstString)  % no name-value pairs
+        objects = varargin ;
+        args = {} ;
+      else  % separate them
+        objects = varargin(1:firstString-1) ;
+        args = varargin(firstString:end) ;
+      end
+      
       % load from struct, distinguishing from SimpleNN
-      if isscalar(varargin) && isstruct(varargin{1}) && ~isfield(varargin{1}, 'layers')
-        net = Net.loadobj(varargin{1}) ;
+      if isscalar(objects) && isstruct(objects{1}) && ~isfield(objects{1}, 'layers')
+        net = Net.loadobj(objects{1}) ;
+        assert(isempty(args), ...
+          'Compilation arguments cannot be used when just loading a pre-compiled Net.') ;
         return
       end
 
-      if isscalar(varargin) && ~isa(varargin{1}, 'Layer')
+      if isscalar(objects) && ~isa(objects{1}, 'Layer')
         % convert SimpleNN or DagNN to Layer
-        s = varargin{1} ;
+        s = objects{1} ;
         if isstruct(s) && isfield(s, 'layers')
           if iscell(s.layers)  % SimpleNN
             s = dagnn.DagNN.fromSimpleNN(s, 'CanonicalNames', true) ;
@@ -87,14 +102,14 @@ classdef Net < handle
           s = Layer.fromDagNN(s) ;
         end
         if iscell(s)
-          varargin = s ;  % varargin should contain a list of Layer objects
+          objects = s ;  % objects should contain a list of Layer objects
         else
-          varargin = {s} ;
+          objects = {s} ;
         end
       end
 
       % compile Net from a list of Layers
-      net.compile(varargin{:}) ;
+      net.compile(objects{:}, args{:}) ;
     end
     
     function value = getValue(net, var)
