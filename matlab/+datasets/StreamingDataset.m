@@ -200,7 +200,7 @@ classdef StreamingDataset < datasets.Dataset
       images = o.filenames ;
       [avg, rgbm1, rgbm2] = deal({}) ;
 
-      maxImages = 100000 ;  % max number of images, should be enough for pixel-wise mean
+      maxImages = 10000 ;  % max number of images, should be enough for pixel-wise mean
       skip = floor(max(1, numel(images) / maxImages)) ;  % number of batches to skip
       for t = 1 : skip * bs : numel(images)
         time = tic ;

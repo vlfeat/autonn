@@ -101,7 +101,7 @@ function imagenet_example(varargin)
       % get current objective and error, and update their average.
       % also report iteration number and timing.
       t = toc() ;
-      fprintf('train %d/%d - %.1fms (%.1fHz) ', stats.counts(1) + 1, ...
+      fprintf('train ep%d %d/%d - %.1fms (%.1fHz) ', epoch, stats.counts(1) + 1, ...
         floor(numel(dataset.trainSet) / opts.batchSize), t * 1e3, opts.batchSize / t);
       stats.update(net) ;
       stats.print() ;
@@ -117,7 +117,7 @@ function imagenet_example(varargin)
       net.eval({'images', images, 'labels', labels}, 'test') ;
       t = toc() ;
 
-      fprintf('val %d/%d - %.1fms (%.1fHz) ', stats.counts(1) + 1, ...
+      fprintf('val ep%d %d/%d - %.1fms (%.1fHz) ', epoch, stats.counts(1) + 1, ...
         floor(numel(dataset.trainSet) / opts.batchSize), t * 1e3, opts.batchSize / t);
       stats.update(net) ;
       stats.print() ;
