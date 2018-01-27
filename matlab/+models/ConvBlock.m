@@ -1,6 +1,12 @@
 function output = ConvBlock(varargin)
 %CONVBLOCK Creates a conv block, with activation and optional batch-norm
 
+% Copyright (C) 2018 Joao F. Henriques.
+% All rights reserved.
+%
+% This file is part of the VLFeat library and is made available under
+% the terms of the BSD license (see the COPYING file).
+
   if nargin > 0 && isa(varargin{1}, 'Layer')
     % create conv block immediately, with given layer as input
     output = createConvBlock(varargin{:}) ;

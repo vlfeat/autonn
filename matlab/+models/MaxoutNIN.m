@@ -74,19 +74,20 @@ function block = ninMaxoutBlock(in, inChannels, ...
   % third conv block
   sz = [1, 1, units(2), units(3) * pieces(3)] ;
   c3 = vl_nnconv(m1, 'size', sz, 'stride', 1, 'pad', 0) ;
-  
-  % skip if it's the final layer (prediction)
+  c3bn = vl_nnbnorm(c3) ;
+
+  % second maxout block
+%   m2 = maxout(c3bn, units(3), pieces(3)) ;
+  m2 = vl_nnmaxout(c3bn, pieces(3)) ;
+
+  % pooling
+  p1 = vl_nnpool(m2, poolKer, 'method', 'avg', 'stride', 2, 'pad', [0 1 0 1]) ;
+
+  % dropout, skipped if it's the final layer (prediction)
   if ~final
-    c3bn = vl_nnbnorm(c3) ;
-
-    % second maxout block
-  %   m2 = maxout(c3bn, units(3), pieces(3)) ;
-    m2 = vl_nnmaxout(c3bn, pieces(3)) ;
-
-    % pooling and dropout
-    p1 = vl_nnpool(m2, poolKer, 'method', 'avg', 'stride', 2, 'pad', [0 1 0 1]) ;
-
     block = vl_nndropout(p1, 'rate', 0.5) ;
+  else
+    block = p1 ;
   end
 end
 
