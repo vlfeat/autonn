@@ -620,15 +620,17 @@ classdef Layer < matlab.mixin.Copyable
     
     function saveStack(obj)
       % record call stack (source files and line numbers), starting with
-      % the first function in user-land (not part of AutoNN).
+      % the first function outside of the core (user-land or packages)
       stack = dbstack('-completenames') ;
       
-      % 2 folders up from current file's directory (<autonn>/matlab)
+      % path 2 folders up from current file's directory (<autonn>/matlab)
       p = [fileparts(fileparts(stack(1).file)), filesep] ;
       
-      % find a non-matching directory (i.e., not part of AutoNN directly)
+      % find a non-matching directory (outside AutoNN), or package
+      % (starts with +)
       for i = 2:numel(stack)
-        if ~strncmp(p, stack(i).file, numel(p))
+        file = stack(i).file ;
+        if ~strncmp(file, p, numel(p)) || strncmp(file, [p, '+'], numel(p) + 1)
           obj.source = stack(i:end) ;
           return
         end
