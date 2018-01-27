@@ -13,7 +13,7 @@ function imagenet_example(varargin)
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
   opts.numThreads = 12 ;  % number of threads for image reading
   opts.augmentation = [] ;  % data augmentation (see datasets.StreamingDataset) (*)
-  opts.savePlot = false ;  % whether to save the plot as a PDF file
+  opts.savePlot = true ;  % whether to save the plot as a PDF file
   opts.continue = true ;  % continue from last checkpoint if available
   
   opts = vl_argparse(opts, varargin) ;  % let user override options
@@ -130,11 +130,9 @@ function imagenet_example(varargin)
       print(1, [opts.expDir '/plot.pdf'], '-dpdf') ;
     end
     
-    % save checkpoint every few epochs
-    if mod(epoch, 10) == 0
-      save(sprintf('%s/epoch-%d.mat', opts.resultsDir, epoch), ...
-        'net', 'stats', 'solver') ;
-    end
+    % save checkpoint every epoch
+    save(sprintf('%s/epoch-%d.mat', opts.resultsDir, epoch), ...
+      'net', 'stats', 'solver') ;
   end
 
   % save results

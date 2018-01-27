@@ -8,7 +8,7 @@ function output = AlexNet(varargin)
 % the terms of the BSD license (see the COPYING file).
 
   % parse options. unknown arguments will be passed to ConvBlock (e.g.
-  % batchNorm).
+  % activation).
   opts.pretrained = false ;  % whether to fetch a pre-trained model
   opts.input = Input('name', 'images', 'gpu', true) ;  % default input layer
   opts.numClasses = 1000 ;  % number of predicted classes
