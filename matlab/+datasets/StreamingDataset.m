@@ -9,7 +9,7 @@ classdef StreamingDataset < datasets.Dataset
     numThreads = 1  % higher to enable multithreading/prefetching
     useGpu = false
     removeMean = true
-    whiten = false
+    whiten = true
     
     imageSize
     keepAspect = true
