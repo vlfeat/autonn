@@ -56,6 +56,7 @@ end
 
 function block = ninMaxoutBlock(in, inChannels, ...
   units, pieces, ker, pad, poolKer, final)
+  % helper function to create each of the 3 main blocks of the model
 
   % first conv block
   sz = [ker(1:2), inChannels, units(1) * pieces(1)] ;
@@ -68,7 +69,6 @@ function block = ninMaxoutBlock(in, inChannels, ...
   c2bn = vl_nnbnorm(c2) ;
   
   % first maxout block
-%   m1 = maxout(c2bn, units(2), pieces(2)) ;
   m1 = vl_nnmaxout(c2bn, pieces(2)) ;
   
   % third conv block
@@ -77,7 +77,6 @@ function block = ninMaxoutBlock(in, inChannels, ...
   c3bn = vl_nnbnorm(c3) ;
 
   % second maxout block
-%   m2 = maxout(c3bn, units(3), pieces(3)) ;
   m2 = vl_nnmaxout(c3bn, pieces(3)) ;
 
   % pooling
@@ -90,27 +89,4 @@ function block = ninMaxoutBlock(in, inChannels, ...
     block = p1 ;
   end
 end
-
-% function output = maxout(input, units, pieces)
-%   % maxout is implemented by reshaping the tensor to split the channels
-%   % dimension (assumed to have size = units*pieces) into 2 dimensions: the
-%   % first has size = pieces, the second has size = units. the max operation
-%   % is then ran along the pieces dimension, and the result is reshaped back
-%   % to a 4D tensor.
-%   
-%   if pieces == 1  % trivial case, nothing to do
-%     output = input ;
-%     return
-%   end
-%   
-%   rows = size(input, 1) ;
-%   cols = size(input, 2) ;
-%   
-%   split = reshape(input, rows, cols, pieces, units, []) ;
-%   
-%   maxed = max(split, [], 3) ;
-%   
-%   output = reshape(maxed, rows, cols, units, []) ;
-% end
-
 

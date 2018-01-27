@@ -76,13 +76,13 @@ function output = VGGVeryDeep(varargin)
   end
   
   
-  % build network
-  images = opts.input ;
-  
   % get conv block generator with the given options. default activation is
   % ReLU, with pre-activation batch normalization (can be overriden).
   conv = models.ConvBlock('batchNorm', opts.batchNorm, ...
     'preActivationBatchNorm', opts.preActivationBatchNorm, convBlockArgs{:}) ;
+  
+  % build network
+  images = opts.input ;
   
   x = conv(images, 'size', [3, 3, 3, 64], 'pad', 1) ;
   x = conv(x, 'size', [3, 3, 64, 64], 'pad', 1) ;

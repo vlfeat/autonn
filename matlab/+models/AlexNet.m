@@ -65,13 +65,13 @@ function output = AlexNet(varargin)
   end
   
   
-  % build network
-  images = opts.input ;
-  
   % get conv block generator with the given options. default activation is
   % ReLU, with pre-activation batch normalization (can be overriden).
   conv = models.ConvBlock('batchNorm', opts.batchNorm, ...
     'preActivationBatchNorm', opts.preActivationBatchNorm, convBlockArgs{:}) ;
+  
+  % build network
+  images = opts.input ;
   
   % first conv block
   x = conv(images, 'size', [11, 11, 3, 96], 'stride', 4) ;

@@ -75,14 +75,14 @@ function output = VGG(varargin)
   end
   
   
-  % build network
-  images = opts.input ;
-  
   % get conv block generator with the given options. default activation is
   % ReLU, with pre-activation batch normalization (can be overriden).
   conv = models.ConvBlock('batchNorm', opts.batchNorm, ...
     'preActivationBatchNorm', opts.preActivationBatchNorm, convBlockArgs{:}) ;
   
+  
+  % build network
+  images = opts.input ;
   
   % implement the 3 variants: S, M and F (from paper)
   switch lower(opts.variant)
