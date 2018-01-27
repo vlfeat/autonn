@@ -47,11 +47,12 @@ function imagenet_example(varargin)
   % create losses
   labels = Input() ;
   objective = vl_nnloss(predictions, labels, 'loss', 'softmaxlog') / opts.batchSize ;
-  error = vl_nnloss(predictions, labels, 'loss', 'classerror') / opts.batchSize ;
+  top1err = vl_nnloss(predictions, labels, 'loss', 'classerror') / opts.batchSize ;
+  top5err = vl_nnloss(predictions, labels, 'loss', 'topkerror', 'topK', 5) / opts.batchSize ;
 
   % assign layer names automatically, and compile network
   Layer.workspaceNames() ;
-  net = Net(objective, error, 'conserveMemory', opts.conserveMemory) ;
+  net = Net(objective, top1err, top5err, 'conserveMemory', opts.conserveMemory) ;
 
 
   % set solver learning rate
@@ -66,7 +67,7 @@ function imagenet_example(varargin)
   dataset.numThreads = opts.numThreads ;
   
   % compute average objective and error
-  stats = Stats({'objective', 'error'}) ;
+  stats = Stats({'objective', 'top1err', 'top5err'}) ;
   
   % continue from last checkpoint if there is one
   startEpoch = 1 ;
@@ -101,7 +102,7 @@ function imagenet_example(varargin)
       % get current objective and error, and update their average.
       % also report iteration number and timing.
       t = toc() ;
-      fprintf('train ep%d %d/%d - %.1fms (%.1fHz) ', epoch, stats.counts(1) + 1, ...
+      fprintf('ep%d %d/%d - %.1fms (%.1fHz) ', epoch, stats.counts(1) + 1, ...
         floor(numel(dataset.trainSet) / opts.batchSize), t * 1e3, opts.batchSize / t);
       stats.update(net) ;
       stats.print() ;
