@@ -23,8 +23,10 @@ function out = createConvBlock(in, varargin)
   opts.inChannels = [] ;
   opts.outChannels = [] ;
   opts.size = [] ;
+  opts.pad = 0 ;
   opts.batchNorm = false ;
   opts.batchNormScaleBias = true ;
+  opts.batchNormEpsilon = 1e-4 ;
   opts.preActivationBatchNorm = false ;
   opts.activation = 'relu' ;
   opts.leak = 0.1 ;  % for leaky ReLU only
@@ -42,16 +44,32 @@ function out = createConvBlock(in, varargin)
     opts.size = [opts.kernel(1:2), opts.inChannels, opts.outChannels] ;
   end
   
+  % handle 'same' padding (i.e., maintain same output size, given stride 1)
+  if isequal(opts.pad, 'same')
+    pad = (opts.size(1:2) - 1) / 2 ;  % will be fractional for even filter sizes
+    opts.pad = [floor(pad(1)), ceil(pad(1)), floor(pad(2)), ceil(pad(2))] ;
+  end
+  if opts.pad ~= 0  % don't include padding argument if it's 0
+    convArgs(end+1:end+2) = {'pad', opts.pad} ;
+  end
+  
   % create conv layer
   out = vl_nnconv(in, 'size', opts.size, convArgs{:}) ;
   
+  % prepare batch-norm arguments list
+  if opts.batchNorm
+    bnormArgs = {} ;
+    if ~opts.batchNormScaleBias  % fixed scale and bias (constants instead of Params)
+      bnormArgs(end+1:end+2) = {1, 0} ;
+    end
+    if opts.batchNormEpsilon ~= 1e-4  % non-default epsilon
+      bnormArgs(end+1:end+2) = {'epsilon', opts.batchNormEpsilon} ;
+    end
+  end
+  
   % create pre-activation batch norm
   if opts.batchNorm && opts.preActivationBatchNorm
-    if opts.batchNormScaleBias
-      out = vl_nnbnorm(out) ;
-    else
-      out = vl_nnbnorm(out, 1, 0) ;  % fixed scale and bias
-    end
+    out = vl_nnbnorm(out, bnormArgs{:}) ;
   end
   
   % create activation layer
@@ -59,11 +77,7 @@ function out = createConvBlock(in, varargin)
   
   % create post-activation batch norm
   if opts.batchNorm && ~opts.preActivationBatchNorm
-    if opts.batchNormScaleBias
-      out = vl_nnbnorm(out) ;
-    else
-      out = vl_nnbnorm(out, 1, 0) ;  % fixed scale and bias
-    end
+    out = vl_nnbnorm(out, bnormArgs{:}) ;
   end
 end
 
