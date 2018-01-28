@@ -77,8 +77,8 @@ function mnist_example(varargin)
 
     % plot statistics
     stats.plot() ;
-    if opts.savePlot && ~isempty(opts.expDir)
-      print(1, [opts.expDir '/plot.pdf'], '-dpdf') ;
+    if opts.savePlot && ~isempty(opts.resultsDir)
+      print(1, [opts.resultsDir '/plot.pdf'], '-dpdf') ;
     end
   end
 

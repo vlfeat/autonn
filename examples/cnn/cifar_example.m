@@ -121,8 +121,8 @@ function cifar_example(varargin)
 
     % plot statistics, with optional smoothing
     stats.plot('smoothen', 1) ;
-    if opts.savePlot && ~isempty(opts.expDir)
-      print(1, [opts.expDir '/plot.pdf'], '-dpdf') ;
+    if opts.savePlot && ~isempty(opts.resultsDir)
+      print(1, [opts.resultsDir '/plot.pdf'], '-dpdf') ;
     end
     
     % save checkpoint every few epochs
