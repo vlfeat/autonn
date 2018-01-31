@@ -46,9 +46,9 @@ function imagenet_example(varargin)
 
   % create losses
   labels = Input() ;
-  objective = vl_nnloss(predictions, labels, 'loss', 'softmaxlog') / opts.batchSize ;
-  top1err = vl_nnloss(predictions, labels, 'loss', 'classerror') / opts.batchSize ;
-  top5err = vl_nnloss(predictions, labels, 'loss', 'topkerror', 'topK', 5) / opts.batchSize ;
+  objective = vl_nnloss(predictions, labels, 'loss', 'softmaxlog') ;
+  top1err = vl_nnloss(predictions, labels, 'loss', 'classerror') ;
+  top5err = vl_nnloss(predictions, labels, 'loss', 'topkerror', 'topK', 5) ;
 
   % assign layer names automatically, and compile network
   Layer.workspaceNames() ;

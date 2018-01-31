@@ -195,10 +195,6 @@ classdef Layer < matlab.mixin.Copyable
       y = Layer(@vl_nnsoftmaxloss, obj, varargin{:}) ;
       y.numInputDer = 1 ;  % only the first derivative is defined
     end
-    function y = vl_nnloss(obj, varargin)
-      y = Layer(@vl_nnloss, obj, varargin{:}) ;
-      y.numInputDer = 1 ;  % only the first derivative is defined
-    end
     function [hn, cn] = vl_nnlstm(varargin)
       [hn, cn] = Layer.create(@vl_nnlstm, varargin) ;
     end

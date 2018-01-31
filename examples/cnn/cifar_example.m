@@ -46,8 +46,8 @@ function cifar_example(varargin)
 
   % create losses
   labels = Input() ;
-  objective = vl_nnloss(predictions, labels, 'loss', 'softmaxlog') / opts.batchSize ;
-  error = vl_nnloss(predictions, labels, 'loss', 'classerror') / opts.batchSize ;
+  objective = vl_nnloss(predictions, labels, 'loss', 'softmaxlog') ;
+  error = vl_nnloss(predictions, labels, 'loss', 'classerror') ;
 
   % assign layer names automatically, and compile network
   Layer.workspaceNames() ;

@@ -35,8 +35,8 @@ function mnist_example(varargin)
   output = vl_nnconv(x, 'size', [1, 1, 500, 10], 'weightScale', 0.01) ;
 
   % create losses
-  objective = vl_nnloss(output, labels, 'loss', 'softmaxlog') / opts.batchSize ;
-  error = vl_nnloss(output, labels, 'loss', 'classerror') / opts.batchSize ;
+  objective = vl_nnloss(output, labels, 'loss', 'softmaxlog') ;
+  error = vl_nnloss(output, labels, 'loss', 'classerror') ;
 
   % assign layer names automatically, and compile network
   Layer.workspaceNames() ;
