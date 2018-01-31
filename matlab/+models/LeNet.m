@@ -21,7 +21,7 @@ function output = LeNet(varargin)
     'batchNorm', false, 'activation', 'none') ;
 
   % default training options for this network
-  defaults.numEpochs = 100 ;
+  defaults.numEpochs = 20 ;
   defaults.batchSize = 128 ;
   defaults.learningRate = 0.001 ;
   output.meta = defaults ;

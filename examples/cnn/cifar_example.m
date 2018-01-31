@@ -11,7 +11,7 @@ function cifar_example(varargin)
   opts.solver = solvers.SGD() ;  % solver instance to use (type 'help solvers' for a list)
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
   opts.savePlot = false ;  % whether to save the plot as a PDF file
-  opts.continue = true ;  % continue from last checkpoint if available
+  opts.continue = false ;  % continue from last checkpoint if available
   
   opts = vl_argparse(opts, varargin) ;  % let user override options
   

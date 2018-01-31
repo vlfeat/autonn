@@ -11,8 +11,6 @@ function mnist_example(varargin)
   
   opts = vl_argparse(opts, varargin) ;  % let user override options
   
-  assert(isa(opts.model, 'function_handle'), 'Model must be a function handle (e.g. @models.LeNet).')
-  
   try run('../../setup_autonn.m') ; catch; end  % add AutoNN to the path
   mkdir(opts.resultsDir) ;
   
@@ -21,8 +19,20 @@ function mnist_example(varargin)
   images = Input('gpu', true) ;
   labels = Input() ;
   
-  % create a LeNet (defined in 'autonn/matlab/+models/')
-  output = models.LeNet('input', images);
+  % build network. we could also have used:
+  %   output = models.LeNet('input', images);
+  % or any other model from 'autonn/matlab/+models/'.
+  
+  x = vl_nnconv(images, 'size', [5, 5, 1, 20], 'weightScale', 0.01) ;
+  x = vl_nnpool(x, 2, 'stride', 2) ;
+  
+  x = vl_nnconv(x, 'size', [5, 5, 20, 50], 'weightScale', 0.01) ;
+  x = vl_nnpool(x, 2, 'stride', 2) ;
+  
+  x = vl_nnconv(x, 'size', [4, 4, 50, 500], 'weightScale', 0.01) ;
+  x = vl_nnrelu(x) ;
+  
+  output = vl_nnconv(x, 'size', [1, 1, 500, 10], 'weightScale', 0.01) ;
 
   % create losses
   objective = vl_nnloss(output, labels, 'loss', 'softmaxlog') / opts.batchSize ;

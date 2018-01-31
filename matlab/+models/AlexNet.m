@@ -13,7 +13,6 @@ function output = AlexNet(varargin)
   opts.input = Input('name', 'images', 'gpu', true) ;  % default input layer
   opts.numClasses = 1000 ;  % number of predicted classes
   opts.batchNorm = true ;  % whether to use batch normalization
-  opts.preActivationBatchNorm = true ;  % whether batch-norm comes before or after activations
   opts.normalization = [5 1 0.0001/5 0.75] ;  % for LRN layer (vl_nnnormalize)
   [opts, convBlockArgs] = vl_argparse(opts, varargin, 'nonrecursive') ;
   
@@ -68,7 +67,7 @@ function output = AlexNet(varargin)
   % get conv block generator with the given options. default activation is
   % ReLU, with pre-activation batch normalization (can be overriden).
   conv = models.ConvBlock('batchNorm', opts.batchNorm, ...
-    'preActivationBatchNorm', opts.preActivationBatchNorm, convBlockArgs{:}) ;
+    'preActivationBatchNorm', true, 'weightScale', 0.01, convBlockArgs{:}) ;
   
   % build network
   images = opts.input ;
