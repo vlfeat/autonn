@@ -129,7 +129,7 @@ classdef Stats < handle
     end
     
     function plot(o, varargin)
-      opts.figure = 1 ;
+      opts.figure = [] ;
       opts.names = [] ;
       opts.smoothen = 0 ;
       opts = vl_argparse(opts, varargin) ;
@@ -145,7 +145,10 @@ classdef Stats < handle
       % create plot objects if it's the first datapoint to be plotted, or
       % the graphics objects have been deleted
       if size(o.history.(sets{1}), 2) == 1 || isempty(o.plots) || ~all(ishandle(o.plots(:)))
-        figure(opts.figure) ; clf ;
+        if ~isempty(opts.figure)
+          figure(opts.figure) ;
+        end
+        clf ;
         ax = gobjects(numel(valid_stats), 1) ;
         o.plots = gobjects(numel(valid_stats), numel(sets)) ;
         

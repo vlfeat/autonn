@@ -99,7 +99,7 @@ function cifar_example(varargin)
 
       % get current objective and error, and update their average.
       % also report iteration number and timing.
-      fprintf('train %d - %.1fms ', stats.counts(1) + 1, toc() * 1000);
+      fprintf('ep%d %d - %.1fms ', epoch, stats.counts(1) + 1, toc() * 1000);
       stats.update(net) ;
       stats.print() ;
     end
@@ -113,14 +113,14 @@ function cifar_example(varargin)
       tic;
       net.eval({'images', images, 'labels', labels}, 'test') ;
 
-      fprintf('val %d - %.1fms ', stats.counts(1) + 1, toc() * 1000);
+      fprintf('val ep%d %d - %.1fms ', epoch, stats.counts(1) + 1, toc() * 1000);
       stats.update(net) ;
       stats.print() ;
     end
     stats.push('val') ;
 
     % plot statistics, with optional smoothing
-    stats.plot('smoothen', 1) ;
+    stats.plot('smoothen', 1, 'figure', 1) ;
     if opts.savePlot && ~isempty(opts.resultsDir)
       print(1, [opts.resultsDir '/plot.pdf'], '-dpdf') ;
     end

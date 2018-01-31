@@ -126,7 +126,7 @@ function imagenet_example(varargin)
     stats.push('val') ;
 
     % plot statistics, with optional smoothing
-    stats.plot('smoothen', 1) ;
+    stats.plot('smoothen', 1, 'figure', 1) ;
     if opts.savePlot && ~isempty(opts.resultsDir)
       print(1, [opts.resultsDir '/plot.pdf'], '-dpdf') ;
     end
