@@ -26,7 +26,8 @@ function out = createConvBlock(in, varargin)
   opts.pad = 0 ;
   opts.batchNorm = false ;
   opts.batchNormScaleBias = true ;
-  opts.batchNormEpsilon = 1e-4 ;
+  opts.batchNormEpsilon = 1e-5 ;
+  opts.batchNormCuDNN = false ;
   opts.preActivationBatchNorm = false ;
   opts.activation = 'relu' ;
   opts.leak = 0.1 ;  % for leaky ReLU only
@@ -62,14 +63,16 @@ function out = createConvBlock(in, varargin)
     if ~opts.batchNormScaleBias  % fixed scale and bias (constants instead of Params)
       bnormArgs(end+1:end+2) = {1, 0} ;
     end
-    if opts.batchNormEpsilon ~= 1e-4  % non-default epsilon
-      bnormArgs(end+1:end+2) = {'epsilon', opts.batchNormEpsilon} ;
+    if opts.batchNormCuDNN
+      bnormArgs{end+1} = 'CuDNN' ;
+    else
+      bnormArgs{end+1} = 'NoCuDNN' ;
     end
   end
   
   % create pre-activation batch norm
   if opts.batchNorm && opts.preActivationBatchNorm
-    out = vl_nnbnorm(out, bnormArgs{:}) ;
+    out = vl_nnbnorm(out, bnormArgs{:}, 'epsilon', opts.batchNormEpsilon) ;
   end
   
   % create activation layer
