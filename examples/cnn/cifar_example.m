@@ -13,7 +13,7 @@ function cifar_example(varargin)
   opts.savePlot = false ;  % whether to save the plot as a PDF file
   opts.continue = false ;  % continue from last checkpoint if available
   
-  opts = vl_argparse(opts, varargin) ;  % let user override options
+  opts = vl_argparse(opts, varargin, 'nonrecursive') ;  % let user override options
   
   try run('../../setup_autonn.m') ; catch; end  % add AutoNN to the path
   mkdir(opts.resultsDir) ;

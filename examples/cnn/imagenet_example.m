@@ -16,7 +16,7 @@ function imagenet_example(varargin)
   opts.savePlot = true ;  % whether to save the plot as a PDF file
   opts.continue = true ;  % continue from last checkpoint if available
   
-  opts = vl_argparse(opts, varargin) ;  % let user override options
+  opts = vl_argparse(opts, varargin, 'nonrecursive') ;  % let user override options
   
   try run('../../setup_autonn.m') ; catch; end  % add AutoNN to the path
   mkdir(opts.resultsDir) ;
