@@ -119,8 +119,8 @@ function cifar_example(varargin)
     end
     stats.push('val') ;
 
-    % plot statistics, with optional smoothing
-    stats.plot('smoothen', 1, 'figure', 1) ;
+    % plot statistics
+    stats.plot('figure', 1) ;
     if opts.savePlot && ~isempty(opts.resultsDir)
       print(1, [opts.resultsDir '/plot.pdf'], '-dpdf') ;
     end

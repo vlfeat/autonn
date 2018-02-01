@@ -34,10 +34,10 @@ function output = BasicCifarNet(varargin)
   % default training options for this network
   defaults.batchSize = 128 ;
   if ~opts.batchNorm
-    defaults.learningRate = 0.001 ;
+    defaults.learningRate = 0.01 ;
     defaults.numEpochs = 100 ;
   else
-    defaults.learningRate = 0.01 ;
+    defaults.learningRate = 0.1 ;
     defaults.numEpochs = 40 ;
   end
   output.meta = defaults ;
