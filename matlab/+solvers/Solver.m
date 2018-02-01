@@ -88,6 +88,18 @@ classdef Solver < handle
     function w = gradientStep(o, w, dw, learningRates, weightDecays)  %#ok<INUSD>
       error('Cannot instantiate Solver directly; use one of its subclasses (e.g. solvers.SGD).');
     end
+    
+    function s = saveGeneric(o)
+      % must be called by subclass's saveobj (called by built-in SAVE)
+      s.learningRate = o.learningRate ;
+      s.weightDecay = o.weightDecay ;
+    end
+    
+    function loadGeneric(o, s)
+      % must be called by subclass's loadobj (called by built-in SAVE)
+      o.learningRate = s.learningRate ;
+      o.weightDecay = s.weightDecay ;
+    end
   end
   
 end

@@ -59,13 +59,29 @@ classdef Adam < solvers.Solver
     end
     
     function s = saveobj(o)
-      % called by SAVE; transfer state to CPU first
+      % serialize to struct (called by the built-in function SAVE)
+      % transfer state to CPU first
+      s = o.saveGeneric() ;  % call parent class
       s.beta1 = o.beta1 ;
       s.beta2 = o.beta2 ;
       s.eps = o.eps ;
       s.m = cellfun(@gather, o.m, 'UniformOutput', false) ;
       s.v = cellfun(@gather, o.v, 'UniformOutput', false) ;
       s.t = o.t ;
+    end
+  end
+  
+  methods (Static)
+    function o = loadobj(s)
+      % deserialize from struct (called by the built-in function LOAD)
+      o = solvers.Adam() ;
+      o.beta1 = s.beta1 ;
+      o.beta2 = s.beta2 ;
+      o.eps = s.eps ;
+      o.m = s.m ;
+      o.v = s.v ;
+      o.t = s.t ;
+      o.loadGeneric(s) ;  % call parent class
     end
   end
 end

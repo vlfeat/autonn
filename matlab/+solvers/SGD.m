@@ -39,9 +39,21 @@ classdef SGD < solvers.Solver
     end
     
     function s = saveobj(o)
-      % called by SAVE; transfer state to CPU first
+      % serialize to struct (called by the built-in function SAVE)
+      % transfer state to CPU first
+      s = o.saveGeneric() ;  % call parent class
       s.momentum = o.momentum ;
       s.state = cellfun(@gather, o.state, 'UniformOutput', false) ;
+    end
+  end
+  
+  methods (Static)
+    function o = loadobj(s)
+      % deserialize from struct (called by the built-in function LOAD)
+      o = solvers.SGD() ;
+      o.momentum = s.momentum ;
+      o.state = s.state ;
+      o.loadGeneric(s) ;  % call parent class
     end
   end
 end
