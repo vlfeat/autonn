@@ -27,7 +27,7 @@ function layer = vl_nnbnorm(varargin)
 %
 %   `weightDecay`:: 0
 %     Factor used to adjust the created Params' weight decay. Can specify
-%     separate weight decays for G, B and M as a 3-elements vector.
+%     separate weight decays for G and B as a 2-elements vector.
 %
 %   `testMode`:: []
 %     By default, the layer uses batch statistics when evaluating the
@@ -43,7 +43,7 @@ function layer = vl_nnbnorm(varargin)
 % the terms of the BSD license (see the COPYING file).
 
   % parse options. note the defaults for bnorm's Params are set here.
-  opts = struct('learningRate', [2 1 0.1], 'weightDecay', 0, ...
+  opts = struct('learningRate', [2 1 0.1], 'weightDecay', [0 0], ...
     'moments', [], 'testMode', []) ;
   [opts, posArgs, bnormOpts] = vl_argparsepos(opts, varargin, ...
     'flags', {'CuDNN', 'NoCuDNN'}) ;
@@ -87,7 +87,7 @@ function layer = vl_nnbnorm(varargin)
       % create moments param. note the training method is 'average'.
       moments = Param('value', single(0), ...
                       'learningRate', opts.learningRate(3), ...
-                      'weightDecay', opts.weightDecay(3), ...
+                      'weightDecay', 0, ...
                       'trainMethod', 'average') ;
     end
   end
