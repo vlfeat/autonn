@@ -14,7 +14,6 @@ function output = VGG(varargin)
   opts.numClasses = 1000 ;  % number of predicted classes
   opts.variant = 'm' ;  % choose between variants s/m/f (slow/medium/fast)
   opts.batchNorm = true ;  % whether to use batch normalization
-  opts.preActivationBatchNorm = true ;  % whether batch-norm comes before or after activations
   opts.normalization = [5 1 0.0001/5 0.75] ;  % for LRN layer (vl_nnnormalize)
   [opts, convBlockArgs] = vl_argparse(opts, varargin, 'nonrecursive') ;
   
@@ -31,7 +30,7 @@ function output = VGG(varargin)
     error('Unknown variant.') ;
   end
   meta.imageSize = [224, 224, 3] ;
-  meta.augmentation.crop = 227 / 256;
+  meta.augmentation.crop = 224 / 256;
   meta.augmentation.location = true ;
   meta.augmentation.flip = true ;
   meta.augmentation.brightness = 0.1 ;
@@ -78,7 +77,7 @@ function output = VGG(varargin)
   % get conv block generator with the given options. default activation is
   % ReLU, with pre-activation batch normalization (can be overriden).
   conv = models.ConvBlock('batchNorm', opts.batchNorm, ...
-    'preActivationBatchNorm', opts.preActivationBatchNorm, convBlockArgs{:}) ;
+    'preActivationBatchNorm', true, convBlockArgs{:}) ;
   
   
   % build network

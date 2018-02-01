@@ -32,7 +32,7 @@ function output = VGGVeryDeep(varargin)
     error('Unknown variant.') ;
   end
   meta.imageSize = [224, 224, 3] ;
-  meta.augmentation.crop = 227 / 256;
+  meta.augmentation.crop = 224 / 256;
   meta.augmentation.location = true ;
   meta.augmentation.flip = true ;
   meta.augmentation.brightness = 0.1 ;
