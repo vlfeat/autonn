@@ -41,8 +41,8 @@ classdef Adam < solvers.Solver
       lr_factor = ((1 - beta2^o.t)^0.5) / (1 - beta1^o.t) ;
       
       for i = 1:numel(w)
-        % incorporate weight decay
-        grad = dw{i} * (1 - decay(i)) ;
+        % incorporate weight decay into the gradient
+        grad = vl_taccum(1, dw{i}, decay(i), w{i}) ;
         
         % update first moment vector, m
         m{i} = beta1 * m{i} + (1 - beta1) * grad ;

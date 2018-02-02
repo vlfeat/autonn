@@ -28,11 +28,14 @@ classdef SGD < solvers.Solver
       end
       
       for i = 1:numel(w)
+        % incorporate weight decay into the gradient
+        grad = vl_taccum(1, dw{i}, decay(i), w{i}) ;
+        
         % update momentum
-        state{i} = vl_taccum(momentum, state{i}, -1, dw{i}) ;
+        state{i} = vl_taccum(momentum, state{i}, -1, grad) ;
 
-        % update parameters, incorporating weight decay
-        w{i} = vl_taccum(1 - decay(i), w{i}, lr(i), state{i}) ;
+        % update parameters
+        w{i} = vl_taccum(1, w{i}, lr(i), state{i}) ;
       end
       
       o.state = state ;
