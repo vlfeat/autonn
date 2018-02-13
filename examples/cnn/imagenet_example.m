@@ -1,3 +1,43 @@
+% IMAGENET_EXAMPLE
+% Demonstrates AutoNN training of a CNN on ImageNet.
+% The task is image classification.
+%
+% This example can be called with different name-value pairs, see the
+% script below for a full list. Examples:
+%
+%  imagenet_example                        % train AlexNet using defaults
+%  imagenet_example('learningRate', 0.001) % override default learning rate
+%  imagenet_example('model', models.ResNet())  % train a ResNet-50
+%  imagenet_example('learningRate', 1e-4, 'solver', solvers.Adam()) % Adam solver
+%  imagenet_example('dataDir', '/data/imagenet/')  % specify data location
+%
+%
+% ImageNet data setup:
+%
+% The ImageNet/ILSVRC data ships in several TAR archives that can be
+% obtained from the ILSVRC challenge website. You will need:
+% 
+% ILSVRC2012_img_train.tar
+% ILSVRC2012_img_val.tar
+% ILSVRC2012_img_test.tar
+% ILSVRC2012_devkit.tar
+% 
+% Note that images in the CLS-LOC challenge are the same for the 2012,
+% 2013, and 2014 edition of ILSVRC, but that the development kit is
+% different. However, all devkit versions should work.
+%
+% Create the following hierarchy:
+%
+% <dataDir>/images/train/ : content of ILSVRC2012_img_train.tar
+% <dataDir>/images/val/ : content of ILSVRC2012_img_val.tar
+% <dataDir>/images/test/ : content of ILSVRC2012_img_test.tar
+% <dataDir>/ILSVRC2012_devkit : content of ILSVRC2012_devkit.tar
+% 
+% In order to speedup training and testing, it is a good idea to preprocess
+% the images to have a fixed size (e.g. 256 pixels high). There is a script
+% in MatConvNet (utils/preprocess-imagenet.sh) that achieves this. It may
+% also be necessary to store the images in RAM disk. Reading images off
+% disk with a sufficient speed is crucial for fast training.
 
 function imagenet_example(varargin)
   % options (override by calling script with name-value pairs).

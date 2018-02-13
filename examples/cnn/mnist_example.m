@@ -1,3 +1,15 @@
+% MNIST_EXAMPLE
+% Minimal demonstration of AutoNN training of a CNN on MNIST.
+% The task is handwritten digit recognition.
+%
+% This example can be called with different name-value pairs, see the
+% script below for a full list. Examples:
+%
+%  mnist_example                          % use defaults
+%  mnist_example('learningRate', 0.0005)  % a lower learning rate
+%  mnist_example('learningRate', 0.0005, 'gpu', [])  % no GPU
+%  mnist_example('resultsDir', '~/out', 'savePlot', true)  % plot to ~/out
+%
 
 function mnist_example(varargin)
   % options (override by calling script with name-value pairs)
@@ -15,13 +27,13 @@ function mnist_example(varargin)
   mkdir(opts.resultsDir) ;
   
 
+  % build network. we could also have used:
+  %   output = models.LeNet();
+  % or any other model from 'autonn/matlab/+models/'.
+  
   % create network inputs
   images = Input('gpu', true) ;
   labels = Input() ;
-  
-  % build network. we could also have used:
-  %   output = models.LeNet('input', images);
-  % or any other model from 'autonn/matlab/+models/'.
   
   x = vl_nnconv(images, 'size', [5, 5, 1, 20], 'weightScale', 0.01) ;
   x = vl_nnpool(x, 2, 'stride', 2) ;

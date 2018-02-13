@@ -10,9 +10,9 @@
 % This example can be called with different name-value pairs, see the
 % script below for a full list. Examples:
 %
-%   custom_dataset_example                         % use defaults
-%   custom_dataset_example('learningRate', 0.005)  % a lower learning rate
-%   custom_dataset_example('learningRate', 0.005, 'gpu', [])  % no GPU
+%  custom_dataset_example                         % use defaults
+%  custom_dataset_example('learningRate', 0.005)  % a lower learning rate
+%  custom_dataset_example('learningRate', 0.005, 'gpu', [])  % no GPU
 %
 
 function custom_dataset_example(varargin)

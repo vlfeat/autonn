@@ -1,3 +1,16 @@
+% CIFAR_EXAMPLE
+% Demonstrates AutoNN training of a CNN on CIFAR10.
+% The task is image classification.
+%
+% This example can be called with different name-value pairs, see the
+% script below for a full list. Examples:
+%
+%  cifar_example                           % train a fast, basic network
+%  cifar_example('learningRate', 0.001)    % override default learning rate
+%  cifar_example('learningRate', 1e-4, 'solver', solvers.Adam()) % Adam solver
+%  cifar_example('model', models.ResNet('numClasses', 10))  % train a ResNet-50
+%  cifar_example('resultsDir', '~/out', 'savePlot', true)   % plot to ~/out
+%
 
 function cifar_example(varargin)
   % options (override by calling script with name-value pairs)
