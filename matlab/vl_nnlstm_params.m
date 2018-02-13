@@ -18,7 +18,7 @@ function [W, b] = vl_nnlstm_params(d, m, varargin)
 %     Learning rate factor. If a vector of 2 elements, they specify the W
 %     and B factors, respectively.
 %
-%   `weightDecay`:: 1
+%   `weightDecay`:: [1, 0]
 %     Weight decay factor. If a vector of 2 elements, they specify the W
 %     and B factors, respectively.
 
@@ -31,7 +31,7 @@ function [W, b] = vl_nnlstm_params(d, m, varargin)
   opts.noise = 0.1 ;
   opts.forgetBias = 1 ;
   opts.learningRate = 1 ;
-  opts.weightDecay = 1 ;
+  opts.weightDecay = [1, 0] ;
   
   opts = vl_argparse(opts, varargin) ;
   
