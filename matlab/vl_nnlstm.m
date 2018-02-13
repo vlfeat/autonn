@@ -50,6 +50,7 @@ function varargout = vl_nnlstm(x, hp, cp, W, b, varargin)
 %   magnitude larger than CLIP will be clamped. This only affects the
 %   gradient (backward) pass. CLIP can also be a 5-elements vector, to
 %   apply a different value to each of the 5 output gradient matrices.
+%   By default, a value of 10 is used.
 %
 %
 %   See also: VL_NNLSTM_PARAMS.
