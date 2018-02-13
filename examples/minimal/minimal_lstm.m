@@ -4,10 +4,12 @@
 %   given their binary sequences (one bit at a time).
 
 run('../../setup_autonn.m') ;  % add AutoNN to the path
+rng(0) ;  % set random seed
 
 
 T = 8 ;  % number of bits / time steps
 d = 16 ;  % dimensionality of the LSTM state
+iters = 1500 ;  % number of iterations
 
 
 % inputs
@@ -46,17 +48,15 @@ Layer.workspaceNames() ;
 net = Net(loss, err) ;
 
 
+% initialize solver
+solver = solvers.Adam() ;
+solver.learningRate = 1e-2 ;
 
-% simple SGD
-learningRate = 0.2 ;
-iters = 1500 ;  % number of iterations
 
 losses = zeros(1, iters) ;
 errors = zeros(1, iters) ;
-rng(0) ;
-params = [net.params.var] ;
 
-for iter = 1:iters,
+for iter = 1:iters
   % generate a simple binary addition problem
   A = randi([0, 2^(T-1) - 1]) ;  % last bit is always 0 to prevent overflow
   B = randi([0, 2^(T-1) - 1]) ;
@@ -69,18 +69,12 @@ for iter = 1:iters,
   data_y = single(fliplr(data_y) == '1') * 2 - 1;  % bit classes for prediction will be -1 or 1
   
   
-  % evaluate network
+  % evaluate network to compute gradients
   net.eval({'x', data_x, 'y', data_y}) ;
   
-  % update weights
-  w = net.getValue(params) ;
-  dw = net.getDer(params) ;
+  % take one SGD step
+  solver.step(net) ;
   
-  for k = 1:numel(params),
-    w{k} = w{k} - learningRate * dw{k} ;
-  end
-  
-  net.setValue(params, w) ;
   
   % plot loss and error
   losses(iter) = net.getValue(loss) ;
@@ -91,7 +85,7 @@ for iter = 1:iters,
     fprintf('Iteration %i\n', iter);
     fprintf('True sequence: %s\n', sprintf('%i ', data_y > 0));
     fprintf('Predicted:     %s\n', sprintf('%i ', net.getValue('prediction') > 0));
-    fprintf('Errors: %i\n\n', errors(iter));
+    fprintf('Errors: %i\n\n', errors(iter) * T);
   end
 end
 

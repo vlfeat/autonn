@@ -2,9 +2,10 @@
 %   Demonstrates automatic differentiation of a least-squares objective.
 
 run('../../setup_autonn.m') ;  % add AutoNN to the path
+rng(0) ;  % set random seed
 
 
-% load simple data
+% load simple data (4 features, 3 classes)
 s = load('fisheriris.mat') ;
 data_x = single(s.meas.') ;  % features-by-samples matrix
 [~, ~, data_y] = unique(s.species) ;  % convert strings to class labels
@@ -32,13 +33,12 @@ net = Net(loss) ;
 % simple SGD
 learningRate = 1e-5 ;
 outputs = zeros(1, 100) ;
-rng(0) ;
 
-for iter = 1:100,
+for iter = 1:100
   % draw minibatch
   idx = randperm(numel(data_y), 50) ;
   
-  % evaluate network
+  % evaluate network to compute gradients
   net.eval({x, data_x(:,idx), y, data_y(idx)'}) ;
   
   % update weights
