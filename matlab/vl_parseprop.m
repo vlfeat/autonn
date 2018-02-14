@@ -1,6 +1,5 @@
 function unknown_args = vl_parseprop(obj, args, properties)
-%VL_PARSEPROP Summary of this function goes here
-%   Detailed explanation goes here
+%VL_PARSEPROP Parses name-value pairs list to override properties of object
 
   assert(iscellstr(properties)) ;
   
@@ -13,12 +12,12 @@ function unknown_args = vl_parseprop(obj, args, properties)
   unmatched = true(1, numel(names)) ;
 
   for i = 1:numel(properties)
-    pos = find(strcmpi(names, properties{i}), 1, 'last') ;
+    pos = find(strcmpi(names, properties{i})) ;
     
-    if isscalar(pos)
-      obj.(properties{i}) = values{pos} ;
-      unmatched(pos) = false ;
+    if ~isempty(pos)  % use last value if more than one is given (i.e., override)
+      obj.(properties{i}) = values{pos(end)} ;
     end
+    unmatched(pos) = false ;
   end
   
   if nargout == 0
