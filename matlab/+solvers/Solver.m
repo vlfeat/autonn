@@ -5,6 +5,7 @@ classdef Solver < handle
   properties
     learningRate = 0.001
     weightDecay = 0.0005
+    conserveMemory = true
   end
   
   methods
@@ -62,7 +63,9 @@ classdef Solver < handle
       decay = [params.weightDecay] * o.weightDecay ;
       
       % allow parameter memory to be released
-      net.setValue(idx, cell(size(idx))) ;
+      if o.conserveMemory
+        net.setValue(idx, cell(size(idx))) ;
+      end
       
       
       % update gradient-based parameters, by calling subclassed solver
@@ -93,12 +96,18 @@ classdef Solver < handle
       % must be called by subclass's saveobj (called by built-in SAVE)
       s.learningRate = o.learningRate ;
       s.weightDecay = o.weightDecay ;
+      s.conserveMemory = o.conserveMemory ;
     end
     
     function loadGeneric(o, s)
       % must be called by subclass's loadobj (called by built-in SAVE)
       o.learningRate = s.learningRate ;
       o.weightDecay = s.weightDecay ;
+      if isfield(s, 'conserveMemory') 
+        o.conserveMemory = s.conserveMemory ; 
+      else 
+        o.conserveMemory = true ; 
+      end
     end
   end
   
