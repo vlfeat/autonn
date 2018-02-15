@@ -33,9 +33,10 @@ function out = createConvBlock(in, varargin)
   opts.leak = 0.1 ;  % for leaky ReLU only
   [opts, convArgs] = vl_argparse(opts, varargin) ;
   
-  % make sure only valid convolution options remain
-  allowedConvArgs = {'stride', 'dilate', 'verbose', 'cudnn', 'nocudnn', ...
-    'cudnnworkspacelimit', 'noderdata', 'noderfilters', 'noderbiases'} ;  % pad handled separately
+  % make sure only valid convolution options remain; pad handled separately
+  allowedConvArgs = {'stride', 'dilate', 'verbose', 'cuDNN', 'noCuDNN', ...
+    'cuDNNWorkspaceLimit', 'noDerData', 'noDerFilters', 'noDerBiases', ...
+    'size', 'weightScale', 'hasBias', 'learningRate', 'weightDecay', 'transpose'} ;
   for i = 1:numel(convArgs)
     if ischar(convArgs{i})
       assert(any(strcmpi(convArgs{i}, allowedConvArgs)), ...
