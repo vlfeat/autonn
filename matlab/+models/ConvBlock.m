@@ -33,6 +33,17 @@ function out = createConvBlock(in, varargin)
   opts.leak = 0.1 ;  % for leaky ReLU only
   [opts, convArgs] = vl_argparse(opts, varargin) ;
   
+  % make sure only valid convolution options remain
+  allowedConvArgs = {'stride', 'dilate', 'verbose', 'cudnn', 'nocudnn', ...
+    'cudnnworkspacelimit', 'noderdata', 'noderfilters', 'noderbiases'} ;  % pad handled separately
+  for i = 1:numel(convArgs)
+    if ischar(convArgs{i})
+      assert(any(strcmpi(convArgs{i}, allowedConvArgs)), ...
+        ['Unknown argument given for convolution: ' convArgs{i} '.']) ;
+    end
+  end
+  
+  % specified kernel, in and outChannels instead of size
   if isempty(opts.size)
     % handle scalar kernel size (kernel is square)
     if isscalar(opts.kernel)
