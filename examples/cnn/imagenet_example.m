@@ -7,12 +7,12 @@
 %
 %  imagenet_example                        % train AlexNet using defaults
 %  imagenet_example('learningRate', 0.001) % override default learning rate
-%  imagenet_example('model', models.ResNet())  % train a ResNet-50
+%  imagenet_example('model', models.ResNet())  % train a ResNet-50 model
 %  imagenet_example('learningRate', 1e-4, 'solver', solvers.Adam()) % Adam solver
 %  imagenet_example('dataDir', '/data/imagenet/')  % specify data location
 %
 %
-% ImageNet data setup:
+% * ImageNet data setup:
 %
 % The ImageNet/ILSVRC data ships in several TAR archives that can be
 % obtained from the ILSVRC challenge website. You will need:

@@ -8,6 +8,7 @@
 %  mnist_example                          % use defaults
 %  mnist_example('learningRate', 0.0005)  % a lower learning rate
 %  mnist_example('learningRate', 0.0005, 'gpu', [])  % no GPU
+%  mnist_example('dataDir', '~/mnist')  % dataset path (downloaded automatically)
 %  mnist_example('resultsDir', '~/out', 'savePlot', true)  % plot to ~/out
 %
 
