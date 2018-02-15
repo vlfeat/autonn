@@ -30,6 +30,9 @@ function layer = vl_nnconv(varargin)
 %   `weightDecay`:: [1 0]
 %     Factor used to adjust the created Params' weight decay. Can specify
 %     separate weight decays for F and B with a 2-elements vector.
+%
+%   `transpose`:: false
+%     If true, creates a vl_nnconvt (convolution-transpose) layer instead.
 
 % Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.

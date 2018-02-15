@@ -1,5 +1,75 @@
 function output = ConvBlock(varargin)
-%CONVBLOCK Creates a conv block, with activation and optional batch-norm
+%CONVBLOCK Conv layer generator, with activation and optional batch-norm
+%   F = models.ConvBlock() returns a function that generates convolutional
+%   blocks. By default, they consist of a convolution followed by a ReLU
+%   layer, but more options are available.
+%
+%   For example:
+%
+%     conv = models.ConvBlock('kernel', [3, 3]) ;
+%     images = Input() ;
+%     x = conv(images, 'channels', [1, 10]) ;  % no need to specify ReLU
+%     x = conv(x, 'channels', [10, 10]) ;      % also kernel size is reused
+%
+%   is equivalent to:
+%
+%     images = Input() ;
+%     x = vl_nnconv(images, 'size', [3, 3, 1, 10]) ;
+%     x = vl_nnrelu(x) ;
+%     x = vl_nnconv(x, 'size', [3, 3, 10, 10]) ;
+%     x = vl_nnrelu(x) ;
+%
+%   This makes it easy to re-use the same options for many convolutional
+%   layers at the same time, with less repetition. For example, this
+%   one-line change would add batch-norm layers and change the activation:
+%
+%     conv = models.ConvBlock('batchNorm', true, 'activation', 'leakyrelu')
+%
+%   The options can be overriden later when calling the generator function
+%   (for example, setting ('activation', 'none') only for the final layer).
+%   See the 'autonn/matlab/+models' folder for more examples.
+%
+%   All the options accepted by vl_nnconv are supported, namely: size,
+%   stride, pad, dilate, weightScale, hasBias, learningRate, weightDecay,
+%   transpose. See 'help Layer.vl_nnconv' for more details.
+%
+%   In addition to vl_nnconv's options, the following are accepted:
+%
+%   `activation`:: 'ReLU'
+%     Activation function to use (case-insensitive). One of: 'ReLU',
+%     'LeakyReLU', 'Sigmoid', 'None'.
+%
+%   `leak`:: 0.1
+%     Leak parameter, only used if the activation is 'LeakyReLU'.
+%
+%   `batchNorm`:: false
+%     Whether to create a batch normalization layer. Disabled by default.
+%
+%   `preActivationBatchNorm`:: false
+%     Specifies whether batch-norm is placed before the activation, or
+%     after (the default).
+%
+%   `batchNormScaleBias`:: true
+%     Specifies whether batch-norm is followed by learnable scale and bias.
+%
+%   `batchNormEpsilon`:: 1e-5
+%     Epsilon parameter of batch-norm (to prevent division-by-zero).
+%
+%   `batchNormCuDNN`:: false
+%     Whether batch-norm uses CuDNN (does not seem to affect speed).
+%
+%   `kernel`:: [3, 3]
+%     Specifies the kernel size. Only used if 'channels' is defined.
+%
+%   `channels`:: undefined
+%     Specifies the number of input and output channels, as a 2-elements
+%     vector. Note that setting 'kernel' and 'channels' is equivalent to
+%     specifying the 'size' option (parameters tensor size), but if both
+%     are present, 'size' takes precedence.
+%
+%   OUT = models.ConvBlock(IN, ...) immediately creates a conv block given
+%   an input layer IN, instead of returning a generator function.
+
 
 % Copyright (C) 2018 Joao F. Henriques.
 % All rights reserved.
@@ -20,8 +90,7 @@ end
 function out = createConvBlock(in, varargin)
   % parse options
   opts.kernel = [3, 3] ;
-  opts.inChannels = [] ;
-  opts.outChannels = [] ;
+  opts.channels = [] ;
   opts.size = [] ;
   opts.pad = 0 ;
   opts.batchNorm = false ;
@@ -44,17 +113,18 @@ function out = createConvBlock(in, varargin)
     end
   end
   
-  % specified kernel, in and outChannels instead of size
+  % specified kernel and channels instead of size
   if isempty(opts.size)
     % handle scalar kernel size (kernel is square)
     if isscalar(opts.kernel)
       opts.kernel = opts.kernel * [1, 1] ;
     end
 
-    assert(~isempty(opts.inChannels), 'Must specify number of input channels.') ;
-    assert(~isempty(opts.outChannels), 'Must specify number of output channels.') ;
+    assert(numel(opts.kernel) == 2, 'Must specify kernel size as a 1 or 2-elements vector.') ;
+    assert(numel(opts.channels) == 2, ['Must specify the number of input and ' ...
+      'output channels for convolution, as a 2-elements vector in option `channels`.']) ;
     
-    opts.size = [opts.kernel(1:2), opts.inChannels, opts.outChannels] ;
+    opts.size = [opts.kernel(:); opts.channels(:)]' ;
   end
   
   % handle 'same' padding (i.e., maintain same output size, given stride 1)
