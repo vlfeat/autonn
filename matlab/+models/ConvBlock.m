@@ -6,24 +6,24 @@ function output = ConvBlock(varargin)
 %
 %   For example:
 %
-%     conv = models.ConvBlock('kernel', [3, 3]) ;
-%     images = Input() ;
-%     x = conv(images, 'channels', [1, 10]) ;  % no need to specify ReLU
-%     x = conv(x, 'channels', [10, 10]) ;      % also kernel size is reused
+%    conv = models.ConvBlock() ;  % default is a 3x3 filter kernel
+%    images = Input() ;
+%    x = conv(images, 'channels', [1, 8]) ;  % no need to specify ReLU
+%    x = conv(x, 'channels', [8, 10]) ;      % also kernel size is reused
 %
 %   is equivalent to:
 %
-%     images = Input() ;
-%     x = vl_nnconv(images, 'size', [3, 3, 1, 10]) ;
-%     x = vl_nnrelu(x) ;
-%     x = vl_nnconv(x, 'size', [3, 3, 10, 10]) ;
-%     x = vl_nnrelu(x) ;
+%    images = Input() ;
+%    x = vl_nnconv(images, 'size', [3 3 1 10]) ; % 3x3, 1 channel in, 8 out
+%    x = vl_nnrelu(x) ;                          % first ReLU
+%    x = vl_nnconv(x, 'size', [3 3 8 10]) ;  % 3x3, 8 channels in, 10 out
+%    x = vl_nnrelu(x) ;                          % second ReLU
 %
-%   This makes it easy to re-use the same options for many convolutional
+%   ConvBlock makes it easy to re-use the same options for many convolution
 %   layers at the same time, with less repetition. For example, this
 %   one-line change would add batch-norm layers and change the activation:
 %
-%     conv = models.ConvBlock('batchNorm', true, 'activation', 'leakyrelu')
+%    conv = models.ConvBlock('batchNorm', true, 'activation', 'leakyrelu')
 %
 %   The options can be overriden later when calling the generator function
 %   (for example, setting ('activation', 'none') only for the final layer).
