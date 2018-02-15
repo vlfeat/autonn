@@ -1,5 +1,5 @@
 function output = VGG(varargin)
-%VGG Returns a VGG-S/M/F model for ImageNet
+%VGG Returns a VGG-16/19 (VGG-VeryDeep) model for ImageNet
 
 % Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
 % All rights reserved.
@@ -12,20 +12,22 @@ function output = VGG(varargin)
   opts.pretrained = false ;  % whether to fetch a pre-trained model
   opts.input = Input('name', 'images', 'gpu', true) ;  % default input layer
   opts.numClasses = 1000 ;  % number of predicted classes
-  opts.variant = 'm' ;  % choose between variants s/m/f (slow/medium/fast)
+  opts.variant = '16' ;  % choose between variants 16/19 (number of layers)
   opts.batchNorm = true ;  % whether to use batch normalization
+  opts.preActivationBatchNorm = true ;  % whether batch-norm comes before or after activations
   opts.normalization = [5 1 0.0001/5 0.75] ;  % for LRN layer (vl_nnnormalize)
   [opts, convBlockArgs] = vl_argparse(opts, varargin, 'nonrecursive') ;
   
   
   % default training options for this network (returned as output.meta)
+  if isnumeric(opts.variant)  % accept variant 16 instead of '16'
+    opts.variant = int2str(opts.variant) ;
+  end
   switch lower(opts.variant)
-  case 's'
-    meta.batchSize = 128 ;
-  case 'm'
-    meta.batchSize = 196 ;
-  case 'f'
-    meta.batchSize = 256 ;
+  case '16'
+    meta.batchSize = 32 ;
+  case '19'
+    meta.batchSize = 24 ;
   otherwise
     error('Unknown variant.') ;
   end
@@ -59,7 +61,7 @@ function output = VGG(varargin)
     if opts.numClasses ~= 1000
       warning('Model options are ignored when loading a pre-trained model.') ;
     end
-    output = models.pretrained(['imagenet-vgg-' opts.variant]) ;
+    output = models.pretrained(['imagenet-vgg-verydeep-' opts.variant]) ;
     
     % return prediction layer (not softmax)
     assert(isequal(output.func, @vl_nnsoftmax)) ;
@@ -77,101 +79,55 @@ function output = VGG(varargin)
   % get conv block generator with the given options. default activation is
   % ReLU, with pre-activation batch normalization (can be overriden).
   conv = models.ConvBlock('batchNorm', opts.batchNorm, ...
-    'preActivationBatchNorm', true, convBlockArgs{:}) ;
-  
+    'preActivationBatchNorm', opts.preActivationBatchNorm, convBlockArgs{:}) ;
   
   % build network
   images = opts.input ;
   
-  % implement the 3 variants: S, M and F (from paper)
-  switch lower(opts.variant)
-  case 's'
-    % first conv block
-    x = conv(images, 'size', [7, 7, 3, 96], 'stride', 2) ;
-    if ~opts.batchNorm
-      x = vl_nnnormalize(x, opts.normalization) ;
-    end
-    x = vl_nnpool(x, 3, 'stride', 3, 'pad', [0 2 0 2]) ;
+  x = conv(images, 'size', [3, 3, 3, 64], 'pad', 1) ;
+  x = conv(x, 'size', [3, 3, 64, 64], 'pad', 1) ;
+  x = vl_nnpool(x, 2, 'stride', 2) ;
 
-    % second conv block
-    x = conv(x, 'size', [5, 5, 96, 256]) ;
-    if ~opts.batchNorm
-      x = vl_nnnormalize(x, opts.normalization) ;
-    end
-    x = vl_nnpool(x, 2, 'stride', 2, 'pad', [0 1 0 1]) ;
+  x = conv(x, 'size', [3, 3, 64, 128], 'pad', 1) ;
+  x = conv(x, 'size', [3, 3, 128, 128], 'pad', 1) ;
+  x = vl_nnpool(x, 2, 'stride', 2) ;
 
-    % conv blocks 3-5
-    x = conv(x, 'size', [3, 3, 256, 512], 'pad', 1) ;
-    x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
-    x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
-    x = vl_nnpool(x, 3, 'stride', 3, 'pad', [0 1 0 1]) ;
-
-    % first fully-connected block
-    x = conv(x, 'size', [6, 6, 512, 4096]) ;
-    
-  case 'm'
-    % first conv block
-    x = conv(images, 'size', [7, 7, 3, 96], 'stride', 2) ;
-    if ~opts.batchNorm
-      x = vl_nnnormalize(x, opts.normalization) ;
-    end
-    x = vl_nnpool(x, 3, 'stride', 2) ;
-
-    % second conv block
-    x = conv(x, 'size', [5, 5, 96, 256], 'stride', 2, 'pad', 1) ;
-    if ~opts.batchNorm
-      x = vl_nnnormalize(x, opts.normalization) ;
-    end
-    x = vl_nnpool(x, 3, 'stride', 2, 'pad', [0 1 0 1]) ;
-
-    % conv blocks 3-5
-    x = conv(x, 'size', [3, 3, 256, 512], 'pad', 1) ;
-    x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
-    x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
-    x = vl_nnpool(x, 3, 'stride', 2) ;
-
-    % first fully-connected block
-    x = conv(x, 'size', [6, 6, 512, 4096]) ;
-
-  case 'f'
-    % first conv block
-    x = conv(images, 'size', [11, 11, 3, 64], 'stride', 4) ;
-    if ~opts.batchNorm
-      x = vl_nnnormalize(x, opts.normalization) ;
-    end
-    x = vl_nnpool(x, 3, 'stride', 2, 'pad', [0 1 0 1]) ;
-
-    % second conv block
-    x = conv(x, 'size', [5, 5, 64, 256], 'pad', 2) ;
-    if ~opts.batchNorm
-      x = vl_nnnormalize(x, opts.normalization) ;
-    end
-    x = vl_nnpool(x, 3, 'stride', 2) ;
-
-    % conv blocks 3-5
+  x = conv(x, 'size', [3, 3, 128, 256], 'pad', 1) ;
+  x = conv(x, 'size', [3, 3, 256, 256], 'pad', 1) ;
+  x = conv(x, 'size', [3, 3, 256, 256], 'pad', 1) ;
+  if strcmp(opts.variant, '19')
     x = conv(x, 'size', [3, 3, 256, 256], 'pad', 1) ;
-    x = conv(x, 'size', [3, 3, 256, 256], 'pad', 1) ;
-    x = conv(x, 'size', [3, 3, 256, 256], 'pad', 1) ;
-    x = vl_nnpool(x, 3, 'stride', 2) ;
-
-    % first fully-connected block
-    x = conv(x, 'size', [6, 6, 256, 4096]) ;
   end
+  x = vl_nnpool(x, 2, 'stride', 2) ;
 
-  % finish first fully-connected block
+  x = conv(x, 'size', [3, 3, 256, 512], 'pad', 1) ;
+  x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
+  x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
+  if strcmp(opts.variant, '19')
+    x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
+  end
+  x = vl_nnpool(x, 2, 'stride', 2) ;
+
+  x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
+  x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
+  x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
+  if strcmp(opts.variant, '19')
+    x = conv(x, 'size', [3, 3, 512, 512], 'pad', 1) ;
+  end
+  x = vl_nnpool(x, 2, 'stride', 2) ;
+
+  x = conv(x, 'size', [7, 7, 512, 4096]) ;
   if ~opts.batchNorm
     x = vl_nndropout(x) ;
   end
-  
-  % second fully-connected block
+
   x = conv(x, 'size', [1, 1, 4096, 4096]) ;
   if ~opts.batchNorm
     x = vl_nndropout(x) ;
   end
 
-  % prediction layer
   output = conv(x, 'size', [1, 1, 4096, opts.numClasses]) ;
-
+  
   output.meta = meta ;
   
 end
