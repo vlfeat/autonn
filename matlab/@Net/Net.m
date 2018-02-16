@@ -88,23 +88,12 @@ classdef Net < handle
         return
       end
 
+      % if not a set of layers, assume SimpleNN or DagNN and convert first
       if isscalar(objects) && ~isa(objects{1}, 'Layer')
-        % convert SimpleNN or DagNN to Layer
-        s = objects{1} ;
-        if isstruct(s) && isfield(s, 'layers')
-          if iscell(s.layers)  % SimpleNN
-            s = dagnn.DagNN.fromSimpleNN(s, 'CanonicalNames', true) ;
-          else  % DagNN
-            s = dagnn.DagNN.loadobj(s) ;
-          end
-        end
-        if isa(s, 'dagnn.DagNN')
-          s = Layer.fromDagNN(s) ;
-        end
-        if iscell(s)
-          objects = s ;  % objects should contain a list of Layer objects
-        else
-          objects = {s} ;
+        objects = Layer.fromDagNN(objects{:}) ;
+        
+        if ~iscell(objects)
+          objects = {objects} ;  % objects should contain a list of Layer objects
         end
       end
 
