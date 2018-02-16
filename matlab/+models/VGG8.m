@@ -1,5 +1,36 @@
 function prediction = VGG8(varargin)
 %VGG8 Returns a VGG-S/M/F (VGG-8) model for ImageNet
+%   M = models.VGG8() returns the model VGG-F proposed in:
+%
+%     Chatfield et al., "Return of the Devil in the Details: Delving Deep
+%     into Convolutional Networks", BMVC 2014.
+%
+%   models.VGG8(..., 'option', value, ...) accepts the following options:
+%
+%   `variant`:: 'f'
+%     Model variant: s, m or f (slow/medium/fast).
+%
+%   `pretrained`:: false
+%     If true, returns a model pre-trained on ImageNet (using the
+%     MatConvNet example code).
+%
+%   `input`:: default input
+%     Specifies an input (images) layer for the network. If unspecified, a
+%     new one is created.
+%
+%   `numClasses`:: 1000
+%     Number of output classes.
+%
+%   `batchNorm`:: true
+%     Whether to use batch normalization.
+%
+%   `normalization`:: [5 1 0.0001/5 0.75]
+%     Parameters for vl_nnnormalize layer (only used without batch-norm).
+%
+%   Any other options will be passed to models.ConvBlock(), and can be used
+%   to change the activation function, weight initialization, etc.
+%
+%   Suggested SGD training options are also returned in the struct M.meta.
 
 % Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
 % All rights reserved.

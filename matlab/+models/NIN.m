@@ -1,6 +1,25 @@
 function prediction = NIN(varargin)
 %NIN Returns a Network-in-Network model for CIFAR10
-%   Lin, Chen and Yan, "Network in network", arXiv 2013. arXiv:1312.4400
+%   M = models.NIN() returns the model proposed in:
+%
+%     Lin et al, "Network in network", arXiv technical report 2013.
+%
+%   models.NIN(..., 'option', value, ...) accepts the following options:
+%
+%   `input`:: default input
+%     Specifies an input (images) layer for the network. If unspecified, a
+%     new one is created.
+%
+%   `numClasses`:: 10
+%     Number of output classes.
+%
+%   `batchNorm`:: true
+%     Whether to use batch normalization.
+%
+%   Any other options will be passed to models.ConvBlock(), and can be used
+%   to change the activation function, weight initialization, etc.
+%
+%   Suggested SGD training options are also returned in the struct M.meta.
 
 % Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
 % All rights reserved.

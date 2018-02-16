@@ -1,5 +1,17 @@
 function prediction = LeNet(varargin)
 %LENET Returns a simple LeNet-5 for digit classification
+%   M = models.LeNet() returns a model inspired by:
+%
+%     LeCun et al., "Gradient-Based Learning Applied to Document
+%     Recognition", Proceedings of the IEEE, 1998.
+%
+%   models.LeNet(..., 'option', value, ...) accepts the following options:
+%
+%   `input`:: default input
+%     Specifies an input (images) layer for the network. If unspecified, a
+%     new one is created.
+%
+%   Suggested SGD training options are also returned in the struct M.meta.
 
   % parse options
   opts.input = Input('name', 'images', 'gpu', true) ;  % default input layer

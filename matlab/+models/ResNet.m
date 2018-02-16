@@ -41,6 +41,8 @@ function prediction = ResNet(varargin)
 %
 %   Any other options will be passed to models.ConvBlock(), and can be used
 %   to change the activation function, weight initialization, etc.
+%
+%   Suggested SGD training options are also returned in the struct M.meta.
 
 % Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
 % All rights reserved.

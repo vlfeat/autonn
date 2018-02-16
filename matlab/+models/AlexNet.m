@@ -23,10 +23,12 @@ function prediction = AlexNet(varargin)
 %     Whether to use batch normalization.
 %
 %   `normalization`:: [5 1 0.0001/5 0.75]
-%     Parameters for normalization layer (only used without batch-norm).
+%     Parameters for vl_nnnormalize layer (only used without batch-norm).
 %
 %   Any other options will be passed to models.ConvBlock(), and can be used
 %   to change the activation function, weight initialization, etc.
+%
+%   Suggested SGD training options are also returned in the struct M.meta.
 
 % Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
 % All rights reserved.
