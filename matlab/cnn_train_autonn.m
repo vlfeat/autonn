@@ -3,12 +3,33 @@ function [net,stats] = cnn_train_autonn(net, imdb, getBatch, varargin)
 %   CNN_TRAIN_AUTONN is similar to CNN_TRAIN, but works with the AutoNN
 %   wrapper instead of the SimpleNN wrapper.
 
-% Copyright (C) 2014-17 Andrea Vedaldi and Joao F. Henriques.
+% Copyright (C) 2014-18 Andrea Vedaldi and Joao F. Henriques.
 % All rights reserved.
 %
 % This file is part of the VLFeat library and is made available under
 % the terms of the BSD license (see the COPYING file).
 addpath(fullfile(vl_rootnn, 'examples'));
+
+
+% this is needed to harmonize the behavior of two versions of vl_nnloss:
+% the legacy behavior which *sums* the loss over the batch, and the new
+% behavior that takes the *average* over the batch.
+% first, detect if the new behavior ('normalise' option) is present.
+old = false ;
+try
+  vl_nnloss([], [], 'normalise', true)  ;
+catch  % unrecognized option, must be the old vl_nnloss
+  old = true ;
+end
+if old
+  warning('MatConvNet:normalizedLoss', ['The most recent version of ' ...
+   'vl_nnloss normalizes the loss by the batch size. The current version ' ...
+   'does not. A workaround is being used, but consider updating MatConvNet.']) ;
+end
+% consider the loss normalized (workaround in Layer.vl_nnloss). this can
+% be disabled if detrimental (e.g. custom loss without normalization).
+opts.normalizedLoss = true ;
+
 
 opts.expDir = fullfile('data','exp') ;
 opts.continue = true ;
@@ -104,7 +125,8 @@ else  % AutoNN
   end
 end
 fn = opts.extractStatsFn ;
-opts.extractStatsFn = @(stats, net, batchSize) fn(stats, net, sel, batchSize) ;
+normalizedLoss = opts.normalizedLoss ;
+opts.extractStatsFn = @(stats, net, batchSize) fn(stats, net, sel, batchSize, normalizedLoss) ;
 
 % -------------------------------------------------------------------------
 %                                                        Train and validate
@@ -412,6 +434,9 @@ function state = accumulateGradients(net, state, params, batchSize, parserv)
 % -------------------------------------------------------------------------
 numGpus = numel(params.gpus) ;
 otherGpus = setdiff(1:numGpus, labindex) ;
+if params.normalizedLoss  % assume loss is normalized by batch size
+  batchSize = max(1,numGpus) * params.numSubBatches ;
+end
 
 for p=1:numel(net.params)
 
@@ -476,6 +501,11 @@ function state = accumulateGradientsAutoNN(net, state, params, batchSize, parser
 
 % ensure supported training methods are ordered as expected
 assert(isequal(Param.trainMethods, {'gradient', 'average', 'none'})) ;
+
+numGpus = numel(params.gpus) ;
+if params.normalizedLoss  % assume loss is normalized by batch size
+  batchSize = max(1,numGpus) * params.numSubBatches ;
+end
 
 paramVars = [net.params.var] ;
 w = net.getValue(paramVars) ;
@@ -583,14 +613,14 @@ for s = {'train', 'val'}
 end
 
 % -------------------------------------------------------------------------
-function stats = extractStats(stats, net, sel, ~)
+function stats = extractStats(stats, net, sel, ~, ~)
 % -------------------------------------------------------------------------
 for i = 1:numel(sel)
   stats.(net.layers(sel(i)).outputs{1}) = net.layers(sel(i)).block.average ;
 end
 
 % -------------------------------------------------------------------------
-function stats = extractStatsAutoNN(stats, net, sel, batchSize)
+function stats = extractStatsAutoNN(stats, net, sel, batchSize, normalizedLoss)
 % -------------------------------------------------------------------------
 for i = 1:numel(sel)
   name = net.forward(sel(i)).name ;
@@ -598,6 +628,9 @@ for i = 1:numel(sel)
     stats.(name) = 0 ;
   end
   newValue = gather(sum(net.vars{net.forward(sel(i)).outputVar(1)}(:))) ;
+  if normalizedLoss  % Undo normalization for following code
+    newValue = newValue * batchSize ;
+  end
   % Update running average (same work as dagnn.Loss)
   stats.(name) = ((stats.num - batchSize) * stats.(name) + newValue) / stats.num ;
 end

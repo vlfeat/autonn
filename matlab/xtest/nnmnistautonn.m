@@ -1,4 +1,4 @@
-classdef nnmnist < nntest
+classdef nnmnistautonn < nntest
   methods (TestClassSetup)
     function init(test)
       addpath([fileparts(mfilename('fullpath')) '/../../examples/cnn']);
