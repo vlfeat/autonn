@@ -1,5 +1,46 @@
 function prediction = ResNet(varargin)
 %ResNet Returns a ResNet-50/101/152/custom model for ImageNet
+%   M = models.ResNet() returns the ResNet-50 model proposed in:
+%
+%     He et al., "Deep Residual Learning for Image Recognition", CVPR 2016.
+%
+%   models.ResNet(..., 'option', value, ...) accepts the following
+%   options:
+%
+%   `variant`:: '50'
+%     Model variant: 50, 101, 152 or 'custom'.
+%
+%   `pretrained`:: false
+%     If true, returns a model pre-trained on ImageNet (using the
+%     MatConvNet example code).
+%
+%   `input`:: default input
+%     Specifies an input (images) layer for the network. If unspecified, a
+%     new one is created.
+%
+%   `numClasses`:: 1000
+%     Number of output classes.
+%
+%   `blocksPerSection`:: depends on variant
+%     Vector with the number of blocks in each section. This is set
+%     automatically depending on the variant, unless it is 'custom'. The
+%     standard variants have only 4 sections (thus this is a 4-elements
+%     vector), but different numbers of sections are supported.
+%
+%   `downsampleSection`:: [0, 1, 1, 1]
+%     Whether to downsample spatially at each section (binary).
+%
+%   `channelsPerSection`:: [64, 128, 256, 512]
+%     Base number of output channels in each section.
+%
+%   `channelsPerBlock`:: [1, 1, 4]
+%     Modifying factor for number of channels per conv layer in a block.
+%
+%   `initialSize`:: [7, 7, 3, 64]
+%     Filter size of the input convolution (4D tensor).
+%
+%   Any other options will be passed to models.ConvBlock(), and can be used
+%   to change the activation function, weight initialization, etc.
 
 % Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
 % All rights reserved.

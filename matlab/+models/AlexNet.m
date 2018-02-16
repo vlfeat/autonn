@@ -1,5 +1,32 @@
 function prediction = AlexNet(varargin)
 %AlexNet Returns an AlexNet model for ImageNet
+%   M = models.AlexNet() returns the model proposed in:
+%
+%     Krizhevsky et al., "ImageNet classification with deep convolutional
+%     neural networks", NIPS 2012.
+%
+%   models.AlexNet(..., 'option', value, ...) accepts the following
+%   options:
+%
+%   `pretrained`:: false
+%     If true, returns a model pre-trained on ImageNet (using the
+%     MatConvNet example code).
+%
+%   `input`:: default input
+%     Specifies an input (images) layer for the network. If unspecified, a
+%     new one is created.
+%
+%   `numClasses`:: 1000
+%     Number of output classes.
+%
+%   `batchNorm`:: true
+%     Whether to use batch normalization.
+%
+%   `normalization`:: [5 1 0.0001/5 0.75]
+%     Parameters for normalization layer (only used without batch-norm).
+%
+%   Any other options will be passed to models.ConvBlock(), and can be used
+%   to change the activation function, weight initialization, etc.
 
 % Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
 % All rights reserved.
