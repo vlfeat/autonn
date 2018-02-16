@@ -1,4 +1,4 @@
-function output = BasicCifarNet(varargin)
+function prediction = BasicCifarNet(varargin)
 %BASICCIFARNET Returns a simple network for CIFAR10
 
   % parse options. unknown arguments will be passed to ConvBlock (e.g.
@@ -27,7 +27,7 @@ function output = BasicCifarNet(varargin)
   
   x = conv(x, 'size', [4, 4, 64, 64], 'weightScale', 0.05) ;
   
-  output = conv(x, 'size', [1, 1, 64, opts.numClasses], 'weightScale', 0.05, ...
+  prediction = conv(x, 'size', [1, 1, 64, opts.numClasses], 'weightScale', 0.05, ...
     'batchNorm', false, 'activation', 'none') ;
   
   
@@ -40,6 +40,6 @@ function output = BasicCifarNet(varargin)
     defaults.learningRate = 0.1 ;
     defaults.numEpochs = 40 ;
   end
-  output.meta = defaults ;
+  prediction.meta = defaults ;
   
 end

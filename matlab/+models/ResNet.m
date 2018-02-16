@@ -1,5 +1,5 @@
-function output = ResNet(varargin)
-%AlexNet Returns a ResNet-50/101/152/custom model for ImageNet
+function prediction = ResNet(varargin)
+%ResNet Returns a ResNet-50/101/152/custom model for ImageNet
 
 % Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
 % All rights reserved.
@@ -63,23 +63,20 @@ function output = ResNet(varargin)
   
   % return a pre-trained model
   if opts.pretrained
-    if opts.batchNorm
-      warning('The pre-trained model does not include batch-norm (set batchNorm to false).') ;
-    end
     if opts.numClasses ~= 1000
       warning('Model options are ignored when loading a pre-trained model.') ;
     end
-    output = models.pretrained(['imagenet-resnet-' opts.variant '-dag']) ;
+    prediction = models.pretrained(['imagenet-resnet-' opts.variant '-dag']) ;
     
     % return prediction layer (not softmax)
-    assert(isequal(output.func, @vl_nnsoftmax)) ;
-    output = output.inputs{1} ;
+    assert(isequal(prediction{1}.func, @vl_nnsoftmax)) ;
+    prediction = prediction{1}.inputs{1} ;
     
     % replace input layer with the given one
-    input = output.find('Input', 1) ;
-    output.replace(input, opts.input) ;
+    input = prediction.find('Input', 1) ;
+    prediction.replace(input, opts.input) ;
     
-    output.meta = meta ;
+    prediction.meta = meta ;
     return
   end
   
@@ -131,9 +128,9 @@ function output = ResNet(varargin)
   x = mean(mean(x, 1), 2) ;
   
   % prediction layer
-  output = conv(x, 'size', [1, 1, channelsOut, opts.numClasses], ...
+  prediction = conv(x, 'size', [1, 1, channelsOut, opts.numClasses], ...
     'batchNorm', false, 'activation', 'none') ;
 
-  output.meta = meta ;
+  prediction.meta = meta ;
   
 end

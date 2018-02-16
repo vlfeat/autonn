@@ -1,4 +1,4 @@
-function output = AlexNet(varargin)
+function prediction = AlexNet(varargin)
 %AlexNet Returns an AlexNet model for ImageNet
 
 % Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
@@ -49,17 +49,17 @@ function output = AlexNet(varargin)
     if opts.numClasses ~= 1000
       warning('Model options are ignored when loading a pre-trained model.') ;
     end
-    output = models.pretrained('imagenet-matconvnet-alex') ;
+    prediction = models.pretrained('imagenet-matconvnet-alex') ;
     
     % return prediction layer (not softmax)
-    assert(isequal(output.func, @vl_nnsoftmax)) ;
-    output = output.inputs{1} ;
+    assert(isequal(prediction{1}.func, @vl_nnsoftmax)) ;
+    prediction = prediction{1}.inputs{1} ;
     
     % replace input layer with the given one
-    input = output.find('Input', 1) ;
-    output.replace(input, opts.input) ;
+    input = prediction.find('Input', 1) ;
+    prediction.replace(input, opts.input) ;
     
-    output.meta = meta ;
+    prediction.meta = meta ;
     return
   end
   
@@ -105,9 +105,9 @@ function output = AlexNet(varargin)
   end
 
   % prediction layer
-  output = conv(x, 'size', [1, 1, 4096, opts.numClasses], ...
+  prediction = conv(x, 'size', [1, 1, 4096, opts.numClasses], ...
     'batchNorm', false, 'activation', 'none') ;
 
-  output.meta = meta ;
+  prediction.meta = meta ;
   
 end

@@ -1,4 +1,4 @@
-function output = VGG8(varargin)
+function prediction = VGG8(varargin)
 %VGG8 Returns a VGG-S/M/F (VGG-8) model for ImageNet
 
 % Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
@@ -59,17 +59,17 @@ function output = VGG8(varargin)
     if opts.numClasses ~= 1000
       warning('Model options are ignored when loading a pre-trained model.') ;
     end
-    output = models.pretrained(['imagenet-vgg-' opts.variant]) ;
+    prediction = models.pretrained(['imagenet-vgg-' opts.variant]) ;
     
     % return prediction layer (not softmax)
-    assert(isequal(output.func, @vl_nnsoftmax)) ;
-    output = output.inputs{1} ;
+    assert(isequal(prediction{1}.func, @vl_nnsoftmax)) ;
+    prediction = prediction{1}.inputs{1} ;
     
     % replace input layer with the given one
-    input = output.find('Input', 1) ;
-    output.replace(input, opts.input) ;
+    input = prediction.find('Input', 1) ;
+    prediction.replace(input, opts.input) ;
     
-    output.meta = meta ;
+    prediction.meta = meta ;
     return
   end
   
@@ -170,8 +170,8 @@ function output = VGG8(varargin)
   end
 
   % prediction layer
-  output = conv(x, 'size', [1, 1, 4096, opts.numClasses]) ;
+  prediction = conv(x, 'size', [1, 1, 4096, opts.numClasses]) ;
 
-  output.meta = meta ;
+  prediction.meta = meta ;
   
 end

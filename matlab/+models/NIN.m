@@ -1,4 +1,4 @@
-function output = NIN(varargin)
+function prediction = NIN(varargin)
 %NIN Returns a Network-in-Network model for CIFAR10
 %   Lin, Chen and Yan, "Network in network", arXiv 2013. arXiv:1312.4400
 
@@ -44,7 +44,7 @@ function output = NIN(varargin)
   poolKer = [7 7] ;
   poolMethod = 'avg' ;
   pad = 1 ;
-  output = ninBlock(m2, outChannels, channels, ker, pad, ...
+  prediction = ninBlock(m2, outChannels, channels, ker, pad, ...
     poolKer, poolMethod, convBlockArgs, opts.batchNorm, true) ;
   
   
@@ -58,7 +58,7 @@ function output = NIN(varargin)
     defaults.learningRate = 0.01 ;
     defaults.numEpochs = 40 ;
   end
-  output.meta = defaults ;
+  prediction.meta = defaults ;
   
 end
 

@@ -1,4 +1,4 @@
-function output = LeNet(varargin)
+function prediction = LeNet(varargin)
 %LENET Returns a simple LeNet-5 for digit classification
 
   % parse options
@@ -17,12 +17,12 @@ function output = LeNet(varargin)
   x = vl_nnconv(x, 'size', [4, 4, 50, 500], 'weightScale', 0.01) ;
   x = vl_nnrelu(x) ;
   
-  output = vl_nnconv(x, 'size', [1, 1, 500, 10], 'weightScale', 0.01, ...
+  prediction = vl_nnconv(x, 'size', [1, 1, 500, 10], 'weightScale', 0.01, ...
     'batchNorm', false, 'activation', 'none') ;
 
   % default training options for this network
   defaults.numEpochs = 20 ;
   defaults.batchSize = 128 ;
   defaults.learningRate = 0.001 ;
-  output.meta = defaults ;
+  prediction.meta = defaults ;
 end
