@@ -30,6 +30,9 @@ function y = vl_nnloss(obj, varargin)
   % if the old vl_nnloss is being used, we introduce a normalization step
   if old
     y = y ./ size(obj, 4) ;
+    warning('MatConvNet:NormalizedLoss', ['The most recent version of ' ...
+     'vl_nnloss normalizes the loss by the batch size. The current version ' ...
+     'does not. A workaround is being used, but consider updating MatConvNet.']) ;
   end
   
 end

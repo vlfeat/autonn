@@ -50,10 +50,6 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
     accumulateParamDers = false ;
   end
   
-  % newInputVars determines whether variable sizes need to be recomputed
-  % before deletion
-  newInputVars = false;
-  
   % set inputs
   for i = 1 : 2 : numel(inputs) - 1
     var = net.getVarIndex(inputs{i}) ;
@@ -101,7 +97,7 @@ function eval(net, inputs, mode, derOutput, accumulateParamDers)
       vars(layer.outputVar) = out(layer.outputArgPos);
       
       % delete non precious variables not needed for backward pass
-      if newInputVars && conserveMemoryForward && numel(layer.deleteVars)
+      if conserveMemoryForward && numel(layer.deleteVars)
         for i = 1:numel(layer.deleteVars)
           % save size and type proxy struct for layers like reshape
           v = vars{layer.deleteVars(i)} ;

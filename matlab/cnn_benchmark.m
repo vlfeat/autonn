@@ -17,6 +17,7 @@ function cnn_benchmark(varargin)
   opts.batchSize = [] ;  % if non-empty, override batch size (4th dimension)
   opts.mode = 'normal' ;  % network evaluation mode ('normal' for backprop, or 'test')
   opts.dagnn = false ;  % if true, the networks are evaluated as DagNN objects instead of AutoNN
+  opts.compileArgs = {} ;  % list of optional compilation arguments (see Net.compile)
   opts.modifier = @deal ;  % optional function to modify a network
   
   opts = vl_argparse(opts, varargin) ;
@@ -55,9 +56,11 @@ function cnn_benchmark(varargin)
       % load it as a DagNN, and keep it that way
       net = dagnn.DagNN.loadobj(net) ;
       net.mode = opts.mode ;
+      assert(isempty(opts.compileArgs), ...
+        'Compilation arguments not supported when benchmarking DagNN.') ;
     elseif isstruct(net)
       % constructor will convert any struct Net, DagNN or SimpleNN
-      net = Net(net) ;
+      net = Net(net, opts.compileArgs{:}) ;
     else
       assert(isa(net, 'Net'), 'Expected a SimpleNN, DagNN or AutoNN model.') ;
     end
