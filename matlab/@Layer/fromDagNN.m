@@ -48,7 +48,16 @@ function netOutputs = fromDagNN(dag, customFn)
     assert(isfield(dag, 'layers'), 'Invalid struct (must be DagNN or SimpleNN).') ;
     if iscell(dag.layers)  % SimpleNN
       dag = dagnn.DagNN.fromSimpleNN(dag, 'CanonicalNames', true) ;
-    else  % serialized DagNN
+    else
+      % serialized DagNN
+      % compatibility: first remove 'exBackprop' property, which does not
+      % exist in recent versions
+      for l = 1:numel(dag.layers)
+        if isfield(dag.layers(l).block, 'exBackprop')
+          dag.layers(l).block = rmfield(dag.layers(l).block, 'exBackprop') ;
+        end
+      end
+      % from struct to DagNN object
       dag = dagnn.DagNN.loadobj(dag) ;
     end
   end
@@ -213,6 +222,21 @@ function netOutputs = fromDagNN(dag, customFn)
       for i = 2:numel(inputs)
         obj = obj + inputs{i} ;
       end
+      
+    case 'dagnn.Crop'
+      % replicate Crop block's functionality using simple operations
+      A = inputs{1} ;
+      B = inputs{2} ;
+      
+      sizeA1 = size(A,1);  % reuse this layer
+      sizeA2 = size(A,2);
+      cropv = sizeA1 - size(B,1) ;
+      cropu = sizeA2 - size(B,2) ;
+      cropv1 = max(0, cropv - block.crop(1)) ;
+      cropu1 = max(0, cropu - block.crop(2)) ;
+      
+      crop = [cropv - cropv1, cropv1, cropu - cropu1, cropu1] ;
+      obj = vl_nncrop(A, crop) ;
       
     otherwise
       if ~isempty(customFn)
