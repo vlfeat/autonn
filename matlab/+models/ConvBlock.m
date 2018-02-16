@@ -16,7 +16,7 @@ function output = ConvBlock(varargin)
 %    images = Input() ;
 %    x = vl_nnconv(images, 'size', [3 3 1 10]) ; % 3x3, 1 channel in, 8 out
 %    x = vl_nnrelu(x) ;                          % first ReLU
-%    x = vl_nnconv(x, 'size', [3 3 8 10]) ;  % 3x3, 8 channels in, 10 out
+%    x = vl_nnconv(x, 'size', [3 3 8 10]) ;    % 3x3, 8 channels in, 10 out
 %    x = vl_nnrelu(x) ;                          % second ReLU
 %
 %   ConvBlock makes it easy to re-use the same options for many convolution
