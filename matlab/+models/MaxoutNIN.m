@@ -1,7 +1,26 @@
 function prediction = MaxoutNIN(varargin)
 %MAXOUTNIN Returns a Maxout Network-in-Network for CIFAR10
-%   Chang and Chen, "Batch-normalized maxout network in network", arXiv
-%   2015. arXiv:1511.02583
+%   M = models.MaxoutNIN() returns the model proposed in:
+%
+%     Chang and Chen, "Batch-normalized maxout network in network", arXiv
+%     technical report, 2015.
+%
+%   This network is notable for achieving low error on CIFAR10 (~8%) with
+%   a relatively short training time (compared to e.g. ResNet variants).
+%
+%   models.MaxoutNIN(..., 'option', value, ...) accepts the following options:
+%
+%   `input`:: default input
+%     Specifies an input (images) layer for the network. If unspecified, a
+%     new one is created.
+%
+%   `numClasses`:: 10
+%     Number of output classes.
+%
+%   Any other options will be passed to models.ConvBlock(), and can be used
+%   to change the activation function, weight initialization, etc.
+%
+%   Suggested SGD training options are also returned in the struct M.meta.
 
 % Copyright (C) 2018 Samuel Albanie, Jia-Ren Chang, Joao F. Henriques.
 % All rights reserved.
@@ -12,7 +31,7 @@ function prediction = MaxoutNIN(varargin)
   % parse options
   opts.input = Input('name', 'images', 'gpu', true) ;  % default input layer
   opts.numClasses = 10 ;
-  opts = vl_argparse(opts, varargin, 'nonrecursive') ;
+  [opts, convBlockArgs] = vl_argparse(opts, varargin, 'nonrecursive') ;
   
   % build network
   images = opts.input ;
@@ -23,7 +42,8 @@ function prediction = MaxoutNIN(varargin)
   ker = [5 5] ;  % conv kernel
   poolKer = [3 3] ;  % pooling kernel
   pad = 2 ;  % input padding
-  m1 = ninMaxoutBlock(images, 3, units, pieces, ker, pad, poolKer, false) ;
+  m1 = ninMaxoutBlock(images, 3, units, pieces, ...
+    ker, pad, poolKer, convBlockArgs, false) ;
   outChannels = units(3) ;  % output channels of the NIN block
   
   % second NIN block
@@ -32,7 +52,8 @@ function prediction = MaxoutNIN(varargin)
   ker = [5 5] ;
   poolKer = [3 3] ;
   pad = 2 ;
-  m2 = ninMaxoutBlock(m1, outChannels, units, pieces, ker, pad, poolKer, false) ;
+  m2 = ninMaxoutBlock(m1, outChannels, units, pieces, ...
+    ker, pad, poolKer, convBlockArgs, false) ;
   outChannels = units(3) ;
   
   % third NIN block
@@ -41,7 +62,8 @@ function prediction = MaxoutNIN(varargin)
   ker = [3 3] ;
   poolKer = [8 8] ;
   pad = 1 ;
-  prediction = ninMaxoutBlock(m2, outChannels, units, pieces, ker, pad, poolKer, true) ;
+  prediction = ninMaxoutBlock(m2, outChannels, units, pieces, ...
+    ker, pad, poolKer, convBlockArgs, true) ;
   
   
   % default training options for this network
@@ -54,30 +76,31 @@ function prediction = MaxoutNIN(varargin)
   
 end
 
-function block = ninMaxoutBlock(in, inChannels, ...
-  units, pieces, ker, pad, poolKer, final)
+function block = ninMaxoutBlock(in, inChannels, units, pieces, ...
+  ker, pad, poolKer, convBlockArgs, final)
   % helper function to create each of the 3 main blocks of the model
 
+  % get conv block generator with the given options. by default there's no
+  % activation (due to the presence of maxout), and batch normalization.
+  conv = models.ConvBlock('activation', 'none', 'batchNorm', true, convBlockArgs{:}) ;
+  
   % first conv block
   sz = [ker(1:2), inChannels, units(1) * pieces(1)] ;
-  c1 = vl_nnconv(in, 'size', sz, 'stride', 1, 'pad', pad) ;
-  c1bn = vl_nnbnorm(c1) ;
+  c1 = conv(in, 'size', sz, 'pad', pad) ;
   
   % second conv block
   sz = [1, 1, units(1) * pieces(1), units(2) * pieces(2)] ;
-  c2 = vl_nnconv(c1bn, 'size', sz, 'stride', 1, 'pad', 0) ;
-  c2bn = vl_nnbnorm(c2) ;
+  c2 = conv(c1, 'size', sz) ;
   
   % first maxout block
-  m1 = vl_nnmaxout(c2bn, pieces(2)) ;
+  m1 = vl_nnmaxout(c2, pieces(2)) ;
   
   % third conv block
   sz = [1, 1, units(2), units(3) * pieces(3)] ;
-  c3 = vl_nnconv(m1, 'size', sz, 'stride', 1, 'pad', 0) ;
-  c3bn = vl_nnbnorm(c3) ;
+  c3 = conv(m1, 'size', sz) ;
 
   % second maxout block
-  m2 = vl_nnmaxout(c3bn, pieces(3)) ;
+  m2 = vl_nnmaxout(c3, pieces(3)) ;
 
   % pooling
   p1 = vl_nnpool(m2, poolKer, 'method', 'avg', 'stride', 2, 'pad', [0 1 0 1]) ;
