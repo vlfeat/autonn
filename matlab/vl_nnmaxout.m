@@ -1,6 +1,15 @@
 function y = vl_nnmaxout(x, units, dzdy)
 %VL_NNMAXOUT CNN maxout operator
-%   Goodfellow et al., "Maxout networks", arxiv 2013. arXiv:1302.4389
+%   Y = VL_NNMAXOUT(X, C) applies the maxout operator to input X and
+%   returns the result. This operator splits the channels (3rd dim.) of the
+%   tensor X into blocks, each one containing C channels. The maximum of
+%   these C channels is then computed for each block.
+%
+%   DZDX = VL_NNMAXOUT(X, C, DZDY) returns the projected derivatives of the
+%   same operation with respect to the input.
+%
+%   References:
+%   [1] Goodfellow et al., "Maxout networks", ICML 2013.
 
 % Copyright (C) 2018 Joao F. Henriques.
 % All rights reserved.

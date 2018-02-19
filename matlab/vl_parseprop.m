@@ -1,5 +1,19 @@
 function unknown_args = vl_parseprop(obj, args, properties)
 %VL_PARSEPROP Parses name-value pairs list to override properties of object
+%   VL_PARSEPROP(OBJ, ARGS, PROPERTIES) is similar to VL_ARGPARSE, except
+%   that it is meant to be used as a helper for class constructors.
+%
+%   An object OBJ has properties with default values. VL_PARSEPROP parses a
+%   list of name-value pairs given as cell array ARGS, which are meant to
+%   override them (e.g. specified by the user). Each pair (NAME, VALUE)
+%   specifies that the assignment OBJ.NAME = VALUE will be made. The list
+%   of valid properties is given in PROPERTIES.
+
+% Copyright (C) 2018 Joao F. Henriques.
+% All rights reserved.
+%
+% This file is part of the VLFeat library and is made available under
+% the terms of the BSD license (see the COPYING file).
 
   assert(iscellstr(properties)) ;
   

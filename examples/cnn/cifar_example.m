@@ -78,7 +78,7 @@ function cifar_example(varargin)
   % continue from last checkpoint if there is one
   startEpoch = 1 ;
   if opts.continue
-    [filename, startEpoch] = get_last_checkpoint([opts.resultsDir '/epoch-*.mat']) ;
+    [filename, startEpoch] = models.checkpoint([opts.resultsDir '/epoch-*.mat']) ;
   end
   if startEpoch > 1
     load(filename, 'net', 'stats', 'solver') ;

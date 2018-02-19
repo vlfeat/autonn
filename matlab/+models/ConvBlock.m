@@ -70,7 +70,6 @@ function output = ConvBlock(varargin)
 %   OUT = models.ConvBlock(IN, ...) immediately creates a conv block given
 %   an input layer IN, instead of returning a generator function.
 
-
 % Copyright (C) 2018 Joao F. Henriques.
 % All rights reserved.
 %
