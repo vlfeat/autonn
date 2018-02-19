@@ -1,7 +1,35 @@
 classdef Adam < solvers.Solver
-  %ADAM Summary of this class goes here
-  %   Detailed explanation goes here
-  
+%ADAM Adam solver
+%   Implements the Adam solver, proposed in:
+%
+%     Kingma & Ba, "Adam: A Method for Stochastic Optimization", ICLR 2015.
+%
+%   Training is performed by calling step (see 'help solvers.Solver.step').
+%   The directory 'autonn/examples/cnn' has some examples.
+%
+%   solvers.Adam('option', value, ...) accepts the following options:
+%
+%   `learningRate`:: 0.001
+%     The learning rate.
+%
+%   `weightDecay`:: 0
+%     The weight decay (regularizer).
+%
+%   `beta1`:: 0.9
+%     Decay for the first moment tensor.
+%
+%   `beta2`:: 0.999
+%     Decay for the second moment tensor.
+%
+%   `eps`:: 1e-8
+%     Additive offset to prevent division by zero.
+
+% Copyright (C) 2016-2018 Joao F. Henriques, Aravindh Mahendran.
+% All rights reserved.
+%
+% This file is part of the VLFeat library and is made available under
+% the terms of the BSD license (see the COPYING file).
+
   properties
     beta1 = 0.9  % decay for first moment tensor
     beta2 = 0.999  % decay for second moment tensor

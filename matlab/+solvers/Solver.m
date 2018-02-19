@@ -1,7 +1,30 @@
 classdef Solver < handle
-  %SOLVER Summary of this class goes here
-  %   Detailed explanation goes here
-  
+%SOLVER Parent class for gradient-based solvers (e.g. solvers.SGD)
+%   The solvers.Solver class implements most of the functionality of
+%   gradient-based solvers. This class cannot be used on its own; instead,
+%   one of the subclassed solvers (e.g. solvers.SGD) should be used.
+%
+%   Training is performed by calling step (see 'help solvers.Solver.step').
+%   The directory 'autonn/examples/cnn' has some examples.
+%
+%   solvers.Solver('option', value, ...) accepts the following options:
+%
+%   `learningRate`:: 0.001
+%     The learning rate.
+%
+%   `weightDecay`:: 0
+%     The weight decay (regularizer).
+%
+%   `conserveMemory`:: true
+%     Whether to conserve memory by clearing some intermediate variables.
+%     Can be disabled by more advanced solvers that need to access them.
+
+% Copyright (C) 2018 Joao F. Henriques.
+% All rights reserved.
+%
+% This file is part of the VLFeat library and is made available under
+% the terms of the BSD license (see the COPYING file).
+
   properties
     learningRate = 0.001
     weightDecay = 0
@@ -15,9 +38,21 @@ classdef Solver < handle
     end
     
     function step(o, net, varargin)
-      % takes one step of the solver, using the given network's gradients.
-      % can specify a subset of parameters to affect exclusively, or to
-      % ignore.
+%STEP Takes one step of the solver, using the given network's gradients
+%   SOLVER.step(NET) performs parameter learning by applying one step of a
+%   solver to the Net object NET. The gradients stored in NET are used,
+%   which must have been computed using back-propagation (NET.eval).
+%
+%   SOLVER.step(NET, 'option', value, ...) accepts the following options:
+%
+%   `ignoreParams`:: []
+%     Specifies a subset of parameters to ignore (by name, as a cell array
+%     of strings, or by var index, as a numerical vector).
+%
+%   `affectParams`:: all
+%     Specifies a subset of parameters to affect (by name or by var index),
+%     ignoring all others. Cannot be used simultaneously with ignoreParams.
+
       opts.affectParams = [] ;
       opts.ignoreParams = [] ;
       opts = vl_argparse(opts, varargin, 'nonrecursive') ;

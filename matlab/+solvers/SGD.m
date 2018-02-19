@@ -1,7 +1,27 @@
 classdef SGD < solvers.Solver
-  %SGD Summary of this class goes here
-  %   Detailed explanation goes here
-  
+%SGD Stochastic Gradient Descent solver
+%   Implements a Stochastic Gradient Descent solver with momentum.
+%
+%   Training is performed by calling step (see 'help solvers.Solver.step').
+%   The directory 'autonn/examples/cnn' has some examples.
+%
+%   solvers.SGD('option', value, ...) accepts the following options:
+%
+%   `learningRate`:: 0.001
+%     The learning rate.
+%
+%   `weightDecay`:: 0
+%     The weight decay (regularizer).
+%
+%   `momentum`:: 0.9
+%     The amount of momentum (0 to disable).
+
+% Copyright (C) 2018 Joao F. Henriques.
+% All rights reserved.
+%
+% This file is part of the VLFeat library and is made available under
+% the terms of the BSD license (see the COPYING file).
+
   properties
     momentum = 0.9
     state = {}  % momentum tensors
