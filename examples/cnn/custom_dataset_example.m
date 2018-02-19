@@ -1,8 +1,16 @@
 % CUSTOM_DATASET_EXAMPLE
 % Minimal demonstration of AutoNN training of a CNN on toy data.
+% Data is loaded from memory, without reading any files.
 %
 % It also serves as a short tutorial on using custom data (as opposed to
-% the standard datasets defined in 'autonn/+datasets/').
+% the standard datasets defined in 'autonn/+datasets/'). The toy data is
+% generated on-the-fly (without reading from files). The same strategy
+% could be used to return images that are stored in memory as an array,
+% which is how the MNIST and CIFAR10 standard datasets work.
+%
+% While this strategy avoids file reading overhead, for large datasets this
+% is not possible. See 'image_folder_example.m' for an example of creating
+% a dataset by reading from a folder of images.
 %
 % The task is to distinguish between images of triangles, squares and
 % circles.
@@ -115,8 +123,7 @@ end
 % note that you could replace this with any way to load and transform
 % images or other inputs. avoid reading images from disk as it's slow.
 %
-% for efficient streaming from disk, it's best to create a subclass of
-% datasets.StreamingDataset (an example is datasets.ImageNet).
+% for efficient streaming from disk, it's best to use datasets.ImageFolder.
 
 function [images, labels] = getSamples(batchSize)
   % randomly sample labels from 3 classes

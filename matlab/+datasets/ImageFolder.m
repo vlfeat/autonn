@@ -85,10 +85,15 @@ classdef ImageFolder < datasets.Dataset
     function files = listImages(o, folder, prefix)
       % returns all JPEG image files recursively from the given directory
       
-      if nargin < 3, prefix = '' ; end
+      if nargin < 3  % no leading slash on top-level prefix/partial folder
+        prefix = '' ;
+      else
+        prefix = [prefix '/'] ;
+      end
+      folder = [folder '/'] ;
       
       % list folder contents
-      s = dir([folder '/*']) ;
+      s = dir([folder '*']) ;
       
       % iterate files/folders
       files = cell(1, numel(s)) ;
@@ -97,11 +102,11 @@ classdef ImageFolder < datasets.Dataset
         if strcmpi(name(max(1,end-3) : end), '.jpg') || ...
            strcmpi(name(max(1,end-4) : end), '.jpeg')
           % a file, store it (wrapped around a scalar cell)
-          files{i} = {[prefix '/' name]} ;
+          files{i} = {[prefix name]} ;
           
         elseif s(i).isdir && ~any(strcmp(name, {'.', '..'}))
           % a folder, recurse (stored as a cell array)
-          files{i} = o.listImages([folder '/' name], [prefix '/' name]) ;
+          files{i} = o.listImages([folder name], [prefix name]) ;
         end
       end
       
