@@ -49,6 +49,7 @@ function imagenet_example(varargin)
   opts.numEpochs = [] ;  % epochs (*)
   opts.batchSize = [] ;  % batch size (*)
   opts.learningRate = [] ;  % learning rate (*)
+  opts.weightDecay = [] ;  % weight decay (*)
   opts.solver = solvers.SGD() ;  % solver instance to use (type 'help solvers' for a list)
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
   opts.numThreads = 12 ;  % number of threads for image reading
@@ -77,7 +78,7 @@ function imagenet_example(varargin)
   assert(isequal(outputSize, [1 1 1000 5]), 'Model output does not have the correct shape.') ;
   
   % replace empty options with model-specific default values
-  for name_ = {'numEpochs', 'batchSize', 'learningRate', 'augmentation'}
+  for name_ = {'numEpochs', 'batchSize', 'learningRate', 'weightDecay', 'augmentation'}
     name = name_{1} ;  % dereference cell array
     if isempty(opts.(name))
       opts.(name) = defaults.(name) ;

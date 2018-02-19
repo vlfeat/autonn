@@ -4,7 +4,7 @@ classdef Solver < handle
   
   properties
     learningRate = 0.001
-    weightDecay = 0.0005
+    weightDecay = 0
     conserveMemory = true
   end
   

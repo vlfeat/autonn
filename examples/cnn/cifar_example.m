@@ -23,6 +23,7 @@ function cifar_example(varargin)
   opts.numEpochs = [] ;  % if empty, default for above model will be used
   opts.batchSize = [] ;  % same as above
   opts.learningRate = [] ;  % same as above
+  opts.weightDecay = [] ;  % same as above
   opts.solver = solvers.SGD() ;  % solver instance to use (type 'help solvers' for a list)
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
   opts.savePlot = false ;  % whether to save the plot as a PDF file
@@ -49,15 +50,10 @@ function cifar_example(varargin)
   
   % replace empty options with the model-specific default values
   defaults = predictions.meta ;  % get model's meta information (default learning rate, etc)
-  if isempty(opts.numEpochs)
-    opts.numEpochs = defaults.numEpochs ;
-  end
-  if isempty(opts.batchSize)
-    opts.batchSize = defaults.batchSize ;
-  end
-  if isempty(opts.learningRate)
-    opts.learningRate = defaults.learningRate ;
-  end
+  if isempty(opts.numEpochs),    opts.numEpochs = defaults.numEpochs ; end
+  if isempty(opts.batchSize),    opts.batchSize = defaults.batchSize ; end
+  if isempty(opts.learningRate), opts.learningRate = defaults.learningRate ; end
+  if isempty(opts.weightDecay),  opts.weightDecay = defaults.weightDecay ; end
 
   % create losses
   labels = Input() ;

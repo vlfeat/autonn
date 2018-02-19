@@ -55,6 +55,7 @@ function prediction = BasicCifarNet(varargin)
   
   % default training options for this network
   defaults.batchSize = 128 ;
+  defaults.weightDecay = 0.0005 ;
   if ~opts.batchNorm
     defaults.learningRate = 0.01 ;
     defaults.numEpochs = 100 ;
