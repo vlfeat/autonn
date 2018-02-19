@@ -1,7 +1,79 @@
 classdef ImageFolder < datasets.Dataset
-  %ImageFolder Summary of this class goes here
-  %   Detailed explanation goes here
-  
+%IMAGEFOLDER Dataset created from a directory of JPEG images
+%   Encapsulates a directory of JPEG images for training. The MatConvNet
+%   function VL_IMREADJPEG is used, which supports fast multi-threaded
+%   reading from disk.
+%
+%   D = datasets.ImageFolder('dataDir', '/folder', 'imageSize', [H, W])
+%   loads a dataset from the directory '/folder', resizing images to have
+%   height H and width W. Any subfolders are recursively scanned for JPEG
+%   files. The resulting list of image files will be stored in D.filenames.
+%
+%   D.train() returns a cell array with mini-batches, from the shuffled
+%   training set. Each mini-batch consists of a set of indexes drawn from
+%   the vector D.trainSet.
+%
+%   D.val() returns a cell array with mini-batches, from the validation set
+%   (without shuffling). Each mini-batch consists of a set of indexes drawn
+%   from the vector D.valSet.
+%
+%   IMAGES = D.get(BATCH) returns a tensor of images for the given
+%   mini-batch BATCH.
+%
+%   datasets.ImageFolder(..., 'option', value, ...) sets the following
+%   properties, in addition to 'dataDir' and 'imageSize':
+%
+%   `batchSize`:: 128
+%     The batch size.
+%
+%   `numThreads`:: 1
+%     Number of image reading threads. If > 1, multi-threading is enabled.
+%
+%   `useGpu`:: false
+%     Whether the IMAGES tensor is returned as a gpuArray.
+%
+%   `keepAspect`:: true
+%     Whether aspect ratio is maintained when resizing images. If true,
+%     images that do not conform to the aspect ratio of D.imageSize will be
+%     cropped.
+%
+%   `removeMean`:: true
+%     Whether the dataset's mean is subtracted from every pixel.
+%
+%   `whiten`:: true
+%     Whether the dataset's standard deviation is removed from every pixel.
+%
+%   `augmentation`:: none
+%     Struct that specifies data augmentation options. The valid fields
+%     are: flip, location, aspect, scale, brightness, contrast, saturation,
+%     crop. They correspond to similarly-named arguments of VL_IMREADJPEG,
+%     with the exception of 'aspect' which corresponds to VL_IMREADJPEG's
+%     'CropAnisotropy'. See 'help vl_imreadjpeg' for more details.
+%
+%   `partialBatches`:: false
+%     Whether partial batches are returned (which can happen for the last
+%     batch in a set, if the batch size does not divide the set size).
+%
+%   `trainSet`:: []
+%     The training set. Note that subclasses (e.g. datasets.ImageNet)
+%     usually override this property with the default training set.
+%
+%   `valSet`:: []
+%     The validation set. Note that subclasses (e.g. datasets.ImageNet)
+%     usually override this property with the default validation set.
+%
+%   `augmentImage`:: training only
+%     Whether data augmentation is applied to each image in the dataset
+%     (logical vector).
+%
+%   See 'autonn/examples/cnn/image_folder_example.m' for a full example.
+
+% Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
+% All rights reserved.
+%
+% This file is part of the VLFeat library and is made available under
+% the terms of the BSD license (see the COPYING file).
+
   properties
     dataDir
     filenames
@@ -53,9 +125,10 @@ classdef ImageFolder < datasets.Dataset
         o.filenames = o.listImages(o.dataDir) ;
       end
       
-      % apply data augmentation to all images by default
+      % apply data augmentation to training images only by default
       if isempty(o.augmentImage)
         o.augmentImage = true(size(o.filenames)) ;
+        o.augmentImage(o.valSet) = false ;
       end
       
       % load or recompute RGB statistics over all images
@@ -123,7 +196,7 @@ classdef ImageFolder < datasets.Dataset
       % now parse ImageFolder arguments
       args = vl_parseprop(o, args, {'dataDir', 'filenames', 'removeMean', ...
         'whiten', 'numThreads', 'useGpu', 'imageSize', 'keepAspect', ...
-        'augmentation'}) ;
+        'augmentation', 'augmentImage'}) ;
     end
     
     function batches = partition(o, idx, batchSz)
