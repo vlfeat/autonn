@@ -1,7 +1,47 @@
 classdef CIFAR10 < datasets.Dataset
-  %CIFAR10 Summary of this class goes here
-  %   Detailed explanation goes here
-  
+%CIFAR10 CIFAR-10 dataset
+%   Encapsulates the CIFAR-10 dataset for training.
+%
+%   D = datasets.CIFAR10('/data/cifar') loads the CIFAR-10 dataset from the
+%   directory '/data/cifar'. If the data is not found, it is downloaded
+%   automatically.
+%
+%   D.train() returns a cell array with mini-batches, from the shuffled
+%   training set. Each mini-batch consists of a set of indexes.
+%
+%   D.val() returns a cell array with mini-batches, from the validation set
+%   (without shuffling). Each mini-batch consists of a set of indexes.
+%
+%   [IMAGES, LABELS] = D.get(BATCH) returns a tensor of images and the
+%   corresponding labels for the given mini-batch BATCH.
+%
+%   datasets.CIFAR10(..., 'option', value, ...) sets the following
+%   properties:
+%
+%   `batchSize`:: 128
+%     The batch size.
+%
+%   `contrastNormalization`:: true
+%     Whether to apply contrast normalization, as suggested by:
+%     Coates et al., "An Analysis of Single-Layer Networks in Unsupervised
+%     Feature Learning", PMLR 2011.
+%
+%   `whitenData`:: true
+%     Whether to whiten the data (not including mean-centering, which is
+%     only performed if contrastNormalization = true).
+%
+%   `partialBatches`:: false
+%     Whether partial batches are returned (which can happen for the last
+%     batch in a set, if the batch size does not divide the set size).
+%
+%   See 'autonn/examples/cnn/cifar_example.m' for a full example.
+
+% Copyright (C) 2018 Joao F. Henriques, Andrea Vedaldi.
+% All rights reserved.
+%
+% This file is part of the VLFeat library and is made available under
+% the terms of the BSD license (see the COPYING file).
+
   properties
     images  % images tensor
     dataMean  % image mean

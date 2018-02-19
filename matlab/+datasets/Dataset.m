@@ -1,7 +1,47 @@
 classdef Dataset < handle
-  %DATASET Summary of this class goes here
-  %   Detailed explanation goes here
-  
+%DATASET Parent class for datasets (e.g. datasets.CIFAR10)
+%   The datasets.Dataset class makes it easier to partition a dataset into
+%   training/validation sets, as well as in mini-batches.
+%
+%   It can be used either as a base class (e.g. datasets.CIFAR10), or on
+%   its own for custom datasets, without creating a subclass. See the
+%   'autonn/examples/cnn/' directory for different examples.
+%
+%   D = datasets.Dataset() creates an empty, default dataset.
+%
+%   D.train() returns a cell array with mini-batches, from the shuffled
+%   training set. Each mini-batch consists of a set of indexes drawn from
+%   the vector D.trainSet.
+%
+%   D.val() returns a cell array with mini-batches, from the validation set
+%   (without shuffling). Each mini-batch consists of a set of indexes drawn
+%   from the vector D.valSet.
+%
+%   D.partition(IDX) partitions a given set (vector) IDX into mini-batches.
+%
+%   datasets.Dataset('option', value, ...) sets the following properties:
+%
+%   `batchSize`:: 128
+%     The batch size.
+%
+%   `partialBatches`:: false
+%     Whether partial batches are returned (which can happen for the last
+%     batch in a set, if the batch size does not divide the set size).
+%
+%   `trainSet`:: []
+%     The training set. Note that subclasses (e.g. datasets.CIFAR10)
+%     usually override this property with the default training set.
+%
+%   `valSet`:: []
+%     The validation set. Note that subclasses (e.g. datasets.CIFAR10)
+%     usually override this property with the default validation set.
+
+% Copyright (C) 2018 Joao F. Henriques.
+% All rights reserved.
+%
+% This file is part of the VLFeat library and is made available under
+% the terms of the BSD license (see the COPYING file).
+
   properties
     batchSize = 128  % batch size
     trainSet = []  % indexes of training samples
@@ -19,7 +59,7 @@ classdef Dataset < handle
     
     function args = parseGenericArgs(o, args)
       % called by subclasses to parse generic Dataset arguments
-      args = vl_parseprop(o, args, {'batchSize'}) ;
+      args = vl_parseprop(o, args, {'batchSize', 'trainSet', 'valSet', 'partialBatches'}) ;
     end
     
     function batches = train(o)

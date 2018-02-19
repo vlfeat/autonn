@@ -3,29 +3,29 @@ classdef Stats < handle
 %   The Stats class keeps track of values such as objectives and errors
 %   during training, and can be used to easily plot them.
 %
-%   STATS = Stats({'var1', 'var2', ...}) creates a Stats object and
-%   registers variables with names 'var1', 'var2', etc. These are the
-%   variables from a network that need to be plotted, such as objectives
-%   and error metrics.
+%   S = Stats({'var1', 'var2', ...}) creates a Stats object and registers
+%   variables with names 'var1', 'var2', etc. These are the variables from
+%   a network that need to be plotted, such as objectives and error
+%   metrics.
 %
-%   STATS.update(NET) fetches the values of all registered variables from
+%   S.update(NET) fetches the values of all registered variables from
 %   object NET (of class Net), and updates the average seen so far. This is
 %   normally done for every mini-batch.
 %
-%   STATS.update('customstat1', value1, 'customstat2', value2, ...) updates
+%   S.update('customstat1', value1, 'customstat2', value2, ...) updates
 %   averages of custom statistics, which are not variables in a network.
 %   This is useful to create plots of other computations that are done
 %   during training, such as custom diagnostics and error metrics.
 %
-%   STATS.push('plotname') appends the current averages of all variables to
-%   a plot named 'plotname'. The plots can correspond to training phases
+%   S.push('plotname') appends the current averages of all variables to a
+%   plot named 'plotname'. The plots can correspond to training phases
 %   ('train' or 'val'), but any may be created. Normally this is done at
 %   the end of an epoch of training. The averages seen so far are cleared.
 %
-%   STATS.print() writes the current statistics to the terminal.
+%   S.print() writes the current statistics to the terminal.
 %
-%   STATS.plot() draws the plots in the current figure. See 'help
-%   Stats.plot' for more options.
+%   S.plot() draws the plots in the current figure. See 'help Stats.plot'
+%   for more options.
 %
 %   See 'autonn/examples/cnn/mnist_example.m' for a more complete example.
 
@@ -158,7 +158,7 @@ classdef Stats < handle
     
     function plot(o, varargin)
 %PLOT Plots the statistics on the current figure
-%   STATS.plot('option', value, ...) accepts the following options:
+%   S.plot('option', value, ...) accepts the following options:
 %
 %   `figure`:: current
 %     Selects a figure number to plot to (e.g. figure 1).

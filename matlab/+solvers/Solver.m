@@ -7,7 +7,7 @@ classdef Solver < handle
 %   Training is performed by calling step (see 'help solvers.Solver.step').
 %   See 'autonn/examples/minimal/minimal_network.m' for a small example.
 %
-%   solvers.Solver('option', value, ...) accepts the following options:
+%   solvers.Solver('option', value, ...) sets the following properties:
 %
 %   `learningRate`:: 0.001
 %     The learning rate.

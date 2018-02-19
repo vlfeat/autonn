@@ -5,7 +5,7 @@ classdef SGD < solvers.Solver
 %   Training is performed by calling step (see 'help solvers.Solver.step').
 %   See 'autonn/examples/minimal/minimal_network.m' for a small example.
 %
-%   solvers.SGD('option', value, ...) accepts the following options:
+%   solvers.SGD('option', value, ...) sets the following properties:
 %
 %   `learningRate`:: 0.001
 %     The learning rate.
