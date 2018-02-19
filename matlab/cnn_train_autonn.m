@@ -11,6 +11,13 @@ function [net,stats] = cnn_train_autonn(net, imdb, getBatch, varargin)
 addpath(fullfile(vl_rootnn, 'examples'));
 
 
+warning('AutoNN:cnn_train_autonn', ['The function cnn_train_autonn is ' ...
+  'deprecated. It will still be supported, however switching to the new, ' ...
+  'more flexible training classes (Solver, Dataset, Stats) is recommended. ' ...
+  'See the examples for more information. This warning will now be disabled.']) ;
+warning('off', 'AutoNN:cnn_train_autonn') ;
+
+
 % this is needed to harmonize the behavior of two versions of vl_nnloss:
 % the legacy behavior which *sums* the loss over the batch, and the new
 % behavior that takes the *average* over the batch.
@@ -22,7 +29,7 @@ catch  % unrecognized option, must be the old vl_nnloss
   old = true ;
 end
 if old
-  warning('MatConvNet:normalizedLoss', ['The most recent version of ' ...
+  warning('AutoNN:normalizedLoss', ['The most recent version of ' ...
    'vl_nnloss normalizes the loss by the batch size. The current version ' ...
    'does not. A workaround is being used, but consider updating MatConvNet.']) ;
 end
