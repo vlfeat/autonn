@@ -5,7 +5,7 @@ classdef Solver < handle
 %   one of the subclassed solvers (e.g. solvers.SGD) should be used.
 %
 %   Training is performed by calling step (see 'help solvers.Solver.step').
-%   The directory 'autonn/examples/cnn' has some examples.
+%   See 'autonn/examples/minimal/minimal_network.m' for a small example.
 %
 %   solvers.Solver('option', value, ...) accepts the following options:
 %

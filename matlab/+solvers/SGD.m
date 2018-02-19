@@ -3,7 +3,7 @@ classdef SGD < solvers.Solver
 %   Implements a Stochastic Gradient Descent solver with momentum.
 %
 %   Training is performed by calling step (see 'help solvers.Solver.step').
-%   The directory 'autonn/examples/cnn' has some examples.
+%   See 'autonn/examples/minimal/minimal_network.m' for a small example.
 %
 %   solvers.SGD('option', value, ...) accepts the following options:
 %

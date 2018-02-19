@@ -1,15 +1,46 @@
 classdef Stats < handle
-  %STATS Summary of this class goes here
-  %   Detailed explanation goes here
-  
+%STATS Aggregation and plotting of training statistics
+%   The Stats class keeps track of values such as objectives and errors
+%   during training, and can be used to easily plot them.
+%
+%   STATS = Stats({'var1', 'var2', ...}) creates a Stats object and
+%   registers variables with names 'var1', 'var2', etc. These are the
+%   variables from a network that need to be plotted, such as objectives
+%   and error metrics.
+%
+%   STATS.update(NET) fetches the values of all registered variables from
+%   object NET (of class Net), and updates the average seen so far. This is
+%   normally done for every mini-batch.
+%
+%   STATS.update('customstat1', value1, 'customstat2', value2, ...) updates
+%   averages of custom statistics, which are not variables in a network.
+%   This is useful to create plots of other computations that are done
+%   during training, such as custom diagnostics and error metrics.
+%
+%   STATS.push('plotname') appends the current averages of all variables to
+%   a plot named 'plotname'. The plots can correspond to training phases
+%   ('train' or 'val'), but any may be created. Normally this is done at
+%   the end of an epoch of training. The averages seen so far are cleared.
+%
+%   STATS.print() writes the current statistics to the terminal.
+%
+%   STATS.plot() draws the plots in the current figure. See 'help
+%   Stats.plot' for more options.
+%
+%   See 'autonn/examples/cnn/mnist_example.m' for a more complete example.
+
+% Copyright (C) 2018 Joao F. Henriques.
+% All rights reserved.
+%
+% This file is part of the VLFeat library and is made available under
+% the terms of the BSD license (see the COPYING file).
+
   properties
     names = {}
     accumulators = []
     counts = []
     lastValues = []
     fromNetwork = []
-    
-    smoothenPlots = 0
     
     lookup = struct()
     history = struct()
@@ -21,10 +52,7 @@ classdef Stats < handle
   end
   
   methods
-    function o = Stats(names, varargin)
-      % parse arguments
-      vl_parseprop(o, varargin, {'smoothenPlots'}) ;
-      
+    function o = Stats(names)
       % register given stat names
       if nargin > 0
         o.registerVars(names, true) ;
@@ -129,6 +157,19 @@ classdef Stats < handle
     end
     
     function plot(o, varargin)
+%PLOT Plots the statistics on the current figure
+%   STATS.plot('option', value, ...) accepts the following options:
+%
+%   `figure`:: current
+%     Selects a figure number to plot to (e.g. figure 1).
+%
+%   `names`:: all
+%     Specifies a subset of variables to plot (as a cell array of strings).
+%
+%   `smoothen`:: 0
+%     Scale of a Gaussian kernel used to smoothen the plot, 0 to disable it
+%     (the default). This can be useful for high-variance/jagged plots.
+
       opts.figure = [] ;
       opts.names = [] ;
       opts.smoothen = 0 ;

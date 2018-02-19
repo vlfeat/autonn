@@ -5,7 +5,7 @@ classdef Adam < solvers.Solver
 %     Kingma & Ba, "Adam: A Method for Stochastic Optimization", ICLR 2015.
 %
 %   Training is performed by calling step (see 'help solvers.Solver.step').
-%   The directory 'autonn/examples/cnn' has some examples.
+%   See 'autonn/examples/minimal/minimal_network.m' for a small example.
 %
 %   solvers.Adam('option', value, ...) accepts the following options:
 %
