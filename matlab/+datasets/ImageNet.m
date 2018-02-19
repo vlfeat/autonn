@@ -1,4 +1,4 @@
-classdef ImageNet < datasets.StreamingDataset
+classdef ImageNet < datasets.ImageFolder
   %ImageNet Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -11,9 +11,9 @@ classdef ImageNet < datasets.StreamingDataset
   methods
     function o = ImageNet(varargin)
       % call parent class's constructor, but delay initialization
-      o = o@datasets.StreamingDataset('skipInitialization', true) ;
+      o = o@datasets.ImageFolder('skipInitialization', true) ;
       
-      % parse generic StreamingDataset arguments
+      % parse generic ImageFolder arguments
       varargin = o.parseGenericArgs(varargin) ;
       assert(isempty(varargin), 'Unknown arguments.') ;
       
@@ -51,7 +51,7 @@ classdef ImageNet < datasets.StreamingDataset
     
     function [images, labels] = get(o, batch)
       % return a single batch of images, with optional prefetching
-      [images, idx] = o.get@datasets.StreamingDataset(batch) ;
+      [images, idx] = o.get@datasets.ImageFolder(batch) ;
       labels = o.labels(idx) ;
     end
   end

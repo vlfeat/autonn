@@ -1,5 +1,5 @@
-classdef StreamingDataset < datasets.Dataset
-  %StreamingDataset Summary of this class goes here
+classdef ImageFolder < datasets.Dataset
+  %ImageFolder Summary of this class goes here
   %   Detailed explanation goes here
   
   properties
@@ -28,8 +28,8 @@ classdef StreamingDataset < datasets.Dataset
   end
   
   methods
-    function o = StreamingDataset(varargin)
-      % parse generic StreamingDataset arguments on non-subclassed
+    function o = ImageFolder(varargin)
+      % parse generic ImageFolder arguments on non-subclassed
       % construction. allows use as a stand-alone class.
       varargin = o.parseGenericArgs(varargin) ;
       
@@ -42,13 +42,21 @@ classdef StreamingDataset < datasets.Dataset
     end
     
     function initialize(o)
-      % finishes initializing the dataset, called by subclasses
+      % finishes initializing the dataset, must be called by subclasses
       assert(~o.initialized) ;
       assert(~isempty(o.dataDir), 'Must specify dataset.dataDir.') ;
-      assert(~isempty(o.filenames), 'Must specify dataset.filenames.') ;
       assert(~isempty(o.imageSize), 'Must specify dataset.imageSize.') ;
-      assert(~isempty(o.augmentImage), 'Must specify dataset.augmentImage.') ;
       o.initialized = true ;
+      
+      % list image files if they weren't set
+      if isempty(o.filenames)
+        o.filenames = o.listImages(o.dataDir) ;
+      end
+      
+      % apply data augmentation to all images by default
+      if isempty(o.augmentImage)
+        o.augmentImage = true(size(o.filenames)) ;
+      end
       
       % load or recompute RGB statistics over all images
       if o.removeMean || o.whiten
@@ -74,12 +82,40 @@ classdef StreamingDataset < datasets.Dataset
       clear('vl_imreadjpeg') ;
     end
     
+    function files = listImages(o, folder, prefix)
+      % returns all JPEG image files recursively from the given directory
+      
+      if nargin < 3, prefix = '' ; end
+      
+      % list folder contents
+      s = dir([folder '/*']) ;
+      
+      % iterate files/folders
+      files = cell(1, numel(s)) ;
+      for i = 1:numel(s)
+        name = s(i).name ;
+        if strcmpi(name(max(1,end-3) : end), '.jpg') || ...
+           strcmpi(name(max(1,end-4) : end), '.jpeg')
+          % a file, store it (wrapped around a scalar cell)
+          files{i} = {[prefix '/' name]} ;
+          
+        elseif s(i).isdir && ~any(strcmp(name, {'.', '..'}))
+          % a folder, recurse (stored as a cell array)
+          files{i} = o.listImages([folder '/' name], [prefix '/' name]) ;
+        end
+      end
+      
+      % flatten nested cell arrays. this also removes empty entries, which
+      % were not assigned in the For loop (e.g. invalid files/folders).
+      files = [files{:}] ;
+    end
+    
     function args = parseGenericArgs(o, args)
       % called by subclasses to parse generic Dataset arguments.
       % start by parsing parent class's arguments
       args = o.parseGenericArgs@datasets.Dataset(args) ;
       
-      % now parse StreamingDataset arguments
+      % now parse ImageFolder arguments
       args = vl_parseprop(o, args, {'dataDir', 'filenames', 'removeMean', ...
         'whiten', 'numThreads', 'useGpu', 'imageSize', 'keepAspect', ...
         'augmentation'}) ;
@@ -121,7 +157,7 @@ classdef StreamingDataset < datasets.Dataset
     
     function data = getImageBatch(o, images, augmentImages)
       % load image batch, with data augmentation and whitening
-      assert(o.initialized, 'Subclass did not call StreamingDataset.initialize.') ;
+      assert(o.initialized, 'Subclass did not call ImageFolder.initialize.') ;
 
       imagePaths = strcat([o.dataDir filesep], images) ;
       
