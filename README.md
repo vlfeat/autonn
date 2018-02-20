@@ -1,6 +1,6 @@
 
 # AutoNN #
-AutoNN (cf. [auton](https://en.wikipedia.org/wiki/Auton)) is a functional wrapper for [MatConvNet](http://www.vlfeat.org/matconvnet/), implementing automatic differentiation.
+AutoNN is a functional wrapper for [MatConvNet](http://www.vlfeat.org/matconvnet/), implementing automatic differentiation.
 
 It builds on MatConvNet's low-level functions and Matlab's math operators, to create a modern deep learning API with automatic differentiation at its core. The guiding principles are:
 
@@ -13,8 +13,8 @@ Compared to the SimpleNN and DagNN [wrappers](http://www.vlfeat.org/matconvnet/w
 
 # Requirements #
 
-* A recent Matlab (preferably 2015b onwards, though older versions may also work).
-* MatConvNet [version 24](http://www.vlfeat.org/matconvnet/) or [more recent](https://github.com/vlfeat/matconvnet).
+* A recent Matlab (preferably 2016b onwards, though older versions may also work).
+* MatConvNet (preferably the [most recent version](https://github.com/vlfeat/matconvnet), though others may still work).
 
 
 # AutoNN in a nutshell #
@@ -70,6 +70,29 @@ prediction = vl_nnconv(pooled, 'size', [1 1 64 1000]) ;
 
 All of MatConvNet's layer functions are overloaded, as well as a growing list of Matlab math operators and functions. The derivatives for these functions are defined whenever possible, so that they can be composed to create differentiable models. A full list can be found [here](doc/methods.txt).
 
+Finally, there are several classes to aid training, such as standard datasets, solvers, models, and statistics plotting. It is easy to mix them, and you retain full control over the training loop. For example:
+
+```Matlab
+% load dataset
+dataset = datasets.CIFAR10('/data/cifar') ;
+
+% create solver
+solver = solvers.Adam() ;
+solver.learningRate = 0.0001 ;
+
+for epoch = 1:100  % iterate epochs
+  for batch = dataset.train()  % iterate batches
+    % draw samples
+    [images, labels] = dataset.get(batch) ;
+
+    % evaluate network to compute gradients
+    net.eval({'images', images, 'labels', labels}) ;
+
+    % take one SGD step using gradients
+    solver.step(net) ;
+  end
+end
+```
 
 # Documentation #
 
@@ -110,3 +133,9 @@ Some gratuitous screenshots, though the important bits are in the code above rea
 *Graph topology plot*
 
 ![Graph](doc/graph.png)
+
+
+# Authors #
+
+[AutoNN](https://en.wikipedia.org/wiki/Auton) was developed by [João F. Henriques](http://www.robots.ox.ac.uk/~joao/) at the [Visual Geometry Group (VGG)](http://www.robots.ox.ac.uk/~vgg/), University of Oxford. It has contributions by: [Sam Albanie](http://www.robots.ox.ac.uk/~albanie/), Ryan Webster, [Ankush Gupta](http://www.robots.ox.ac.uk/~ankush/), [David Novotny](http://www.robots.ox.ac.uk/~david/), [Aravindh Mahendran](http://users.ox.ac.uk/~newc4521/index.html), Stefano Woerner.
+
