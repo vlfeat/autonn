@@ -115,11 +115,9 @@ For a quicker start or to load pre-trained models, you may want to import them f
 
 The `examples` directory has heavily-commented samples. These can be grouped in two categories:
 
-- The *minimal* examples (in `examples/minimal`) are very short and self-contained. They are scripts so you can inspect and explore the resulting variables in the command window. The SGD optimization is a simple `for` loop, so if you prefer to have full control over learning this is the way to go.
+- The *minimal* examples (in `examples/minimal`) are very short and self-contained. They are scripts so you can inspect and explore the resulting variables in the command window.
 
-- The *full* examples (in `examples/cnn` and `examples/rnn`) demonstrate training using `cnn_train_autonn`, equivalent to the MatConvNet `cnn_train` function. This includes the standard options, such as checkpointing and different solvers.
-
-The ImageNet and MNIST examples work exactly the same as the corresponding MatConvNet examples, except for the network definitions. There is also a text LSTM example (`examples/rnn/rnn_lstm_shakespeare.m`), and a CNN on toy data (`examples/cnn/cnn_toy_data_autonn.m`), which provides a good starting point for training on custom datasets.
+- The *full* examples (in `examples/cnn` and `examples/rnn`) demonstrate usage of the AutoNN training packages. These include several standard solvers (e.g. Adam, AdaGrad), CNN models (including automatically downloading pre-trained models), and datasets (e.g. ImageNet, CIFAR-10). You can override the parameters on the command window, and experiment with different models and settings.
 
 
 # Screenshots #
@@ -137,5 +135,7 @@ Some gratuitous screenshots, though the important bits are in the code above rea
 
 # Authors #
 
-[AutoNN](https://en.wikipedia.org/wiki/Auton) was developed by [João F. Henriques](http://www.robots.ox.ac.uk/~joao/) at the [Visual Geometry Group (VGG)](http://www.robots.ox.ac.uk/~vgg/), University of Oxford. It has contributions by: [Sam Albanie](http://www.robots.ox.ac.uk/~albanie/), Ryan Webster, [Ankush Gupta](http://www.robots.ox.ac.uk/~ankush/), [David Novotny](http://www.robots.ox.ac.uk/~david/), [Aravindh Mahendran](http://users.ox.ac.uk/~newc4521/index.html), Stefano Woerner.
+[AutoNN](https://en.wikipedia.org/wiki/Auton) was developed by [João F. Henriques](http://www.robots.ox.ac.uk/~joao/) at the [Visual Geometry Group (VGG)](http://www.robots.ox.ac.uk/~vgg/), University of Oxford.
+
+We gratefully acknowledge contributions by: [Sam Albanie](http://www.robots.ox.ac.uk/~albanie/), Ryan Webster, [Ankush Gupta](http://www.robots.ox.ac.uk/~ankush/), [David Novotny](http://www.robots.ox.ac.uk/~david/), [Aravindh Mahendran](http://users.ox.ac.uk/~newc4521/index.html), Stefano Woerner.
 
