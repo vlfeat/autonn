@@ -12,7 +12,7 @@
 %  mnist_example('resultsDir', '~/out', 'savePlot', true)  % plot to ~/out
 %
 
-function mnist_example(varargin)
+function [net, stats] = mnist_example(varargin)
   % options (override by calling script with name-value pairs)
   opts.dataDir = [vl_rootnn() '/data/mnist'] ;  % MNIST data location
   opts.resultsDir = [vl_rootnn() '/data/mnist-example'] ;  % results location
