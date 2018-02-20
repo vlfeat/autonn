@@ -88,7 +88,7 @@ for epoch = 1:100  % iterate epochs
     % evaluate network to compute gradients
     net.eval({'images', images, 'labels', labels}) ;
 
-    % take one SGD step using gradients
+    % take one gradient descent step
     solver.step(net) ;
   end
 end

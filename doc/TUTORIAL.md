@@ -115,7 +115,7 @@ net.getDer('pool1')
 
 The access methods for network variables are `getValue`/`setValue`, and for their derivatives `getDer`/`setDer`.
 
-For serious training tasks, we should use the highly optimized GPU routines of MatConvNet and Matlab's `gpuArray`. We first need to select a GPU (e.g. GPU #1) with `gpuDevice(1)`. We can then mark the `images` input to be automatically transferred to the GPU, as follows:
+For serious training tasks, we should use the highly optimized GPU routines of MatConvNet and Matlab's `gpuArray`. We can mark the `images` input to be automatically transferred to the GPU, as follows:
 
 ```Matlab
 images.gpu = true;
