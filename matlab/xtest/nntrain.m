@@ -1,9 +1,9 @@
 classdef nntrain < nntest
   properties (Constant)
     % test these solvers on MNIST
-    solvers = {@solvers.SGD, @solvers.Adam}
-    trainObjective = [0.29, 0.14]
-    valObjective = [0.078, 0.095]
+    solvers = {@solvers.SGD, @solvers.Adam, @solvers.AdaGrad, @solvers.AdaDelta, @solvers.RMSProp}
+    trainObjective = [ 0.29,          0.14,             0.16,              0.40,             0.16]
+    valObjective = [  0.078,         0.095,            0.065,             0.125,            0.060]
   end
   
   properties (TestParameter)
