@@ -26,7 +26,7 @@ function cifar_example(varargin)
   opts.weightDecay = [] ;  % same as above
   opts.solver = solvers.SGD() ;  % solver instance to use (type 'help solvers' for a list)
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
-  opts.savePlot = false ;  % whether to save the plot as a PDF file
+  opts.savePlot = true ;  % whether to save the plot as a PDF file
   opts.continue = false ;  % continue from last checkpoint if available
   
   opts = vl_argparse(opts, varargin, 'nonrecursive') ;  % let user override options
@@ -132,14 +132,18 @@ function cifar_example(varargin)
 
     % plot statistics
     stats.plot('figure', 1) ;
-    if opts.savePlot && ~isempty(opts.resultsDir)
-      print(1, [opts.resultsDir '/plot.pdf'], '-dpdf') ;
-    end
-    
-    % save checkpoint every few epochs
-    if mod(epoch, 10) == 0
-      save(sprintf('%s/epoch-%d.mat', opts.resultsDir, epoch), ...
-        'net', 'stats', 'solver') ;
+
+    if ~isempty(opts.resultsDir)
+      % save the plot
+      if opts.savePlot
+        print(1, [opts.resultsDir '/plot.pdf'], '-dpdf') ;
+      end
+
+      % save checkpoint every few epochs
+      if mod(epoch, 10) == 0
+        save(sprintf('%s/epoch-%d.mat', opts.resultsDir, epoch), ...
+          'net', 'stats', 'solver') ;
+      end
     end
   end
 
