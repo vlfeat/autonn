@@ -3,6 +3,8 @@ classdef Stats < handle
 %   The Stats class keeps track of values such as objectives and errors
 %   during training, and can be used to easily plot them.
 %
+%   See 'autonn/examples/cnn/mnist_example.m' for a more complete example.
+%
 %   S = Stats({'var1', 'var2', ...}) creates a Stats object and registers
 %   variables with names 'var1', 'var2', etc. These are the variables from
 %   a network that need to be plotted, such as objectives and error
@@ -27,7 +29,10 @@ classdef Stats < handle
 %   S.plot() draws the plots in the current figure. See 'help Stats.plot'
 %   for more options.
 %
-%   See 'autonn/examples/cnn/mnist_example.m' for a more complete example.
+%   X = S.values('plotname', 'statname') returns the values of variable
+%   'statname' that were stored using S.push('plotname'). This can be used
+%   to access the same values that are plotted using S.plot(), for example
+%   S.values('train', 'error').
 
 % Copyright (C) 2018 Joao F. Henriques.
 % All rights reserved.
@@ -105,9 +110,16 @@ classdef Stats < handle
       end
     end
     
-    function v = value(o, name)
+    function v = average(o, name)
+      % return current value (average estimate, before push)
       idx = o.lookup.(name) ;
       v = o.accumulators(idx) / o.counts(idx) ;
+    end
+    
+    function v = values(o, set, name)
+      % return all values (history created by push) for a set and stat name
+      idx = o.lookup.(name) ;
+      v = o.history.(set)(idx,:) ;
     end
     
     function reset(o)
