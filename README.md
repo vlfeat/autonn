@@ -1,6 +1,6 @@
 
 # AutoNN #
-AutoNN (cf. [auton](https://en.wikipedia.org/wiki/Auton)) is a functional wrapper for [MatConvNet](http://www.vlfeat.org/matconvnet/), implementing automatic differentiation.
+AutoNN is a functional wrapper for [MatConvNet](http://www.vlfeat.org/matconvnet/), implementing automatic differentiation.
 
 It builds on MatConvNet's low-level functions and Matlab's math operators, to create a modern deep learning API with automatic differentiation at its core. The guiding principles are:
 
@@ -13,8 +13,8 @@ Compared to the SimpleNN and DagNN [wrappers](http://www.vlfeat.org/matconvnet/w
 
 # Requirements #
 
-* A recent Matlab (preferably 2015b onwards, though older versions may also work).
-* MatConvNet [version 24](http://www.vlfeat.org/matconvnet/) or [more recent](https://github.com/vlfeat/matconvnet).
+* A recent Matlab (preferably 2016b onwards, though older versions may also work).
+* MatConvNet (preferably the [most recent version](https://github.com/vlfeat/matconvnet), though others may still work).
 
 
 # AutoNN in a nutshell #
@@ -70,6 +70,29 @@ prediction = vl_nnconv(pooled, 'size', [1 1 64 1000]) ;
 
 All of MatConvNet's layer functions are overloaded, as well as a growing list of Matlab math operators and functions. The derivatives for these functions are defined whenever possible, so that they can be composed to create differentiable models. A full list can be found [here](doc/methods.txt).
 
+Finally, there are several classes to aid training, such as standard datasets, solvers, models, and statistics plotting. It is easy to mix them, and you retain full control over the training loop. For example:
+
+```Matlab
+% load dataset
+dataset = datasets.CIFAR10('/data/cifar') ;
+
+% create solver
+solver = solvers.Adam() ;
+solver.learningRate = 0.0001 ;
+
+for epoch = 1:100  % iterate epochs
+  for batch = dataset.train()  % iterate batches
+    % draw samples
+    [images, labels] = dataset.get(batch) ;
+
+    % evaluate network to compute gradients
+    net.eval({'images', images, 'labels', labels}) ;
+
+    % take one gradient descent step
+    solver.step(net) ;
+  end
+end
+```
 
 # Documentation #
 
@@ -92,11 +115,9 @@ For a quicker start or to load pre-trained models, you may want to import them f
 
 The `examples` directory has heavily-commented samples. These can be grouped in two categories:
 
-- The *minimal* examples (in `examples/minimal`) are very short and self-contained. They are scripts so you can inspect and explore the resulting variables in the command window. The SGD optimization is a simple `for` loop, so if you prefer to have full control over learning this is the way to go.
+- The *minimal* examples (in `examples/minimal`) are very short and self-contained. They are scripts so you can inspect and explore the resulting variables in the command window.
 
-- The *full* examples (in `examples/cnn` and `examples/rnn`) demonstrate training using `cnn_train_autonn`, equivalent to the MatConvNet `cnn_train` function. This includes the standard options, such as checkpointing and different solvers.
-
-The ImageNet and MNIST examples work exactly the same as the corresponding MatConvNet examples, except for the network definitions. There is also a text LSTM example (`examples/rnn/rnn_lstm_shakespeare.m`), and a CNN on toy data (`examples/cnn/cnn_toy_data_autonn.m`), which provides a good starting point for training on custom datasets.
+- The *full* examples (in `examples/cnn` and `examples/rnn`) demonstrate usage of the AutoNN training packages. These include several standard solvers (e.g. Adam, AdaGrad), CNN models (including automatically downloading pre-trained models), and datasets (e.g. ImageNet, CIFAR-10). You can override the parameters on the command window, and experiment with different models and settings.
 
 
 # Screenshots #
@@ -110,3 +131,11 @@ Some gratuitous screenshots, though the important bits are in the code above rea
 *Graph topology plot*
 
 ![Graph](doc/graph.png)
+
+
+# Authors #
+
+[AutoNN](https://en.wikipedia.org/wiki/Auton) was developed by [João F. Henriques](http://www.robots.ox.ac.uk/~joao/) at the [Visual Geometry Group (VGG)](http://www.robots.ox.ac.uk/~vgg/), University of Oxford.
+
+We gratefully acknowledge contributions by: [Sam Albanie](http://www.robots.ox.ac.uk/~albanie/), Ryan Webster, [Ankush Gupta](http://www.robots.ox.ac.uk/~ankush/), [David Novotny](http://www.robots.ox.ac.uk/~david/), [Aravindh Mahendran](http://users.ox.ac.uk/~newc4521/index.html), Stefano Woerner.
+

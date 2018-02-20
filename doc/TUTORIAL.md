@@ -115,17 +115,17 @@ net.getDer('pool1')
 
 The access methods for network variables are `getValue`/`setValue`, and for their derivatives `getDer`/`setDer`.
 
-For serious training tasks, we should use the highly optimized GPU routines of MatConvNet and Matlab's `gpuArray`. We first need to select a GPU (e.g. GPU #1) with `gpuDevice(1)`. We can then mark the `images` input to be automatically transferred to the GPU, as follows:
+For serious training tasks, we should use the highly optimized GPU routines of MatConvNet and Matlab's `gpuArray`. We can mark the `images` input to be automatically transferred to the GPU, as follows:
 
 ```Matlab
 images.gpu = true;
 ```
 
-Note that this has to be done *before* compiling the network. The `gpu` property of `Param` objects is true by default. To actually enable the GPU computations, use:
+Note that this has to be done *before* compiling the network. The `gpu` property of `Param` objects is true by default. To actually enable the GPU computations on the GPU with index `idx`, use:
 
 ```Matlab
-net.move('gpu');
+net.useGpu(idx);
 ```
 
-Using these elements, we can compose an SGD training loop. Simple examples of such loops are included in the directory `examples/minimal`. For more demanding tasks, it's probably best to use the `cnn_train_autonn` function, which supports different solvers (such as AdaGrad, RMSProp, AdaDelta, ADAM), multi-GPU training, checkpointing, and more. The corresponding examples are in the `examples/cnn` and `examples/rnn` directories. To get a full list of all classes and methods, and their documentation, just type `help autonn` into the Matlab console.
+Using these elements, we can compose an SGD training loop. Simple examples of such loops are included in the directory `examples/minimal`. For more demanding tasks, it's probably best to use the AutoNN training packages: `solvers`, `datasets`, and `models`. These packages contain classes that can be mixed and matched freely. Examples on how to use them can be found in the `examples/cnn` and `examples/rnn` directories. To see a list of all the available solvers, for example, type `help solvers` into the console. A full list of all classes and methods, and their documentation, can be accessed with `help autonn`.
 

@@ -27,9 +27,12 @@ function layer = vl_nnconv(varargin)
 %     Factor used to adjust the created Params' learning rate. Can specify
 %     separate learning rates for F and B with a 2-elements vector.
 %
-%   `weightDecay`:: 1
+%   `weightDecay`:: [1 0]
 %     Factor used to adjust the created Params' weight decay. Can specify
 %     separate weight decays for F and B with a 2-elements vector.
+%
+%   `transpose`:: false
+%     If true, creates a vl_nnconvt (convolution-transpose) layer instead.
 
 % Copyright (C) 2016-2017 Joao F. Henriques.
 % All rights reserved.
@@ -40,9 +43,9 @@ function layer = vl_nnconv(varargin)
   % parse options. other options such as 'stride' will be maintained in
   % convArgs.
   opts = struct('size', [], 'weightScale', 'xavier', 'hasBias', true, ...
-    'learningRate', 1, 'weightDecay', 1, 'transpose', false) ;
-  [opts, posArgs, convOpts] = vl_argparsepos(opts, varargin, ...
-    'flags', {'CuDNN', 'NoCuDNN', 'Verbose'}) ;
+    'learningRate', [1 1], 'weightDecay', [1 0], 'transpose', false) ;
+  [opts, posArgs, convOpts] = vl_argparsepos(opts, varargin, 'flags', ...
+    {'cuDNN', 'noCuDNN', 'verbose', 'noDerData', 'noDerFilters', 'noDerBiases'}) ;
   
   if ~isempty(opts.size)
     % a size was specified, create Params

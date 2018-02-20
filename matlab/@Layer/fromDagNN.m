@@ -1,8 +1,8 @@
 function netOutputs = fromDagNN(dag, customFn)
-%FROMDAGNN Converts a DagNN object to the AutoNN framework
+%FROMDAGNN Converts a DagNN/SimpleNN object to the AutoNN framework
 %   OUTPUTS = Layer.fromDagNN(DAG) converts a MatConvNet DagNN object, DAG,
 %   into the AutoNN framework (i.e., a set of recursively nested Layer
-%   objects).
+%   objects). SimpleNN is also supported.
 %
 %   Returns a cell array of Layer objects, each corresponding to an output
 %   of the network. These can be composed with other layers, or compiled
@@ -43,6 +43,28 @@ function netOutputs = fromDagNN(dag, customFn)
     customFn = [] ;
   end
 
+  % handle struct inputs (SimpleNN or serialized DagNN)
+  if isstruct(dag)
+    assert(isfield(dag, 'layers'), 'Invalid struct (must be DagNN or SimpleNN).') ;
+    if iscell(dag.layers)  % SimpleNN
+      dag = dagnn.DagNN.fromSimpleNN(dag, 'CanonicalNames', true) ;
+    else
+      % serialized DagNN
+      % compatibility: first remove 'exBackprop' property, which does not
+      % exist in recent versions
+      for l = 1:numel(dag.layers)
+        if isfield(dag.layers(l).block, 'exBackprop')
+          dag.layers(l).block = rmfield(dag.layers(l).block, 'exBackprop') ;
+        end
+      end
+      % from struct to DagNN object
+      dag = dagnn.DagNN.loadobj(dag) ;
+    end
+  end
+  
+  assert(isa(dag, 'dagnn.DagNN'), 'Input must be a DagNN or SimpleNN.') ;
+
+  % update DagNN variable indexes
   dag.rebuild() ;
   
   % like initParams, but does not overwrite them if already defined
@@ -116,9 +138,19 @@ function netOutputs = fromDagNN(dag, customFn)
     case 'dagnn.Conv'
       if isscalar(params), params{2} = [] ; end  % no bias
       
-      obj = vl_nnconv(inputs{1}, params{1}, params{2}, ...
-        'stride', block.stride, 'pad', block.pad, ...
-        'dilate', block.dilate, block.opts{:}) ;
+      % ommit arguments with default values, for conciseness
+      args = {} ;
+      if ~all(block.stride == 1)
+        args(end+1:end+2) = {'stride', block.stride} ;
+      end
+      if ~all(block.pad == 0)
+        args(end+1:end+2) = {'pad', block.pad} ;
+      end
+      if ~all(block.dilate == 1)
+        args(end+1:end+2) = {'dilate', block.dilate} ;
+      end
+      
+      obj = vl_nnconv(inputs{1}, params{1}, params{2}, args{:}, block.opts{:}) ;
     
     case 'dagnn.ConvTranspose'
       if isscalar(params), params{2} = [] ; end  % no bias
@@ -140,11 +172,26 @@ function netOutputs = fromDagNN(dag, customFn)
         'moments', params{3}, 'epsilon', block.epsilon) ;
     
     case 'dagnn.Pooling'
-      obj = vl_nnpool(inputs{1}, block.poolSize, 'method', block.method, ...
-        'pad', block.pad, 'stride', block.stride, block.opts{:}) ;
+      % ommit arguments with default values, for conciseness
+      args = {} ;
+      if ~all(block.stride == 1)
+        args(end+1:end+2) = {'stride', block.stride} ;
+      end
+      if ~all(block.pad == 0)
+        args(end+1:end+2) = {'pad', block.pad} ;
+      end
+      
+      obj = vl_nnpool(inputs{1}, block.poolSize, ...
+       'method', block.method, args{:}, block.opts{:}) ;
     
     case 'dagnn.ReLU'
-      obj = vl_nnrelu(inputs{1}, 'leak', block.leak, block.opts{:}) ;
+      % ommit arguments with default values, for conciseness
+      args = {} ;
+      if block.leak ~= 0
+        args(end+1:end+2) = {'leak', block.leak} ;
+      end
+      
+      obj = vl_nnrelu(inputs{1}, args{:}, block.opts{:}) ;
       
     case 'dagnn.DropOut'
       obj = vl_nndropout(inputs{1}) ;
@@ -175,6 +222,21 @@ function netOutputs = fromDagNN(dag, customFn)
       for i = 2:numel(inputs)
         obj = obj + inputs{i} ;
       end
+      
+    case 'dagnn.Crop'
+      % replicate Crop block's functionality using simple operations
+      A = inputs{1} ;
+      B = inputs{2} ;
+      
+      sizeA1 = size(A,1);  % reuse this layer
+      sizeA2 = size(A,2);
+      cropv = sizeA1 - size(B,1) ;
+      cropu = sizeA2 - size(B,2) ;
+      cropv1 = max(0, cropv - block.crop(1)) ;
+      cropu1 = max(0, cropu - block.crop(2)) ;
+      
+      crop = [cropv - cropv1, cropv1, cropu - cropu1, cropu1] ;
+      obj = vl_nncrop(A, crop) ;
       
     otherwise
       if ~isempty(customFn)

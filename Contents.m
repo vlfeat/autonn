@@ -1,12 +1,32 @@
 % AutoNN - Table of Contents
 %
-% Classes
+% Examples
+%   examples/minimal   - Directory with minimal examples: regression and LSTM (start here)
+%   examples/cnn       - Directory with CNN examples: ImageNet, CIFAR-10, MNIST and custom data
+%   examples/rnn       - Directory with RNN/LSTM language model example on Shakespeare text
+%
+% Base classes
 %   Layer              - Main building block for defining new networks
 %   Net                - Compiled network that can be evaluated on data
 %   Input              - Defines a network input (such as images or labels)
 %   Param              - Defines a learnable network parameter
 %   Selector           - Selects a single output of a multiple-outputs layer
 %   Var                - Defines a network variable explicitly
+%
+% Training classes and packages
+%   models             - Standard models package (e.g. AlexNet, VGG)
+%   solvers            - Solvers package (e.g. SGD, Adam)
+%   datasets           - Standard/custom datasets package (e.g. CIFAR-10)
+%   Stats              - Aggregation and plotting of training statistics
+%
+% Extra CNN blocks (in addition to MatConvNet's)
+%   vl_nnlstm          - Long Short-Term Memory cell (LSTM)
+%   vl_nnlstm_params   - Initialize the learnable parameters for an LSTM
+%   vl_nnaffinegrid    - Affine grid generator for Spatial Transformer Networks
+%   vl_nnmaxout        - CNN maxout operator
+%   vl_nnmask          - CNN dropout mask generator
+%   For                - Differentiable For-loop or recursion, with dynamic iteration count
+%   While              - Differentiable While-loop or recursion, with dynamic stop condition
 %
 % Layer methods
 %   display            - Display layer information
@@ -39,19 +59,9 @@
 %   plotDiagnostics    - Creates or updates diagnostics plot
 %   setParameterServer - Sets up a parameter server for multi-GPU training
 %
-% Extra CNN blocks
-%   vl_nnlstm          - Long Short-Term Memory cell (LSTM)
-%   vl_nnlstm_params   - Initialize the learnable parameters for an LSTM
-%   vl_nnaffinegrid    - Affine grid generator for Spatial Transformer Networks
-%   vl_nnmask          - CNN dropout mask generator
-%
 % Utilities
 %   setup_autonn       - Sets up AutoNN, by adding its folders to the Matlab path
-%   cnn_train_autonn   - Demonstrates training a CNN using the AutoNN wrapper
+%   cnn_benchmark      - Times execution of AutoNN and DagNN models
 %   vl_argparsepos     - Parse list of param.-value pairs, with positional arguments
+%   vl_parseprop       - Parses name-value pairs list to override properties of object
 %   dynamic_subplot    - Dynamically reflowing subplots, to maintain aspect ratio
-%
-% Examples
-%   examples/minimal   - Directory with minimal examples: regression and LSTM (start here)
-%   examples/cnn       - Directory with CNN examples: ImageNet, MNIST and toy data
-%   examples/rnn       - Directory with RNN/LSTM language model example on Shakespeare text

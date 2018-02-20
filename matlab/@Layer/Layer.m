@@ -116,29 +116,22 @@ classdef Layer < matlab.mixin.Copyable
         return  % called during Input, Param or Selector construction, nothing to do
       end
       
-      % convert from SimpleNN to DagNN
-      if isstruct(func) && isfield(func, 'layers')
-        func = dagnn.DagNN.fromSimpleNN(func, 'CanonicalNames', true) ;
-      end
-      
-      % convert from DagNN to Layer
-      if isa(func, 'dagnn.DagNN')
-         obj = Layer.fromDagNN(func) ;
-         if isscalar(obj)
-           obj = obj{1} ;
-         else  % wrap multiple outputs in a weighted sum
-           for i = 1:numel(obj)  % keep original objects, don't let them be optimized into a single weighted sum
-             obj{i}.optimize = false ;
-           end
+      % if not a function handle, assume DagNN or SimpleNN, and convert
+      if ~isa(func, 'function_handle')
+        assert(isstruct(func) || isa(func, 'dagnn.DagNN'), ...
+          'Input must be a function handle, a SimpleNN or a DagNN.') ;
+        
+        obj = Layer.fromDagNN(func) ;
+        if isscalar(obj)
+          obj = obj{1} ;
+        else  % wrap multiple outputs in a weighted sum (this is a constructor, only 1 object out)
+          for i = 1:numel(obj)  % keep original objects, don't let them be optimized into a single weighted sum
+            obj{i}.optimize = false ;
+          end
            obj = Layer(@vl_nnwsum, obj{:}, 'weights', ones(1, numel(obj))) ;
-         end
-         return
-      else
-        assert(isa(func, 'function_handle'), ...
-          'Input must be a function handle, a SimpleNN struct or a DagNN.') ;
+        end
+        return
       end
-      
-      assert(isa(func, 'function_handle'), 'Must specify a function handle as the first argument.') ;
       
       obj.enableCycleChecks = false ;
       obj.func = func ;
@@ -204,6 +197,9 @@ classdef Layer < matlab.mixin.Copyable
     end
     function [hn, cn] = vl_nnlstm(varargin)
       [hn, cn] = Layer.create(@vl_nnlstm, varargin) ;
+    end
+    function y = vl_nnmaxout(obj, varargin)
+      y = Layer(@vl_nnmaxout, obj, varargin{:}) ;
     end
     
     
@@ -620,15 +616,17 @@ classdef Layer < matlab.mixin.Copyable
     
     function saveStack(obj)
       % record call stack (source files and line numbers), starting with
-      % the first function in user-land (not part of AutoNN).
+      % the first function outside of the core (user-land or packages)
       stack = dbstack('-completenames') ;
       
-      % 2 folders up from current file's directory (<autonn>/matlab)
+      % path 2 folders up from current file's directory (<autonn>/matlab)
       p = [fileparts(fileparts(stack(1).file)), filesep] ;
       
-      % find a non-matching directory (i.e., not part of AutoNN directly)
+      % find a non-matching directory (outside AutoNN), or package
+      % (starts with +)
       for i = 2:numel(stack)
-        if ~strncmp(p, stack(i).file, numel(p))
+        file = stack(i).file ;
+        if ~strncmp(file, p, numel(p)) || strncmp(file, [p, '+'], numel(p) + 1)
           obj.source = stack(i:end) ;
           return
         end
