@@ -19,6 +19,7 @@ function mnist_example(varargin)
   opts.numEpochs = 20 ;  % number of epochs
   opts.batchSize = 128 ;  % batch size
   opts.learningRate = 0.001 ;  % learning rate
+  opts.solver = solvers.SGD() ;  % solver instance to use (type 'help solvers' for a list)
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
   opts.savePlot = false ;  % whether to save the plot as a PDF file
   
@@ -56,8 +57,9 @@ function mnist_example(varargin)
   net = Net(objective, error) ;
 
 
-  % initialize solver
-  solver = solvers.SGD('learningRate', opts.learningRate) ;
+  % set solver learning rate
+  solver = opts.solver ;
+  solver.learningRate = opts.learningRate ;
   
   % initialize dataset
   dataset = datasets.MNIST(opts.dataDir, 'batchSize', opts.batchSize) ;

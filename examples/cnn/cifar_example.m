@@ -67,7 +67,7 @@ function cifar_example(varargin)
 
   % set solver learning rate
   solver = opts.solver ;
-  solver.learningRate = opts.learningRate(1)  ;
+  solver.learningRate = opts.learningRate(1) ;
   
   % initialize dataset
   dataset = datasets.CIFAR10(opts.dataDir, 'batchSize', opts.batchSize) ;

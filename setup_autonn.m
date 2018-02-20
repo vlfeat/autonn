@@ -6,6 +6,12 @@ function setup_autonn()
 
   root = fileparts(mfilename('fullpath')) ;
   addpath(root, [root '/matlab'], [root '/matlab/wrappers'], [root '/matlab/derivatives']) ;
+  
+  if ~exist('vl_setupnn', 'file')
+    warning('AutoNN:MatConvNetMissing', ['MatConvNet is not on the path. '...
+      'You can set it up by calling:\n  run MATCONVNET/vl_setupnn\n' ...
+      'replacing ''MATCONVNET'' with the directory where it is located.']) ;
+  end
 
 end
 
