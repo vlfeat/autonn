@@ -119,6 +119,14 @@ function prediction = ResNet(varargin)
     input = prediction.find('Input', 1) ;
     prediction.replace(input, opts.input) ;
     
+    % in pre-trained networks, the last pooling is fixed to have size 7x7.
+    % to make it compatible with any input size, replace it with mean().
+    pool = prediction.inputs{1} ;
+    assert(isequal(pool.func, @vl_nnpool));  % sanity check
+    
+    poolIn = pool.inputs{1} ;  % input to pool
+    prediction.inputs{1} = mean(mean(poolIn, 1), 2) ;  % replace pooling
+    
     prediction.meta = meta ;
     return
   end
