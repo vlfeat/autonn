@@ -31,6 +31,12 @@ function layer = vl_nnconv(varargin)
 %     Factor used to adjust the created Params' weight decay. Can specify
 %     separate weight decays for F and B with a 2-elements vector.
 %
+%   `pad`:: [0 0 0 0]
+%     Specifying 'same' for this option will set the padding amount such
+%     that the input and output spatial dimensions will be the same.
+%     This can only be used in conjunction with the 'size' option or if F
+%     is of class Param (i.e., the filter size can be inferred).
+%
 %   `transpose`:: false
 %     If true, creates a vl_nnconvt (convolution-transpose) layer instead.
 
@@ -43,7 +49,7 @@ function layer = vl_nnconv(varargin)
   % parse options. other options such as 'stride' will be maintained in
   % convArgs.
   opts = struct('size', [], 'weightScale', 'xavier', 'hasBias', true, ...
-    'learningRate', [1 1], 'weightDecay', [1 0], 'transpose', false) ;
+    'learningRate', [1 1], 'weightDecay', [1 0], 'pad', 0, 'transpose', false) ;
   [opts, posArgs, convOpts] = vl_argparsepos(opts, varargin, 'flags', ...
     {'cuDNN', 'noCuDNN', 'verbose', 'noDerData', 'noDerFilters', 'noDerBiases'}) ;
   
@@ -79,6 +85,21 @@ function layer = vl_nnconv(varargin)
   else
     assert(numel(posArgs) == 3, ...
       'Must specify all 3 inputs, or the ''size'' option.') ;
+  end
+  
+  % handle 'same' padding (i.e., maintain same output size, given stride 1)
+  if isequal(opts.pad, 'same')
+    assert(isa(posArgs{2}, 'Param'), ...
+      'Can only use ''same'' padding when the convolution filter is of class Param.') ;
+    sz = size(posArgs{2}.value) ;
+    
+    pad = (sz(1:2) - 1) / 2 ;  % will be fractional for even filter sizes
+    opts.pad = [floor(pad(1)), ceil(pad(1)), floor(pad(2)), ceil(pad(2))] ;
+  end
+  
+  % don't include the padding argument if it's 0
+  if any(opts.pad ~= 0)
+    convOpts(end+1:end+2) = {'pad', opts.pad} ;
   end
   
   % create layer

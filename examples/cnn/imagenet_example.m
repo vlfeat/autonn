@@ -53,7 +53,7 @@ function imagenet_example(varargin)
   opts.solver = solvers.SGD() ;  % solver instance to use (type 'help solvers' for a list)
   opts.gpu = 1 ;  % GPU index, empty for CPU mode
   opts.numThreads = 12 ;  % number of threads for image reading
-  opts.augmentation = [] ;  % data augmentation (see datasets.StreamingDataset) (*)
+  opts.augmentation = [] ;  % data augmentation (see datasets.ImageFolder) (*)
   opts.savePlot = true ;  % whether to save the plot as a PDF file
   opts.continue = true ;  % continue from last checkpoint if available
   
@@ -160,7 +160,7 @@ function imagenet_example(varargin)
       t = toc() ;
 
       fprintf('val ep%d %d/%d - %.1fms (%.1fHz) ', epoch, stats.counts(1) + 1, ...
-        floor(numel(dataset.trainSet) / opts.batchSize), t * 1e3, opts.batchSize / t);
+        floor(numel(dataset.valSet) / opts.batchSize), t * 1e3, opts.batchSize / t);
       stats.update(net) ;
       stats.print() ;
     end

@@ -91,7 +91,6 @@ function out = createConvBlock(in, varargin)
   opts.kernel = [3, 3] ;
   opts.channels = [] ;
   opts.size = [] ;
-  opts.pad = 0 ;
   opts.batchNorm = false ;
   opts.batchNormScaleBias = true ;
   opts.batchNormEpsilon = 1e-5 ;
@@ -101,8 +100,8 @@ function out = createConvBlock(in, varargin)
   opts.leak = 0.1 ;  % for leaky ReLU only
   [opts, convArgs] = vl_argparse(opts, varargin) ;
   
-  % make sure only valid convolution options remain; pad handled separately
-  allowedConvArgs = {'stride', 'dilate', 'verbose', 'cuDNN', 'noCuDNN', ...
+  % make sure only valid convolution options remain
+  allowedConvArgs = {'stride', 'dilate', 'pad', 'verbose', 'cuDNN', 'noCuDNN', ...
     'cuDNNWorkspaceLimit', 'noDerData', 'noDerFilters', 'noDerBiases', ...
     'size', 'weightScale', 'hasBias', 'learningRate', 'weightDecay', 'transpose'} ;
   for i = 1:numel(convArgs)
@@ -124,15 +123,6 @@ function out = createConvBlock(in, varargin)
       'output channels for convolution, as a 2-elements vector in option `channels`.']) ;
     
     opts.size = [opts.kernel(:); opts.channels(:)]' ;
-  end
-  
-  % handle 'same' padding (i.e., maintain same output size, given stride 1)
-  if isequal(opts.pad, 'same')
-    pad = (opts.size(1:2) - 1) / 2 ;  % will be fractional for even filter sizes
-    opts.pad = [floor(pad(1)), ceil(pad(1)), floor(pad(2)), ceil(pad(2))] ;
-  end
-  if opts.pad ~= 0  % don't include padding argument if it's 0
-    convArgs(end+1:end+2) = {'pad', opts.pad} ;
   end
   
   % create conv layer
