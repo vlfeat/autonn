@@ -35,6 +35,8 @@ classdef nncheckder < nntest
       params = output.find('Param') ;
       values = cellfun(@(p) {net.getValue(p)}, params) ;
       
+      guessTol = isempty(tol) ;
+      
       for p = 1:numel(params)
         if eq(params{p}, ignore, 'sameInstance'), continue, end
         
@@ -46,6 +48,13 @@ classdef nncheckder < nntest
         net.setValue(params, values);
         net.eval({}, 'normal', der) ;
         dzdx = net.getDer(params{p}) ;
+        
+        if guessTol
+          % set numerical check tolerance based on derivative magnitudes
+          maxv = max(real(dzdx(:))) ;
+          minv = min(real(dzdx(:))) ;
+          tol = max(1e-2 * (maxv - minv), 1e-3 * max(maxv, -minv)) ;
+        end
         
         test.der(wrapper, values{p}, der, dzdx, step, tol) ;
       end

@@ -71,7 +71,7 @@ classdef nnlayers < nncheckder
       % use Params for all inputs so we can choose their values now
       a = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
       b = Param('value', randn(3, 3, test.currentDataType) + 0.1 * eye(3,3)) ;  % matrix
-      c = Param('value', ones(1, 1, test.currentDataType)) ;  % scalar
+      c = Param('value', 2 * ones(1, 1, test.currentDataType)) ;  % scalar
       d = Param('value', randn(3, 1, test.currentDataType)) ;  % vector
       e = Param('value', rand(3, 3, test.currentDataType) + 1e-3 * ones(3,3)) ;  % non-negative matrix
       f = Param('value', rand(3, 3, test.currentDataType) * 2 - 1) ;  % matrix in -1..1
@@ -89,13 +89,18 @@ classdef nnlayers < nncheckder
       do(test, a') ;
       do(test, inv(a)) ;
       do(test, a / b) ;
+      do(test, a \ b) ;
       
       % binary with expanded dimensions
       do(test, a .* d) ;
       do(test, a ./ d) ;
-      do(test, a .^ 2) ;
+      do(test, a .^ c, [], 1e-6 * test.range, 1e-3) ;  % higher tolerance
       
       do(test, atan2(a, b)) ;
+      
+      % matrix ops should deal with scalars gracefully
+      do(test, a * c) ;
+      do(test, a / c) ;
       
       % unary
       do(test, sqrt(e)) ;

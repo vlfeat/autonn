@@ -189,16 +189,26 @@ function dx = ctranspose_der(~, dy)
 end
 
 function [da, db] = mtimes_der(a, b, dy)
-  da = dy * b.' ;
-  db = a.' * dy ;
+  if isscalar(a) || isscalar(b)
+    % if an input is scalar, this is an element-wise product
+    [~, da, db] = bsxfun_der(@times, a, b, dy) ;
+  else
+    da = dy * b.' ;
+    db = a.' * dy ;
+  end
 end
 
 function [da, db] = mrdivide_der(a, b, dy)
   % note: @mldivide is just @mrdivide with swapped inputs
-  bt = b.' ;
-  da = dy / bt ;
-  %NOTE: The following line is equivalent to  db = inv_der(b, a.' * dy) ;
-  db = - bt \ a' * dy / bt ;
+  if isscalar(a) || isscalar(b)
+    % if an input is scalar, this is an element-wise division
+    [~, da, db] = bsxfun_der(@rdivide, a, b, dy) ;
+  else
+    bt = b.' ;
+    da = dy / bt ;
+    % note: the following line is equivalent to:  db = inv_der(b, a.' * dy)
+    db = - bt \ a' * dy / bt ;
+  end
 end
 
 function dx = inv_der(x, dy)
