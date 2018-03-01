@@ -252,3 +252,17 @@ function dx = gather_der(x, dy)
     dx = dy ;  % keep same type (non-gpuArray)
   end
 end
+
+function dx = single_der(x, dy)
+  dx = typecast_der(x, dy) ;
+end
+
+function dx = double_der(x, dy)
+  dx = typecast_der(x, dy) ;
+end
+
+% helper function for single(), double(), and any other type cast
+function dx = typecast_der(x, dy)
+  [~, x_type] = struct_or_tensor_size(x);  % handle proxy structs
+  dx = feval(class(x_type), dy) ;  % convert derivative to same type as input
+end

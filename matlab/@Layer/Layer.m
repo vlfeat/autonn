@@ -323,7 +323,15 @@ classdef Layer < matlab.mixin.Copyable
     end
     function y = gather(obj)
       y = Layer(@gather, obj) ;
-      y.precious = false ; 
+      y.precious = false ;
+    end
+    function y = single(obj)
+      y = Layer(@single, obj) ;
+      y.precious = false ;
+    end
+    function y = double(obj)
+      y = Layer(@double, obj) ;
+      y.precious = false ;
     end
     
     % overloaded matrix creation operators (no derivative).
