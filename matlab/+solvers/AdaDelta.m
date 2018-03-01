@@ -83,6 +83,12 @@ classdef AdaDelta < solvers.Solver
       o.delta_sqr = delta_sqr ;
     end
     
+    function reset(o)
+      % reset state
+      o.g_sqr = {} ;
+      o.delta_sqr = {} ;
+    end
+    
     function s = saveobj(o)
       % serialize to struct (called by the built-in function SAVE)
       % transfer state to CPU first

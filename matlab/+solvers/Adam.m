@@ -86,6 +86,13 @@ classdef Adam < solvers.Solver
       o.v = v ;
     end
     
+    function reset(o)
+      % reset state
+      o.m = {} ;
+      o.v = {} ;
+      o.t = 0 ;
+    end
+    
     function s = saveobj(o)
       % serialize to struct (called by the built-in function SAVE)
       % transfer state to CPU first

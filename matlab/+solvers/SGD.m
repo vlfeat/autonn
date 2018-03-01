@@ -61,6 +61,11 @@ classdef SGD < solvers.Solver
       o.state = state ;
     end
     
+    function reset(o)
+      % reset state
+      o.state = {} ;
+    end
+    
     function s = saveobj(o)
       % serialize to struct (called by the built-in function SAVE)
       % transfer state to CPU first
