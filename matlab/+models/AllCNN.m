@@ -1,6 +1,6 @@
 function prediction = AllCNN(varargin)
-%ALLCNN Returns a All-Convolutional Network for CIFAR10
-%   M = models.AllCNN() returns the model proposed in:
+%ALLCNN Returns a All-Convolutional Network (All-CNN-C) for CIFAR10
+%   M = models.AllCNN() returns variant C of the model proposed in:
 %
 %     Springenberg et al., "Striving for simplicity: The all convolutional
 %     net", ICLR Workshop 2015.
@@ -31,9 +31,9 @@ function prediction = AllCNN(varargin)
   
   % get conv block generator with the given options. default activation is
   % ReLU, with batch normalization (can be overriden).
-  % also set a kernel size and padding that will be reused by most layers.
+  % also set a kernel size that will be reused by most layers.
   conv = models.ConvBlock('batchNorm', opts.batchNorm, ...
-    'kernel', 3, 'pad', 'same', convBlockArgs{:}) ;
+    'kernel', 3, convBlockArgs{:}) ;
   
   % build network
   images = opts.input ;
@@ -58,9 +58,9 @@ function prediction = AllCNN(varargin)
   
   % third stage. final conv has no batch-norm or activation
   x = conv(x, 'channels', [192, 192]) ;
-  x = conv(x, 'channels', [192, 192], 'kernel', 1, 'pad', 0) ;
+  x = conv(x, 'channels', [192, 192], 'kernel', 1) ;
   x = conv(x, 'channels', [192, opts.numClasses], ...
-    'kernel', 1, 'pad', 0, 'batchNorm', false, 'activation', 'none') ;
+    'kernel', 1, 'batchNorm', false, 'activation', 'none') ;
   
   % average pool predictions
   prediction = mean(mean(x, 1), 2) ;
