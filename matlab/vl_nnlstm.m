@@ -12,11 +12,17 @@ function varargout = vl_nnlstm(x, hp, cp, W, b, varargin)
 %   hp: The previous hidden-state (d x N), hidden/cell state dimension d.
 %   cp: The previous cell-state (d x N).
 %
-%   W: Linear parameters matrix ((4*d) x (m+d)) = [Wxi   Whi
-%      See Donahue et al. [1] for a detailed       Wxf   Whf
-%      description.                                Wxo   Who
-%                                                  Wxc   Whc]
-%   b: Bias parameters vector ((4*d) x 1).
+%   W = [Wxi   Whi      Linear parameters matrix, size (4*d) x (m+d).
+%        Wxf   Whf
+%        Wxo   Who
+%        Wxc   Whc]
+%
+%   b = [bi bf bo bc]'  Bias parameters vector, size (4*d) x 1.
+%
+%   Both W and b are partitioned into blocks, corresponding to the multiple
+%   gates that are part of an LSTM. Here, i/f/o/c stand for input, forget
+%   gate, output gate, and cell respectively, while x and h are the input
+%   and hidden state. See Donahue et al. [1] for a detailed description.
 %
 %   The inputs (x, hp, cp) may also be 4D tensors with the first two
 %   dimensions of size 1 (i.e., 1 x 1 x m x N). This is for added

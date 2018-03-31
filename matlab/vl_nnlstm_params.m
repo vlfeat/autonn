@@ -3,6 +3,8 @@ function [W, b] = vl_nnlstm_params(d, m, varargin)
 %   [W, B] = VL_NNLSTM_PARAMS(D, M) initializes parameter matrix W and
 %   vector B with appropriate randomized values, for an LSTM with D hidden
 %   units and a M-dimensional input.
+%
+%   See VL_NNLSTM for a full description of the parameters.
 %   
 %   VL_NNLSTM_PARAMS(..., 'option', value, ...) accepts the following
 %   options:
