@@ -70,6 +70,7 @@ function prediction = MaxoutNIN(varargin)
   defaults.numEpochs = 200 ;
   defaults.batchSize = 100 ;
   defaults.weightDecay = 0.0005 ;
+  defaults.imageSize = [32, 32, 3] ;
   % the default learning rate schedule, changing every 50 epochs
   ep50 = ones(1, 50) ;
   defaults.learningRate = [0.5 * ep50, 0.05 * ep50, 0.005 * ep50, 0.0005 * ep50] ;

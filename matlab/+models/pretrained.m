@@ -36,6 +36,7 @@ function outputs = pretrained(modelName, varargin)
   opts.modelsDir = [vl_rootnn() '/data/models'] ;
   opts.modelsUrls = {'http://www.vlfeat.org/matconvnet/models', ...
                     'http://www.robots.ox.ac.uk/~albanie/models'} ;
+  opts.customLayerFn = [] ;
   opts = vl_argparse(opts, varargin, 'nonrecursive') ;
   
   assert(exist(opts.modelsDir, 'dir') ~= 0, 'Models directory does not exist.') ;
@@ -66,6 +67,6 @@ function outputs = pretrained(modelName, varargin)
   
   % load and convert to AutoNN layer
   net = load(modelPath) ;
-  outputs = Layer.fromDagNN(net) ;
+  outputs = Layer.fromDagNN(net, opts.customLayerFn) ;
 
 end

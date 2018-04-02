@@ -70,6 +70,7 @@ function prediction = NIN(varargin)
   % default training options for this network
   defaults.batchSize = 100 ;
   defaults.weightDecay = 0.0005 ;
+  defaults.imageSize = [32, 32, 3] ;
   % the default learning rate schedule
   if ~opts.batchNorm
     defaults.learningRate = [0.002, 0.01, 0.02, 0.04 * ones(1,80), 0.004 * ones(1,10), 0.0004 * ones(1,10)] ;

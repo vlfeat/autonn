@@ -29,12 +29,13 @@ function prediction = LeNet(varargin)
   x = vl_nnconv(x, 'size', [4, 4, 50, 500], 'weightScale', 0.01) ;
   x = vl_nnrelu(x) ;
   
-  prediction = vl_nnconv(x, 'size', [1, 1, 500, 10], 'weightScale', 0.01, ...
-    'batchNorm', false, 'activation', 'none') ;
+  prediction = vl_nnconv(x, 'size', [1, 1, 500, 10], 'weightScale', 0.01) ;
 
   % default training options for this network
   defaults.numEpochs = 20 ;
   defaults.batchSize = 128 ;
   defaults.learningRate = 0.001 ;
+  defaults.weightDecay = 0 ;
+  defaults.imageSize = [28, 28, 1] ;
   prediction.meta = defaults ;
 end

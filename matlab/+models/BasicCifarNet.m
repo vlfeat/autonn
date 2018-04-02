@@ -63,6 +63,7 @@ function prediction = BasicCifarNet(varargin)
     defaults.learningRate = 0.1 ;
     defaults.numEpochs = 40 ;
   end
+  defaults.imageSize = [32, 32, 3] ;
   prediction.meta = defaults ;
   
 end
