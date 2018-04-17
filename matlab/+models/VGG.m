@@ -157,7 +157,8 @@ function prediction = VGG(varargin)
     x = vl_nndropout(x) ;
   end
 
-  prediction = conv(x, 'size', [1, 1, 4096, opts.numClasses]) ;
+  prediction = conv(x, 'size', [1, 1, 4096, opts.numClasses], ...
+    'batchNorm', false, 'activation', 'none') ;
   
   prediction.meta = meta ;
   

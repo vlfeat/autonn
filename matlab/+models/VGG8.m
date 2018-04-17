@@ -201,7 +201,8 @@ function prediction = VGG8(varargin)
   end
 
   % prediction layer
-  prediction = conv(x, 'size', [1, 1, 4096, opts.numClasses]) ;
+  prediction = conv(x, 'size', [1, 1, 4096, opts.numClasses], ...
+    'batchNorm', false, 'activation', 'none') ;
 
   prediction.meta = meta ;
   
