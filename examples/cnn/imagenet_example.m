@@ -98,7 +98,8 @@ function imagenet_example(varargin)
 
   % set solver learning rate
   solver = opts.solver ;
-  solver.learningRate = opts.learningRate(1)  ;
+  solver.learningRate = opts.learningRate(1) ;
+  solver.weightDecay = opts.weightDecay ;
   
   % initialize dataset
   dataset = datasets.ImageNet('dataDir', opts.dataDir, ...
