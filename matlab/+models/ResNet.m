@@ -68,6 +68,12 @@ function prediction = ResNet(varargin)
     opts.variant = int2str(opts.variant) ;
   end
   switch opts.variant
+  case '18'
+    opts.blocksPerSection = [2, 2, 2, 2] ;
+    opts.channelsPerBlock(3:end) = [];  % only two convolutions per block
+  case '34'
+    opts.blocksPerSection = [3, 4, 6, 3] ;
+    opts.channelsPerBlock(3:end) = [];  % only two convolutions per block
   case '50'
     opts.blocksPerSection = [3, 4, 6, 3] ;
   case '101'
@@ -80,6 +86,9 @@ function prediction = ResNet(varargin)
   otherwise
     error('Unknown variant.') ;
   end
+  
+  assert(any(numel(opts.channelsPerBlock) == [2, 3]), ...
+    'Can only specify 2 or 3 channels per block.') ;
   
   
   % default training options for this network (returned as output.meta)
@@ -155,15 +164,23 @@ function prediction = ResNet(varargin)
         stride = 2 ;
       end
       
-      % 3 convs: 1x1, 3x3, 1x1
-      sumInput = x ;  % this will be connected to the sum later
-      x = conv(x, 'size', [1, 1, channelsOut, ch(1)]) ;
-      x = conv(x, 'size', [3, 3, ch(1), ch(2)], 'stride', stride) ;
-      x = conv(x, 'size', [1, 1, ch(2), ch(3)], 'activation', 'none') ;
+      % this will be connected to the sum later
+      sumInput = x ;
+      
+      if numel(ch) == 3
+        % 3 convs for deeper variants: 1x1, 3x3, 1x1
+        x = conv(x, 'size', [1, 1, channelsOut, ch(1)]) ;
+        x = conv(x, 'size', [3, 3, ch(1), ch(2)], 'stride', stride) ;
+        x = conv(x, 'size', [1, 1, ch(2), ch(3)], 'activation', 'none') ;
+      else
+        % 2 convs for shallower variants: 3x3, 3x3
+        x = conv(x, 'size', [3, 3, channelsOut, ch(1)], 'stride', stride) ;
+        x = conv(x, 'size', [3, 3, ch(1), ch(2)], 'activation', 'none') ;
+      end
 
       % optional adapter layer, parallel to the above 3 convs
-      if l == 1
-        sumInput = conv(sumInput, 'size', [1, 1, channelsOut, ch(3)], ...
+      if l == 1 && channelsOut ~= ch(end)
+        sumInput = conv(sumInput, 'size', [1, 1, channelsOut, ch(end)], ...
           'stride', stride, 'activation', 'none') ;
       end
 
@@ -171,7 +188,7 @@ function prediction = ResNet(varargin)
       x = sumInput + x ;
       x = vl_nnrelu(x) ;
       
-      channelsOut = ch(3);
+      channelsOut = ch(end);
     end
   end
 
@@ -180,7 +197,7 @@ function prediction = ResNet(varargin)
   
   % prediction layer
   prediction = conv(x, 'size', [1, 1, channelsOut, opts.numClasses], ...
-    'batchNorm', false, 'activation', 'none') ;
+    'batchNorm', false, 'activation', 'none', 'hasBias', true) ;
 
   prediction.meta = meta ;
   
