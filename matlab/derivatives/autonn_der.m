@@ -261,6 +261,16 @@ function dx = double_der(x, dy)
   dx = typecast_der(x, dy) ;
 end
 
+function [da, db] = complex_der(varargin)
+  % support either 1 or 2 arguments:
+  % y = complex(a) -> da = complex_der(a, dy)
+  % y = complex(a, b) -> [da, db] = complex_der(a, b, dy)
+  da = real(varargin{end}) ;
+  if nargin == 3
+    db = imag(varargin{end}) ;
+  end
+end
+
 % helper function for single(), double(), and any other type cast
 function dx = typecast_der(x, dy)
   [~, x_type] = struct_or_tensor_size(x);  % handle proxy structs

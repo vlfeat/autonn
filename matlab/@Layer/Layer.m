@@ -333,6 +333,10 @@ classdef Layer < matlab.mixin.Copyable
       y = Layer(@double, obj) ;
       y.precious = false ;
     end
+    function y = complex(obj, varargin)
+      y = Layer(@complex, obj, varargin{:}) ;
+      y.precious = false ;
+    end
     
     % overloaded matrix creation operators (no derivative).
     function y = rand(obj, varargin)
